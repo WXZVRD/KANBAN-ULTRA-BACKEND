@@ -5,8 +5,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import IORedis from 'ioredis';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import { getMsFromEnv } from './libs/common/ms.util';
-import { parseBoolean } from './libs/common/parseBoolean.util';
+import { getMsFromEnv } from './libs/common/utils/ms.util';
+import { parseBoolean } from './libs/common/utils/parseBoolean.util';
 import connectRedis from 'connect-redis';
 
 async function bootstrap(): Promise<void> {
