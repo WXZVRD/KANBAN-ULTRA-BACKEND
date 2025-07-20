@@ -33,7 +33,7 @@ export class UserRepository implements IUserRepository {
 
     const user: User | null = await this.userRepository.findOne({
       where: { id },
-      relations: ['accounts'],
+      relations: ['account'],
     });
 
     if (!user) {
