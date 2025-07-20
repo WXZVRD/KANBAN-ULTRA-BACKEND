@@ -2,15 +2,49 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-
-import * as cookieParser from 'cookie-parser';
+import IORedis from 'ioredis';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import { getMsFromEnv } from './libs/common/ms.util';
+import { parseBoolean } from './libs/common/parseBoolean.util';
+import connectRedis from 'connect-redis';
 
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
 
   const config: ConfigService = app.get(ConfigService);
+  const redis: IORedis = new IORedis(config.getOrThrow<string>('REDIS_URI'));
+  const RedisStore = connectRedis(session);
+
+  redis.on('connect', () => {
+    console.log('[✅ Redis] Connected successfully');
+  });
+
+  redis.on('error', (err) => {
+    console.error('[❌ Redis] Connection error:', err);
+  });
 
   app.use(cookieParser(config.getOrThrow<string>('COOKIE_SECRET')));
+
+  app.use(
+    session({
+      store: new RedisStore({
+        client: redis,
+        prefix: config.getOrThrow<string>('SESSION_FOLDER'),
+      }),
+      secret: config.getOrThrow<string>('SESSION_SECRET'),
+      name: config.getOrThrow<string>('SESSION_NAME'),
+      resave: true,
+      saveUninitialized: false,
+      cookie: {
+        domain: config.getOrThrow<string>('SESSION_DOMAIN'),
+        maxAge: getMsFromEnv(config.getOrThrow<string>('SESSION_MAX_AGE')),
+        httpOnly: parseBoolean(config.getOrThrow<string>('SESSION_HTTP_ONLY')),
+        secure: parseBoolean(config.getOrThrow<string>('SESSION_SECURE')),
+        sameSite: 'lax',
+      },
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
