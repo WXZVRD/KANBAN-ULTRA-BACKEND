@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { AuthMethod } from './types/authMethods.enum';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserRepository {
-  constructor(private readonly userRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   async findUniqueById(id: string): Promise<User | null> {
     return this.userRepository.findOne({
