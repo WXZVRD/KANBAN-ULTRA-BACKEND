@@ -4,9 +4,24 @@ import { User } from './entity/user.entity';
 import { AuthMethod } from './types/authMethods.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 
+export interface IUserRepository {
+  findUniqueById(id: string): Promise<User | null>;
+
+  findUniqueByEmail(email: string): Promise<User | null>;
+
+  createUser(
+    email: string,
+    password: string,
+    displayName: string,
+    picture: string,
+    method: AuthMethod,
+    isVerified: boolean,
+  ): Promise<User>;
+}
+
 @Injectable()
-export class UserRepository {
-  private readonly logger = new Logger(UserRepository.name);
+export class UserRepository implements IUserRepository {
+  private readonly logger: Logger = new Logger(UserRepository.name);
 
   constructor(
     @InjectRepository(User)
@@ -16,7 +31,7 @@ export class UserRepository {
   async findUniqueById(id: string): Promise<User | null> {
     this.logger.log(`Called findUniqueById with id=${id}`);
 
-    const user = await this.userRepository.findOne({
+    const user: User | null = await this.userRepository.findOne({
       where: { id },
       relations: ['accounts'],
     });
@@ -35,7 +50,7 @@ export class UserRepository {
 
     const user: User | null = await this.userRepository.findOne({
       where: { email },
-      relations: ['accounts'],
+      relations: ['account'],
     });
 
     if (!user) {
