@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { AuthMethod } from './types/authMethods.enum';
@@ -6,23 +6,45 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserRepository {
+  private readonly logger = new Logger(UserRepository.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
 
   async findUniqueById(id: string): Promise<User | null> {
-    return this.userRepository.findOne({
+    this.logger.log(`Called findUniqueById with id=${id}`);
+
+    const user = await this.userRepository.findOne({
       where: { id },
       relations: ['accounts'],
     });
+
+    if (!user) {
+      this.logger.warn(`User with id=${id} not found`);
+    } else {
+      this.logger.debug(`User found: ${JSON.stringify(user)}`);
+    }
+
+    return user;
   }
 
   async findUniqueByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({
+    this.logger.log(`Called findUniqueByEmail with email=${email}`);
+
+    const user: User | null = await this.userRepository.findOne({
       where: { email },
       relations: ['accounts'],
     });
+
+    if (!user) {
+      this.logger.warn(`User with email=${email} not found`);
+    } else {
+      this.logger.debug(`User found: ${JSON.stringify(user)}`);
+    }
+
+    return user;
   }
 
   async createUser(
@@ -33,7 +55,11 @@ export class UserRepository {
     method: AuthMethod,
     isVerified: boolean,
   ): Promise<User> {
-    const createdUser = this.userRepository.create({
+    this.logger.log(
+      `Called createUser with email=${email}, displayName=${displayName}, method=${method}, isVerified=${isVerified}`,
+    );
+
+    const createdUser: User = this.userRepository.create({
       email,
       password,
       picture,
@@ -42,6 +68,11 @@ export class UserRepository {
       isVerified,
     });
 
-    return this.userRepository.save(createdUser);
+    this.logger.debug(`Created user entity: ${JSON.stringify(createdUser)}`);
+
+    const savedUser: User = await this.userRepository.save(createdUser);
+
+    this.logger.debug(`Saved user to DB: ${JSON.stringify(savedUser)}`);
+    return savedUser;
   }
 }
