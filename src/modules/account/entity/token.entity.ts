@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { TokenType } from '../types/token.types';
 
 @Entity('tokens')
@@ -21,4 +26,7 @@ export class Token {
 
   @Column()
   expiresIn: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

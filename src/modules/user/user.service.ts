@@ -20,7 +20,7 @@ interface IUserService {
 
 @Injectable()
 export class UserService implements IUserService {
-  private readonly logger = new Logger(UserService.name);
+  private readonly logger: Logger = new Logger(UserService.name);
 
   constructor(private readonly userRepository: UserRepository) {}
 
@@ -41,7 +41,8 @@ export class UserService implements IUserService {
   public async findByEmail(email: string): Promise<User | null> {
     this.logger.log(`Called findByEmail with email=${email}`);
 
-    const user = await this.userRepository.findUniqueByEmail(email);
+    const user: User | null =
+      await this.userRepository.findUniqueByEmail(email);
 
     if (!user) {
       this.logger.warn(`User with email=${email} not found`);

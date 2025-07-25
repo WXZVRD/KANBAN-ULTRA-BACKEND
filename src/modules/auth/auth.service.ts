@@ -14,6 +14,11 @@ import { Request, Response } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ConfigService } from '@nestjs/config';
+import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
+import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
+import { AccountService } from '../account/account.service';
+import { Account } from '../account/entity/account.entity';
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
@@ -28,6 +33,8 @@ export class AuthService implements IAuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
+    private readonly accountService: AccountService,
+    private readonly providerService: AuthProviderService,
   ) {}
 
   public async register(req: Request, dto: RegisterDto): Promise<User | null> {
@@ -89,6 +96,82 @@ export class AuthService implements IAuthService {
       `Успешный вход пользователя id=${user.id}, email=${user.email}`,
     );
 
+    return this.saveSession(req, user);
+  }
+
+  public async extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ): Promise<User | null> {
+    this.logger.log(`Начало обработки OAuth провайдера ${provider} с кодом`);
+
+    const providerInstance: BaseOauthService | null =
+      this.providerService.findByService(provider);
+
+    if (!providerInstance) {
+      this.logger.error(`Провайдер ${provider} не найден`);
+      throw new NotFoundException(`Провайдер "${provider}" не найден`);
+    }
+
+    this.logger.debug(`Получение профиля из кода для провайдера ${provider}`);
+    const profile: TypeUserInfo | undefined =
+      await providerInstance?.findUserByCode(code);
+
+    if (!profile) {
+      this.logger.warn(`Не удалось получить профиль от провайдера ${provider}`);
+      throw new NotFoundException(
+        'Не удалось получить данные пользователя от провайдера',
+      );
+    }
+
+    this.logger.log(`Поиск существующего аккаунта для id=${profile.id}`);
+    const account: Account | null =
+      await this.accountService.findByIdAndProvider(
+        profile!.id,
+        profile!.provider,
+      );
+
+    this.logger.log(`Найден существующий акканут: ${JSON.stringify(account)}`);
+
+    let user: User | null = account?.user.id
+      ? await this.userService.findById(account?.user.id)
+      : null;
+
+    if (user) {
+      this.logger.log(
+        `Найден существующий пользователь id=${user.id}, сохранение сессии`,
+      );
+      return this.saveSession(req, user);
+    }
+
+    this.logger.log(`Создание нового пользователя для провайдера ${provider}`);
+    user = await this.userService.create(
+      profile!.email,
+      '',
+      profile!.name,
+      profile!.picture,
+      AuthMethod[profile!.provider.toUpperCase()],
+      true,
+    );
+
+    if (!account) {
+      this.logger.debug(
+        `Создание новой учетной записи для пользователя id=${user.id}`,
+      );
+      await this.accountService.create(
+        user,
+        'oauth',
+        profile!.provider,
+        profile!.access_token!,
+        profile!.refresh_token!,
+        profile!.expires_at,
+      );
+    }
+
+    this.logger.log(
+      `Успешная OAuth аутентификация, пользователь id=${user.id}`,
+    );
     return this.saveSession(req, user);
   }
 
