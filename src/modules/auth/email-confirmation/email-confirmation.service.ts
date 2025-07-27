@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenRepository } from '../repositories/token.repository';
+import { TokenRepository } from '../../account/repositories/token.repository';
 import { TokenType } from '../../account/types/token.types';
 import { Token } from '../../account/entity/token.entity';
 import { ConfirmationDto } from './dto/confirmation.dto';

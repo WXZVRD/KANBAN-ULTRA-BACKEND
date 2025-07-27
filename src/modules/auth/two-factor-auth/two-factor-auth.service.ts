@@ -9,7 +9,7 @@ import { MailService } from '../../mail/mail.service';
 import { Token } from '../../account/entity/token.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { TokenType } from '../../account/types/token.types';
-import { TokenRepository } from '../repositories/token.repository';
+import { TokenRepository } from '../../account/repositories/token.repository';
 
 @Injectable()
 export class TwoFactorAuthService {
