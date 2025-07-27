@@ -56,7 +56,8 @@ export class MailService {
     const apiKey: string =
       this.configService.getOrThrow<string>('RESENDER_API_KEY');
     this.resend = new Resend(apiKey);
-    this.sender = this.configService.getOrThrow<string>('MAIL_LOGIN');
+    this.sender = 'onboarding@resend.dev';
+    // this.sender = this.configService.getOrThrow<string>('MAIL_LOGIN');
 
     this.logger.log(`MailService initialized with sender: ${this.sender}`);
   }
