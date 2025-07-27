@@ -118,7 +118,7 @@ export class PasswordRecoveryService {
       email,
       token,
       expiresIn,
-      TokenType.VERIFICATION,
+      TokenType.PASSWORD_RESET,
     );
 
     this.logger.log(`Токен создан: ${passwordResetToken.token} для ${email}`);
