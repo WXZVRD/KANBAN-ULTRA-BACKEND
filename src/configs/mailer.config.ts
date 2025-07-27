@@ -13,6 +13,9 @@ export const getMailerConfig = async (
       user: configService.getOrThrow<string>('MAIL_LOGIN'),
       pass: configService.getOrThrow<string>('MAIL_PASSWORD'),
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   },
   defaults: {
     from: `"WXZVRD dev." <${configService.getOrThrow<string>('MAIL_LOGIN')}>`,
