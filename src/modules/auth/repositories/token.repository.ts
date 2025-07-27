@@ -17,6 +17,8 @@ export class TokenRepository {
     expiresIn: Date,
     type: TokenType,
   ): Promise<Token> {
+    console.log('[CREATE TOKEN] Data:', { email, token, expiresIn, type });
+
     const createdToken: Token = this.repo.create({
       email,
       token,
@@ -24,40 +26,61 @@ export class TokenRepository {
       type,
     });
 
-    return await this.repo.save(createdToken);
+    console.log('[CREATE TOKEN] Created entity:', createdToken);
+
+    const savedToken: Token = await this.repo.save(createdToken);
+
+    console.log('[CREATE TOKEN] Saved token:', savedToken);
+
+    return savedToken;
   }
 
   public async findByEmailAndToken(
     email: string,
     type: TokenType,
   ): Promise<Token | null> {
-    return this.repo.findOne({
+    console.log('[FIND BY EMAIL AND TOKEN] Query:', { email, type });
+
+    const result: Token | null = await this.repo.findOne({
       where: {
         email,
         type,
       },
     });
+
+    console.log('[FIND BY EMAIL AND TOKEN] Result:', result);
+    return result;
   }
 
   public async deleteByIdAndToken(
     id: string,
     type: TokenType,
   ): Promise<DeleteResult> {
-    return this.repo.delete({
+    console.log('[DELETE BY ID AND TOKEN] Params:', { id, type });
+
+    const result: DeleteResult = await this.repo.delete({
       id,
       type,
     });
+
+    console.log('[DELETE BY ID AND TOKEN] Result:', result);
+    return result;
   }
 
   public async findByTokenAndType(
     token: string,
     type: TokenType,
   ): Promise<Token | null> {
-    return this.repo.findOne({
+    console.log('[FIND BY TOKEN AND TYPE] Query:', { token, type });
+
+    const result: Token | null = await this.repo.findOne({
       where: {
         token,
         type,
       },
     });
+
+    console.log('[FIND BY TOKEN AND TYPE] Result:', result);
+    return result;
   }
 }
