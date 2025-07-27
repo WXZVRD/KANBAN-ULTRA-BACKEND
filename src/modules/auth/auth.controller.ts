@@ -45,11 +45,9 @@ export class AuthController {
     this.logger.log(
       `POST /auth/register — попытка регистрации пользователя email=${dto.email}`,
     );
-    const user: User | null = await this.authService.register(req, dto);
-    this.logger.log(
-      `Пользователь зарегистрирован: id=${user?.id}, email=${user?.email}`,
-    );
-    return user;
+    const res: any = await this.authService.register(req, dto);
+    this.logger.log(`Пользователь зарегистрирован`);
+    return res;
   }
 
   @Recaptcha()

@@ -19,6 +19,8 @@ import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
 import { AccountService } from '../account/account.service';
 import { Account } from '../account/entity/account.entity';
+import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
+import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
@@ -35,9 +37,11 @@ export class AuthService implements IAuthService {
     private readonly userService: UserService,
     private readonly accountService: AccountService,
     private readonly providerService: AuthProviderService,
+    private readonly emailConfirmationService: EmailConfirmationService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
-  public async register(req: Request, dto: RegisterDto): Promise<User | null> {
+  public async register(req: Request, dto: RegisterDto): Promise<any> {
     this.logger.log(`Регистрация пользователя с email=${dto.email}`);
 
     const isExists: User | null = await this.userService.findByEmail(dto.email);
@@ -63,14 +67,20 @@ export class AuthService implements IAuthService {
       false,
     );
 
+    await this.emailConfirmationService.sendVerificationToken(newUser.email);
+
     this.logger.log(
       `Пользователь успешно создан: id=${newUser.id}, email=${newUser.email}`,
     );
 
-    return this.saveSession(req, newUser);
+    // return this.saveSession(req, newUser);
+    return {
+      message:
+        'Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс',
+    };
   }
 
-  public async login(req: Request, dto: LoginDto): Promise<User | null> {
+  public async login(req: Request, dto: LoginDto): Promise<any> {
     this.logger.log(`Попытка входа пользователя email=${dto.email}`);
 
     const user: User | null = await this.userService.findByEmail(dto.email);
@@ -80,7 +90,7 @@ export class AuthService implements IAuthService {
         `Вход не удался: пользователь не найден или без пароля: email=${dto.email}`,
       );
       throw new NotFoundException(
-        'Пользователь не найден. Пожалуйста, проверьте введеные данные',
+        'Пользователь не найден. Пожалуйста, проверьте введеные данные.',
       );
     }
 
@@ -88,13 +98,37 @@ export class AuthService implements IAuthService {
     if (!isValidPassword) {
       this.logger.warn(`Неверный пароль для пользователя email=${dto.email}`);
       throw new UnauthorizedException(
-        'Неверный пароль. Пожалуйста, попробуйте еще раз или восстановите пароль, если забыли его',
+        'Неверный пароль. Пожалуйста, попробуйте еще раз или восстановите пароль, если забыли его.',
+      );
+    }
+
+    if (!user.isVerified) {
+      this.logger.warn(`Не подтвержденна почта для email=${dto.email}`);
+      await this.emailConfirmationService.sendVerificationToken(user.email);
+      throw new UnauthorizedException(
+        'Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адресс.',
       );
     }
 
     this.logger.log(
       `Успешный вход пользователя id=${user.id}, email=${user.email}`,
     );
+
+    if (user.isTwoFactorEnabled) {
+      if (!dto.code) {
+        await this.twoFactorAuthService.sendTwoFactorToken(user.email);
+
+        return {
+          message:
+            'Проверьте почту. Требуется код двухфакторной аутентификаций.',
+        };
+      }
+
+      await this.twoFactorAuthService.validateTwoFactorToken(
+        user.email,
+        dto.code,
+      );
+    }
 
     return this.saveSession(req, user);
   }
@@ -206,7 +240,7 @@ export class AuthService implements IAuthService {
     });
   }
 
-  private async saveSession(req: Request, user: User): Promise<User | null> {
+  public async saveSession(req: Request, user: User): Promise<User | null> {
     this.logger.debug(`Сохраняем сессию для пользователя id=${user.id}`);
 
     return new Promise<User | null>((resolve, reject): void => {
