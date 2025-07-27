@@ -36,7 +36,7 @@ export class EmailConfirmationService {
     this.logger.log(`Попытка подтверждения токена: ${dto.token}`);
 
     const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
+      await this.tokenRepository.findByTokenAndType(
         dto.token,
         TokenType.VERIFICATION,
       );
