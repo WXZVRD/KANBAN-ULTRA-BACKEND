@@ -6,6 +6,7 @@ import { UserModule } from './modules/user/user.module';
 import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
+import { EmailConfirmationModule } from './modules/auth/email-confirmation/email-confirmation.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MailModule } from './modules/mail/mail.module';
     AccountModule,
     AuthModule,
     MailModule,
+    EmailConfirmationModule,
   ],
 })
 export class AppModule {}
