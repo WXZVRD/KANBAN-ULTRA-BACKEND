@@ -28,12 +28,12 @@ export class UserRepository implements IUserRepository {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUniqueById(id: string): Promise<User | null> {
+  public async findUniqueById(id: string): Promise<User | null> {
     this.logger.log(`Called findUniqueById with id=${id}`);
 
     const user: User | null = await this.userRepository.findOne({
       where: { id },
-      relations: ['accounts'],
+      relations: ['account'],
     });
 
     if (!user) {
@@ -45,7 +45,7 @@ export class UserRepository implements IUserRepository {
     return user;
   }
 
-  async findUniqueByEmail(email: string): Promise<User | null> {
+  public async findUniqueByEmail(email: string): Promise<User | null> {
     this.logger.log(`Called findUniqueByEmail with email=${email}`);
 
     const user: User | null = await this.userRepository.findOne({
@@ -62,7 +62,7 @@ export class UserRepository implements IUserRepository {
     return user;
   }
 
-  async createUser(
+  public async createUser(
     email: string,
     password: string,
     displayName: string,
@@ -75,12 +75,12 @@ export class UserRepository implements IUserRepository {
     );
 
     const createdUser: User = this.userRepository.create({
-      email,
-      password,
-      picture,
-      displayName,
-      method,
-      isVerified,
+      email: email,
+      password: password,
+      picture: picture,
+      displayName: displayName,
+      method: method,
+      isVerified: isVerified,
     });
 
     this.logger.debug(`Created user entity: ${JSON.stringify(createdUser)}`);
@@ -89,5 +89,21 @@ export class UserRepository implements IUserRepository {
 
     this.logger.debug(`Saved user to DB: ${JSON.stringify(savedUser)}`);
     return savedUser;
+  }
+
+  public async updateVerified(user: User, isVerified: boolean): Promise<User> {
+    user.isVerified = isVerified;
+
+    return await this.userRepository.save(user);
+  }
+
+  public async save(user: User): Promise<User> {
+    return this.userRepository.save(user);
+  }
+
+  public async updatePassword(user: User, newPassword: string): Promise<User> {
+    user.password = newPassword;
+
+    return await this.userRepository.save(user);
   }
 }

@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { UserRepository } from './user.repository';
 import { AuthMethod } from './types/authMethods.enum';
+import { LoginDto } from '../auth/dto/login.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 interface IUserService {
   findById(id: string): Promise<User | null>;
@@ -20,7 +22,7 @@ interface IUserService {
 
 @Injectable()
 export class UserService implements IUserService {
-  private readonly logger = new Logger(UserService.name);
+  private readonly logger: Logger = new Logger(UserService.name);
 
   constructor(private readonly userRepository: UserRepository) {}
 
@@ -41,7 +43,8 @@ export class UserService implements IUserService {
   public async findByEmail(email: string): Promise<User | null> {
     this.logger.log(`Called findByEmail with email=${email}`);
 
-    const user = await this.userRepository.findUniqueByEmail(email);
+    const user: User | null =
+      await this.userRepository.findUniqueByEmail(email);
 
     if (!user) {
       this.logger.warn(`User with email=${email} not found`);
@@ -75,5 +78,30 @@ export class UserService implements IUserService {
 
     this.logger.debug(`Created user: ${JSON.stringify(user)}`);
     return user;
+  }
+
+  public async updateVerified(user: User, isVerfied: boolean): Promise<User> {
+    return this.userRepository.updateVerified(user, isVerfied);
+  }
+
+  public async updatePassword(user: User, newPassword: string): Promise<User> {
+    return await this.userRepository.updatePassword(user, newPassword);
+  }
+
+  public async update(id: string, dto: UpdateUserDto): Promise<User> {
+    const user: User | null = await this.userRepository.findUniqueById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    const updatedUser: User = {
+      ...user,
+      ...dto,
+    };
+
+    const savedUser: User = await this.userRepository.save(updatedUser);
+
+    return savedUser;
   }
 }

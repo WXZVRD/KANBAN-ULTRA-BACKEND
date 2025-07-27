@@ -5,6 +5,10 @@ import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './modules/mail/mail.module';
+import { EmailConfirmationModule } from './modules/auth/email-confirmation/email-confirmation.module';
+import { PasswordRecoveryModule } from './modules/password-recovery/password-recovery.module';
+import { TwoFactorAuthModule } from './modules/auth/two-factor-auth/two-factor-auth.module';
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     AccountModule,
     AuthModule,
+    MailModule,
+    EmailConfirmationModule,
+    PasswordRecoveryModule,
+    TwoFactorAuthModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 export enum AuthMethod {
-  CREDENTIALS,
-  GOOGLE,
-  YANDEX,
+  CREDENTIALS = 'CREDENTIALS',
+  GOOGLE = 'GOOGLE',
+  YANDEX = 'YANDEX',
 }

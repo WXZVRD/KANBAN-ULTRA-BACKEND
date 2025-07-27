@@ -14,7 +14,7 @@ async function bootstrap(): Promise<void> {
 
   const config: ConfigService = app.get(ConfigService);
   const redis: IORedis = new IORedis(config.getOrThrow<string>('REDIS_URI'));
-  const RedisStore = connectRedis(session);
+  const RedisStore: connectRedis.RedisStore = connectRedis(session);
 
   redis.on('connect', () => {
     console.log('[✅ Redis] Connected successfully');
