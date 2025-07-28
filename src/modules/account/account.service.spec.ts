@@ -4,7 +4,7 @@ import { User } from '../user/entity/user.entity';
 import { Account } from './entity/account.entity';
 import { UserRole } from '../user/types/roles.enum';
 import { AuthMethod } from '../user/types/authMethods.enum';
-import { AccountRepository } from './account.repository';
+import { AccountRepository } from './repositories/account.repository';
 
 describe('AccountService', (): void => {
   let accountService: AccountService;
