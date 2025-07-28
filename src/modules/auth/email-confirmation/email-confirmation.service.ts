@@ -13,7 +13,7 @@ import { Token } from '../../account/entity/token.entity';
 import { ConfirmationDto } from './dto/confirmation.dto';
 import { User } from '../../user/entity/user.entity';
 import { MailService } from '../../mail/mail.service';
-import { UserService } from '../../user/user.service';
+import { UserService } from '../../user/services/user.service';
 import { AuthService } from '../auth.service';
 import { Request } from 'express';
 
