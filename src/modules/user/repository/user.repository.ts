@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from './entity/user.entity';
-import { AuthMethod } from './types/authMethods.enum';
+import { User } from '../entity/user.entity';
+import { AuthMethod } from '../types/authMethods.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 
 export interface IUserRepository {

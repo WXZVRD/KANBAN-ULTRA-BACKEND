@@ -10,7 +10,7 @@ export class IsPasswordsMatchingConstraint
   implements ValidatorConstraintInterface
 {
   public validate(passwordRepeat: string, args: ValidationArguments) {
-    const obj = args.object as RegisterDto;
+    const obj: RegisterDto = args.object as RegisterDto;
     return obj.password === passwordRepeat;
   }
 

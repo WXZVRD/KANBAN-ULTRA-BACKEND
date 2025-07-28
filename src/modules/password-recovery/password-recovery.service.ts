@@ -4,12 +4,12 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserService } from '../user/user.service';
+import { UserService } from '../user/services/user.service';
 import { MailService } from '../mail/mail.service';
 import { Token } from '../account/entity/token.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { TokenType } from '../account/types/token.types';
-import { TokenRepository } from '../auth/repositories/token.repository';
+import { TokenRepository } from '../account/repositories/token.repository';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { User } from '../user/entity/user.entity';
 import { NewPasswordDto } from './dto/new-password.dto';
