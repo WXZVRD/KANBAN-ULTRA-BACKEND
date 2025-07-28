@@ -7,7 +7,7 @@ import { Token } from '../../account/entity/token.entity';
 import { MailModule } from '../../mail/mail.module';
 import { AuthModule } from '../auth.module';
 import { UserModule } from '../../user/user.module';
-import { UserService } from '../../user/user.service';
+import { UserService } from '../../user/services/user.service';
 import { MailService } from '../../mail/mail.service';
 
 @Module({

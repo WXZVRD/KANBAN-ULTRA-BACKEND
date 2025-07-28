@@ -7,7 +7,7 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from './services/user.service';
 import { User } from './entity/user.entity';
 import { Authorized } from '../auth/decorators/authorized.decorator';
 import { Authorization } from '../auth/decorators/auth.decorator';
