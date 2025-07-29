@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,6 +11,7 @@ import {
 import { Account } from '../../account/entity/account.entity';
 import { UserRole } from '../types/roles.enum';
 import { AuthMethod } from '../types/authMethods.enum';
+import { Project } from '../../project/entity/project.entity';
 
 @Entity('users')
 export class User {
@@ -57,4 +59,7 @@ export class User {
   @OneToOne(() => Account, { cascade: true, eager: true })
   @JoinColumn({ name: 'account_id' })
   account: Account;
+
+  @OneToMany(() => Project, (project) => project.owner)
+  projects: Project[];
 }

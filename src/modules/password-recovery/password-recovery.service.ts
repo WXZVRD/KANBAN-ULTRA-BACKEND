@@ -98,7 +98,7 @@ export class PasswordRecoveryService {
     this.logger.log(`Создание нового токена подтверждения для: ${email}`);
 
     const token: string = uuidv4();
-    const expiresIn: Date = new Date(Date.now() + 3600 * 1000); // 1 час
+    const expiresIn: Date = new Date(Date.now() + 3600 * 1000);
 
     const existingToken: Token | null =
       await this.tokenRepository.findByEmailAndToken(
