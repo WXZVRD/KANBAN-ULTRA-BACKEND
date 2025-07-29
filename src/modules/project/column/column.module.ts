@@ -4,10 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectColumn } from './entity/column.entity';
 import { ProjectColumnRepository } from './repository/column.repository';
 import { ProjectColumnService } from './column.service';
+import { UserModule } from '../../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProjectColumn])],
+  imports: [TypeOrmModule.forFeature([ProjectColumn]), UserModule],
   controllers: [ProjectColumnController],
   providers: [ProjectColumnService, ProjectColumnRepository],
+  exports: [ProjectColumnService, ProjectColumnRepository],
 })
 export class ColumnModule {}

@@ -1,10 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AccessType } from '../types/access.enum';
 import { User } from '../../user/entity/user.entity';
@@ -38,4 +40,10 @@ export class Project {
     cascade: true,
   })
   columns: ProjectColumn[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
