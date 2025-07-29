@@ -1,4 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { ProjectColumnRepository } from './repository/column.repository';
 
 @Injectable()
-export class ColumnService {}
+export class ProjectColumnService {
+  public constructor(
+    private readonly projectColumnRepository: ProjectColumnRepository,
+  ) {}
+}

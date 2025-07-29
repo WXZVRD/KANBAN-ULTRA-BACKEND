@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ColumnService } from './column.service';
-import { ColumnController } from './column.controller';
+import { ProjectColumnController } from './column.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProjectColumn } from './entity/column.entity';
+import { ProjectColumnRepository } from './repository/column.repository';
+import { ProjectColumnService } from './column.service';
 
 @Module({
-  controllers: [ColumnController],
-  providers: [ColumnService],
+  imports: [TypeOrmModule.forFeature([ProjectColumn])],
+  controllers: [ProjectColumnController],
+  providers: [ProjectColumnService, ProjectColumnRepository],
 })
 export class ColumnModule {}
