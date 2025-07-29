@@ -7,9 +7,15 @@ import { ProjectRepository } from './repository/project.repository';
 import { ColumnModule } from './column/column.module';
 import { ProjectColumnService } from './column/column.service';
 import { UserModule } from '../user/user.module';
+import { TaskModule } from './task/task.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project]), ColumnModule, UserModule],
+  imports: [
+    TypeOrmModule.forFeature([Project]),
+    ColumnModule,
+    TaskModule,
+    UserModule,
+  ],
   controllers: [ProjectController],
   providers: [ProjectService, ProjectRepository, ProjectColumnService],
 })

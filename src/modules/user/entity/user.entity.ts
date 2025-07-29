@@ -12,6 +12,7 @@ import { Account } from '../../account/entity/account.entity';
 import { UserRole } from '../types/roles.enum';
 import { AuthMethod } from '../types/authMethods.enum';
 import { Project } from '../../project/entity/project.entity';
+import { Task } from '../../project/task/entity/task.entity';
 
 @Entity('users')
 export class User {
@@ -59,6 +60,9 @@ export class User {
   @OneToOne(() => Account, { cascade: true, eager: true })
   @JoinColumn({ name: 'account_id' })
   account: Account;
+
+  @OneToMany(() => Task, (task) => task.author)
+  tasks: Task[];
 
   @OneToMany(() => Project, (project) => project.owner)
   projects: Project[];

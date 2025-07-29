@@ -6,8 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Project } from '../../entity/project.entity';
+import { Task } from '../../task/entity/task.entity';
 
 @Entity('project_column')
 export class ProjectColumn {
@@ -25,6 +27,9 @@ export class ProjectColumn {
   })
   @JoinColumn({ name: 'projectId' })
   project: Project;
+
+  @OneToMany(() => Task, (task) => task.column, { cascade: true })
+  tasks: Task[];
 
   @Column()
   projectId: string;
