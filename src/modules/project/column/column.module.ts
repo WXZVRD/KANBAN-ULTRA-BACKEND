@@ -9,5 +9,6 @@ import { ProjectColumnService } from './column.service';
   imports: [TypeOrmModule.forFeature([ProjectColumn])],
   controllers: [ProjectColumnController],
   providers: [ProjectColumnService, ProjectColumnRepository],
+  exports: [ProjectColumnService, ProjectColumnRepository],
 })
 export class ColumnModule {}

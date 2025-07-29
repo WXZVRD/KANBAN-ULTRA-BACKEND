@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from '../../entity/project.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { ProjectColumn } from '../entity/column.entity';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class ProjectColumnRepository {
   }
 
   public async createAndSave(
-    columnToSave: ProjectColumn,
+    columnToSave: DeepPartial<ProjectColumn>,
   ): Promise<ProjectColumn> {
     const createdColumn: ProjectColumn = this.repo.create(columnToSave);
 
