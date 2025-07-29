@@ -11,7 +11,9 @@ export class ProjectColumnRepository {
     private readonly repo: Repository<ProjectColumn>,
   ) {}
 
-  public async create(columnToCreate: ProjectColumn): Promise<ProjectColumn> {
+  public async create(
+    columnToCreate: DeepPartial<ProjectColumn>,
+  ): Promise<ProjectColumn> {
     return this.repo.create(columnToCreate);
   }
 
@@ -25,5 +27,19 @@ export class ProjectColumnRepository {
     const createdColumn: ProjectColumn = this.repo.create(columnToSave);
 
     return this.repo.save(createdColumn);
+  }
+
+  public async findByTitle(title: string): Promise<ProjectColumn | null> {
+    return await this.repo.findOne({ where: { title: title } });
+  }
+
+  public async findByTitleOrOrder(
+    title: string,
+    order: number,
+    projectId: string,
+  ): Promise<ProjectColumn | null> {
+    return await this.repo.findOne({
+      where: [{ title: title }, { order: order, projectId: projectId }],
+    });
   }
 }
