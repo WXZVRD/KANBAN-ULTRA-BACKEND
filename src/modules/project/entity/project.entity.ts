@@ -1,12 +1,16 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AccessType } from '../types/access.enum';
 import { User } from '../../user/entity/user.entity';
+import { ProjectColumn } from '../column/entity/column.entity';
 
 @Entity('project')
 export class Project {
@@ -31,4 +35,15 @@ export class Project {
 
   @Column()
   ownerId: string;
+
+  @OneToMany(() => ProjectColumn, (column) => column.project, {
+    cascade: true,
+  })
+  columns: ProjectColumn[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

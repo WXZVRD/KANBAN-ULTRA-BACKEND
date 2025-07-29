@@ -10,7 +10,7 @@ export class ProjectRepository {
     private readonly repo: Repository<Project>,
   ) {}
 
-  public async create(projectToCreate: Project): Promise<Project> {
+  public async create(projectToCreate: DeepPartial<Project>): Promise<Project> {
     return this.repo.create(projectToCreate);
   }
 
@@ -22,5 +22,9 @@ export class ProjectRepository {
     const createdProject: Project = this.repo.create(projectToSave);
 
     return this.repo.save(createdProject);
+  }
+
+  public async findByTitle(title: string): Promise<Project | null> {
+    return await this.repo.findOne({ where: { title: title } });
   }
 }
