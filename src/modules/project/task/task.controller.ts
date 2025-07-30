@@ -27,7 +27,9 @@ export class TaskController {
 
   @Post('getAll')
   @Authorization()
-  public async getAll(@Body() dto: UpdateTaskDTO): Promise<void> {}
+  public async getAll(): Promise<Task[]> {
+    return this.taskService.getAll();
+  }
 
   @Post('getById')
   @Authorization()

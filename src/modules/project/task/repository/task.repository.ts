@@ -29,4 +29,8 @@ export class TaskRepository {
       where: { id },
     });
   }
+
+  public async getAll(): Promise<Task[] | null> {
+    return this.repo.find();
+  }
 }

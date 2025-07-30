@@ -46,6 +46,19 @@ export class TaskService {
     return updated;
   }
 
+  public async getAll(): Promise<Task[]> {
+    const tasks: Task[] | null = await this.taskRepository.getAll();
+
+    if (!tasks || tasks.length === 0) {
+      this.logger.warn(`Нету задач`);
+      throw new NotFoundException(
+        `Задач не сущесвует, пожалуйста создайте хотя бы 1 задачу.`,
+      );
+    }
+
+    return tasks;
+  }
+
   public async getById(id: string): Promise<Task> {
     const task: Task | null = await this.taskRepository.findById(id);
 
