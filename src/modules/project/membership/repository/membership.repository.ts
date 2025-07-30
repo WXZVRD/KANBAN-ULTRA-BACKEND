@@ -29,4 +29,11 @@ export class MembershipRepository {
 
     return this.repo.save(createdMember);
   }
+
+  public async findByUserAndProject(
+    userId: string,
+    projectId: string,
+  ): Promise<Membership | null> {
+    return this.repo.findOne({ where: { userId, projectId } });
+  }
 }
