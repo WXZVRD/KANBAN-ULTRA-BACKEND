@@ -45,12 +45,14 @@ import { ConfirmationTemplate } from './templates/confirmation.template';
 import { CreateEmailResponse, Resend } from 'resend';
 import { ResetPasswordTemplate } from './templates/reset-password.template';
 import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
+import { MembershipInviteTemplate } from './templates/membership-invite.template';
+import { MemberRole } from '../project/membership/types/member-role.enum';
 
 @Injectable()
 export class MailService {
   private readonly resend: Resend;
   private readonly sender: string;
-  private readonly logger = new Logger(MailService.name);
+  private readonly logger: Logger = new Logger(MailService.name);
 
   constructor(private readonly configService: ConfigService) {
     const apiKey: string =
@@ -81,6 +83,35 @@ export class MailService {
     } catch (error) {
       this.logger.error(
         `Failed to send confirmation email to ${email}`,
+        error.stack || error.message,
+      );
+      throw error;
+    }
+  }
+
+  public async sendMembershipInviteEmail(
+    email: string,
+    token: string,
+    projectId: string,
+    memberRole: MemberRole,
+  ): Promise<void> {
+    try {
+      const domain: string =
+        this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
+      this.logger.debug(`Domain resolved: ${domain}`);
+
+      const html: string = await render(
+        MembershipInviteTemplate({ domain, token, projectId, memberRole }),
+      );
+      this.logger.debug(
+        `sendMembershipInviteEmail email HTML rendered for ${email}`,
+      );
+
+      await this.sendMail(email, 'Приглашения в проект', html);
+      this.logger.log(`sendMembershipInviteEmail email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to send sendMembershipInviteEmail email to ${email}`,
         error.stack || error.message,
       );
       throw error;
