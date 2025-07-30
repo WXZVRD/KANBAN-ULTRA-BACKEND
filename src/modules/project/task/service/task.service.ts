@@ -4,8 +4,15 @@ import { CreateTaskDTO } from '../dto/create-task.dto';
 import { Task } from '../entity/task.entity';
 import { UpdateTaskDTO } from '../dto/update-task.dto';
 
+interface ITaskService {
+  create(dto: CreateTaskDTO, id: string): Promise<Task>;
+  update(dto: UpdateTaskDTO): Promise<Task>;
+  getAll(): Promise<Task[]>;
+  getById(id: string): Promise<Task>;
+}
+
 @Injectable()
-export class TaskService {
+export class TaskService implements ITaskService {
   private readonly logger: Logger = new Logger(TaskService.name);
 
   public constructor(private readonly taskRepository: TaskRepository) {}
