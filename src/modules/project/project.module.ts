@@ -8,6 +8,7 @@ import { ColumnModule } from './column/column.module';
 import { ProjectColumnService } from './column/column.service';
 import { UserModule } from '../user/user.module';
 import { TaskModule } from './task/task.module';
+import { MembershipModule } from './membership/membership.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { TaskModule } from './task/task.module';
     ColumnModule,
     TaskModule,
     UserModule,
+    MembershipModule,
   ],
   controllers: [ProjectController],
   providers: [ProjectService, ProjectRepository, ProjectColumnService],
