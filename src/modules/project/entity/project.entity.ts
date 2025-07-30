@@ -12,6 +12,7 @@ import { AccessType } from '../types/access.enum';
 import { User } from '../../user/entity/user.entity';
 import { ProjectColumn } from '../column/entity/column.entity';
 import { Task } from '../task/entity/task.entity';
+import { Membership } from '../membership/entity/membership.entity';
 
 @Entity('project')
 export class Project {
@@ -44,6 +45,11 @@ export class Project {
 
   @OneToMany(() => Task, (task) => task.project, { cascade: true })
   tasks: Task[];
+
+  @OneToMany(() => Membership, (membership) => membership.project, {
+    cascade: true,
+  })
+  memberships: Membership[];
 
   @CreateDateColumn()
   createdAt: Date;
