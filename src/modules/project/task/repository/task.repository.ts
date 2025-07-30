@@ -23,4 +23,10 @@ export class TaskRepository {
 
     return this.repo.save(createdTask);
   }
+
+  public async findById(id: string): Promise<Task | null> {
+    return this.repo.findOne({
+      where: { id },
+    });
+  }
 }
