@@ -9,5 +9,6 @@ import { MembershipRepository } from './repository/membership.repository';
   imports: [TypeOrmModule.forFeature([Membership])],
   controllers: [MembershipController],
   providers: [MembershipService, MembershipRepository],
+  exports: [MembershipService, MembershipRepository],
 })
 export class MembershipModule {}

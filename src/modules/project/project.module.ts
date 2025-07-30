@@ -9,6 +9,7 @@ import { ProjectColumnService } from './column/column.service';
 import { UserModule } from '../user/user.module';
 import { TaskModule } from './task/task.module';
 import { MembershipModule } from './membership/membership.module';
+import { MembershipService } from './membership/services/membership.service';
 
 @Module({
   imports: [
@@ -19,6 +20,11 @@ import { MembershipModule } from './membership/membership.module';
     MembershipModule,
   ],
   controllers: [ProjectController],
-  providers: [ProjectService, ProjectRepository, ProjectColumnService],
+  providers: [
+    ProjectService,
+    ProjectRepository,
+    ProjectColumnService,
+    MembershipService,
+  ],
 })
 export class ProjectModule {}
