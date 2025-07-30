@@ -1,15 +1,27 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TaskService } from './service/task.service';
 import { Authorization } from '../../auth/decorators/auth.decorator';
 import { Task } from './entity/task.entity';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { Authorized } from '../../auth/decorators/authorized.decorator';
 import { UpdateTaskDTO } from './dto/update-task.dto';
+import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
+import { MembershipRoles } from '../membership/decorators/membership.decorator';
+import { MemberRole } from '../membership/types/member-role.enum';
 
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @UseGuards(MembershipAccessControlGuard)
+  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
   @Post('create')
   @Authorization()
   public async create(
