@@ -45,4 +45,17 @@ export class TaskService {
     this.logger.log(`Задача с id ${updated.id} успешно обновлена.`);
     return updated;
   }
+
+  public async getById(id: string): Promise<Task> {
+    const task: Task | null = await this.taskRepository.findById(id);
+
+    if (!task) {
+      this.logger.warn(`Задача с id ${id} не найдена`);
+      throw new NotFoundException(
+        `Задача с id ${id} не была найдена. Пожалуйста, проверьте введённый id.`,
+      );
+    }
+
+    return task;
+  }
 }

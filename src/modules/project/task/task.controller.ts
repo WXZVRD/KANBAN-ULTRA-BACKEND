@@ -31,5 +31,7 @@ export class TaskController {
 
   @Post('getById')
   @Authorization()
-  public async getById(@Param('id') id: string): Promise<void> {}
+  public async getById(@Param('id') id: string): Promise<Task> {
+    return this.taskService.getById(id);
+  }
 }

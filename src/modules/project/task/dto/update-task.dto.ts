@@ -39,8 +39,3 @@ export class UpdateTaskDTO {
   @IsOptional()
   priority?: TaskPriority;
 }
-
-/*"columnId": "b7cb5b78-7a2a-49b7-82ac-1cf07158c32c",
-    "projectId": "58b24dbb-3156-4e1c-99a0-7ec44f067969",
-    "assigneeId": "a8b40e50-5a2c-405c-a417-e3651a3a509b",
-    "priority": "medium"*/
