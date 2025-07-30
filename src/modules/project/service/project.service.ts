@@ -4,6 +4,9 @@ import { CreateProjectDto } from '../dto/create-project.dto';
 import { ProjectColumnService } from '../column/column.service';
 import { Project } from '../entity/project.entity';
 import { ProjectColumn } from '../column/entity/column.entity';
+import { Membership } from '../membership/entity/membership.entity';
+import { MembershipService } from '../membership/services/membership.service';
+import { MemberRole } from '../membership/types/member-role.enum';
 
 @Injectable()
 export class ProjectService {
@@ -12,6 +15,7 @@ export class ProjectService {
   public constructor(
     private readonly projectRepository: ProjectRepository,
     private readonly projectColumnService: ProjectColumnService,
+    private readonly membershipService: MembershipService,
   ) {}
 
   public async create(dto: CreateProjectDto, userId: string): Promise<any> {
@@ -42,6 +46,14 @@ export class ProjectService {
     this.logger.log(
       `Проект успешно сохранен без колонок. ID проекта: ${savedProject.id}`,
     );
+
+    await this.membershipService.createNewMember({
+      memberRole: MemberRole.ADMIN,
+      projectId: savedProject.id,
+      userId: userId,
+    });
+
+    this.logger.log(`Создателю проекта присвоено членство как АДМИНИСТРАТОР`);
 
     const newProjectColumns: ProjectColumn[] =
       await this.projectColumnService.createDefaultColumns(savedProject);

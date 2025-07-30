@@ -13,6 +13,7 @@ import { UserRole } from '../types/roles.enum';
 import { AuthMethod } from '../types/authMethods.enum';
 import { Project } from '../../project/entity/project.entity';
 import { Task } from '../../project/task/entity/task.entity';
+import { Membership } from '../../project/membership/entity/membership.entity';
 
 @Entity('users')
 export class User {
@@ -66,4 +67,7 @@ export class User {
 
   @OneToMany(() => Project, (project) => project.owner)
   projects: Project[];
+
+  @OneToMany(() => Membership, (membership) => membership.user)
+  memberships: Membership[];
 }
