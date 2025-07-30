@@ -23,6 +23,13 @@ export class Task {
   title: string;
 
   @Column({
+    type: 'varchar',
+    default: null,
+    nullable: true,
+  })
+  description: string;
+
+  @Column({
     enum: TaskPriority,
     default: TaskPriority.MEDIUM,
   })
