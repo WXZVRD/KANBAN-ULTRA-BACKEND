@@ -5,9 +5,14 @@ import { ProjectColumn } from './entity/column.entity';
 import { ProjectColumnRepository } from './repository/column.repository';
 import { ProjectColumnService } from './column.service';
 import { UserModule } from '../../user/user.module';
+import { MembershipModule } from '../membership/membership.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProjectColumn]), UserModule],
+  imports: [
+    TypeOrmModule.forFeature([ProjectColumn]),
+    UserModule,
+    MembershipModule,
+  ],
   controllers: [ProjectColumnController],
   providers: [ProjectColumnService, ProjectColumnRepository],
   exports: [ProjectColumnService, ProjectColumnRepository],

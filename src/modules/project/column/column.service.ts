@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProjectColumnRepository } from './repository/column.repository';
 import { ProjectColumn } from './entity/column.entity';
 import { Project } from '../entity/project.entity';
@@ -69,5 +74,18 @@ export class ProjectColumnService {
     );
 
     return newColumn;
+  }
+
+  public async findByProjectId(projectId: string): Promise<ProjectColumn[]> {
+    const columns: ProjectColumn[] | null =
+      await this.projectColumnRepository.findByProjectId(projectId);
+
+    if (!columns || columns.length === 0) {
+      throw new NotFoundException(
+        `В данный момент у прроекта ${projectId} нету колоноу.`,
+      );
+    }
+
+    return columns;
   }
 }

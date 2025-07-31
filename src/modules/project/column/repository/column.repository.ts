@@ -42,4 +42,17 @@ export class ProjectColumnRepository {
       where: [{ title: title }, { order: order, projectId: projectId }],
     });
   }
+
+  public async findByProjectId(
+    projectId: string,
+  ): Promise<ProjectColumn[] | null> {
+    return await this.repo.find({
+      where: {
+        projectId: projectId,
+      },
+      order: {
+        order: 'ASC',
+      },
+    });
+  }
 }
