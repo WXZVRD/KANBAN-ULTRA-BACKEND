@@ -87,4 +87,20 @@ export class ProjectService {
 
     return projects;
   }
+
+  public async getByUser(userId: string): Promise<Project[]> {
+    const projects: Project[] | null =
+      await this.projectRepository.findByUserId(userId);
+
+    if (!projects || !projects.length) {
+      this.logger.warn(
+        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один`,
+      );
+      throw new NotFoundException(
+        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один.`,
+      );
+    }
+
+    return projects;
+  }
 }
