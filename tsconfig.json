@@ -11,6 +11,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "rootDir": "./src",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -23,5 +24,9 @@
   "include": [
     "src",
     "src/express-session.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }

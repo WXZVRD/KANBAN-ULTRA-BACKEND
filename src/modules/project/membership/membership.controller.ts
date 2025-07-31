@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -16,8 +18,10 @@ import { Authorization } from '../../auth/decorators/auth.decorator';
 import { MembershipAccessControlGuard } from './guards/member-access-control.guard';
 import { MembershipRoles } from './decorators/membership.decorator';
 import { MemberRole } from './types/member-role.enum';
+import { Authorized } from '../../auth/decorators/authorized.decorator';
+import { DeleteResult } from 'typeorm';
 
-@Controller('membership')
+@Controller('project/:projectId/membership')
 export class MembershipController {
   constructor(
     private readonly membershipService: MembershipService,
@@ -29,10 +33,13 @@ export class MembershipController {
   @Post('/invite')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  public async inviteUser(@Body() dto: SendInviteDTO): Promise<boolean> {
+  public async inviteUser(
+    @Body() dto: SendInviteDTO,
+    @Param('projectId') projectId: string,
+  ): Promise<boolean> {
     return this.membershipInvitationService.sendVerificationToken(
       dto.email,
-      dto.projectId,
+      projectId,
       dto.memberRole,
     );
   }
@@ -47,5 +54,17 @@ export class MembershipController {
     @Body() dto: InviteDto,
   ): Promise<boolean> {
     return this.membershipInvitationService.newVerification(req, dto);
+  }
+
+  @UseGuards(MembershipAccessControlGuard)
+  @MembershipRoles(MemberRole.ADMIN)
+  @Delete('/delete-member')
+  @HttpCode(HttpStatus.OK)
+  @Authorization()
+  public async deleteMember(
+    @Param('projectId') projectId: string,
+    @Authorized('id') id: string,
+  ): Promise<DeleteResult> {
+    return this.membershipService.deleteProjectMember(id, projectId);
   }
 }
