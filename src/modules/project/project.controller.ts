@@ -3,6 +3,8 @@ import { ProjectService } from './service/project.service';
 import { Authorization } from '../auth/decorators/auth.decorator';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Authorized } from '../auth/decorators/authorized.decorator';
+import { UserRole } from '../user/types/roles.enum';
+import { Project } from './entity/project.entity';
 
 @Controller('project')
 export class ProjectController {
@@ -15,5 +17,11 @@ export class ProjectController {
     @Authorized('id') id: string,
   ) {
     return await this.projectService.create(dto, id);
+  }
+
+  @Post('getAll')
+  @Authorization(UserRole.ADMIN)
+  public async getAll(): Promise<Project[]> {
+    return await this.projectService.getAll();
   }
 }

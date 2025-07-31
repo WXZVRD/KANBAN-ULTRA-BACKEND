@@ -1,10 +1,14 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProjectRepository } from '../repository/project.repository';
 import { CreateProjectDto } from '../dto/create-project.dto';
 import { ProjectColumnService } from '../column/column.service';
 import { Project } from '../entity/project.entity';
 import { ProjectColumn } from '../column/entity/column.entity';
-import { Membership } from '../membership/entity/membership.entity';
 import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership/types/member-role.enum';
 
@@ -69,5 +73,18 @@ export class ProjectService {
     );
 
     return await this.projectRepository.save(savedProject);
+  }
+
+  public async getAll(): Promise<Project[]> {
+    const projects: Project[] | null = await this.projectRepository.findAll();
+
+    if (!projects || !projects.length) {
+      this.logger.warn(`Проектов нету, пожалуйста создайте хотя бы один`);
+      throw new NotFoundException(
+        'Проектов нету, пожалуйста создайте хотя бы один.',
+      );
+    }
+
+    return projects;
   }
 }

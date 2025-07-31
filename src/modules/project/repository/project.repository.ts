@@ -27,4 +27,8 @@ export class ProjectRepository {
   public async findByTitle(title: string): Promise<Project | null> {
     return await this.repo.findOne({ where: { title: title } });
   }
+
+  public async findAll(): Promise<Project[] | null> {
+    return await this.repo.find();
+  }
 }
