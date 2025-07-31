@@ -8,12 +8,14 @@ import { MembershipInvitationService } from './services/membership-invitation.se
 import { MailService } from '../../mail/mail.service';
 import { EmailConfirmationModule } from '../../auth/email-confirmation/email-confirmation.module';
 import { UserModule } from '../../user/user.module';
+import { TokenModule } from '../../token/token.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Membership]),
     EmailConfirmationModule,
     UserModule,
+    TokenModule,
   ],
   controllers: [MembershipController],
   providers: [

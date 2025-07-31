@@ -5,11 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { Token } from '../../../account/entity/token.entity';
+import { Token } from '../../../token/entity/token.entity';
 import { TokenType } from '../../../account/types/token.types';
 import { User } from '../../../user/entity/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenRepository } from '../../../account/repositories/token.repository';
+import { TokenRepository } from '../../../token/repository/token.repository';
 import { MailService } from '../../../mail/mail.service';
 import { UserService } from '../../../user/services/user.service';
 import { InviteDto } from '../dto/invite.dto';

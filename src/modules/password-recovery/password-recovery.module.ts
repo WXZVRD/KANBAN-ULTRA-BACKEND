@@ -4,9 +4,10 @@ import { PasswordRecoveryController } from './password-recovery.controller';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
 import { EmailConfirmationModule } from '../auth/email-confirmation/email-confirmation.module';
+import { TokenModule } from '../token/token.module';
 
 @Module({
-  imports: [UserModule, MailModule, EmailConfirmationModule],
+  imports: [UserModule, MailModule, EmailConfirmationModule, TokenModule],
   controllers: [PasswordRecoveryController],
   providers: [PasswordRecoveryService],
 })

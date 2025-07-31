@@ -10,6 +10,7 @@ import { EmailConfirmationModule } from './modules/auth/email-confirmation/email
 import { PasswordRecoveryModule } from './modules/password-recovery/password-recovery.module';
 import { TwoFactorAuthModule } from './modules/auth/two-factor-auth/two-factor-auth.module';
 import { ProjectModule } from './modules/project/project.module';
+import { TokenModule } from './modules/token/token.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ProjectModule } from './modules/project/project.module';
     PasswordRecoveryModule,
     TwoFactorAuthModule,
     ProjectModule,
+    TokenModule,
   ],
 })
 export class AppModule {}

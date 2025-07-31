@@ -6,10 +6,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { MailService } from '../../mail/mail.service';
-import { Token } from '../../account/entity/token.entity';
+import { Token } from '../../token/entity/token.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { TokenType } from '../../account/types/token.types';
-import { TokenRepository } from '../../account/repositories/token.repository';
+import { TokenRepository } from '../../token/repository/token.repository';
 
 @Injectable()
 export class TwoFactorAuthService {
@@ -19,40 +19,6 @@ export class TwoFactorAuthService {
     private readonly mailService: MailService,
     private readonly tokenRepository: TokenRepository,
   ) {}
-
-  private async generateTwoFactorToken(email: string): Promise<Token> {
-    this.logger.log(`Создание нового токена подтверждения для: ${email}`);
-
-    const token: string = Math.floor(
-      Math.random() * (1000000 - 100000) + 100000,
-    ).toString();
-    const expiresIn: Date = new Date(Date.now() + 300000);
-
-    const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
-        email,
-        TokenType.TWO_FACTOR,
-      );
-
-    if (existingToken) {
-      this.logger.warn(`Старый токен найден и удалён для: ${email}`);
-      await this.tokenRepository.deleteByIdAndToken(
-        existingToken.id,
-        TokenType.TWO_FACTOR,
-      );
-    }
-
-    const newTwoFactorToken: Token = await this.tokenRepository.create(
-      email,
-      token,
-      expiresIn,
-      TokenType.TWO_FACTOR,
-    );
-
-    this.logger.log(`Токен создан: ${newTwoFactorToken.token} для ${email}`);
-
-    return newTwoFactorToken;
-  }
 
   public async validateTwoFactorToken(
     email: string,
@@ -104,5 +70,39 @@ export class TwoFactorAuthService {
     );
 
     return true;
+  }
+
+  private async generateTwoFactorToken(email: string): Promise<Token> {
+    this.logger.log(`Создание нового токена подтверждения для: ${email}`);
+
+    const token: string = Math.floor(
+      Math.random() * (1000000 - 100000) + 100000,
+    ).toString();
+    const expiresIn: Date = new Date(Date.now() + 300000);
+
+    const existingToken: Token | null =
+      await this.tokenRepository.findByEmailAndToken(
+        email,
+        TokenType.TWO_FACTOR,
+      );
+
+    if (existingToken) {
+      this.logger.warn(`Старый токен найден и удалён для: ${email}`);
+      await this.tokenRepository.deleteByIdAndToken(
+        existingToken.id,
+        TokenType.TWO_FACTOR,
+      );
+    }
+
+    const newTwoFactorToken: Token = await this.tokenRepository.create(
+      email,
+      token,
+      expiresIn,
+      TokenType.TWO_FACTOR,
+    );
+
+    this.logger.log(`Токен создан: ${newTwoFactorToken.token} для ${email}`);
+
+    return newTwoFactorToken;
   }
 }

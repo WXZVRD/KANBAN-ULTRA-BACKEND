@@ -15,6 +15,7 @@ import { MailModule } from '../mail/mail.module';
 import { MailService } from '../mail/mail.service';
 import { TwoFactorAuthModule } from './two-factor-auth/two-factor-auth.module';
 import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+import { TokenModule } from '../token/token.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service'
     UserModule,
     MailModule,
     AccountModule,
+    TokenModule,
     TwoFactorAuthModule,
     forwardRef(() => EmailConfirmationModule),
   ],
