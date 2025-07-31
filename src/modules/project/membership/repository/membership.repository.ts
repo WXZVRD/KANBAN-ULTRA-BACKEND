@@ -43,4 +43,11 @@ export class MembershipRepository {
   ): Promise<DeleteResult> {
     return this.repo.delete({ userId: userId, projectId: projectId });
   }
+
+  public async updateUserAccess(
+    userId: string,
+    projectId: string,
+  ): Promise<DeleteResult> {
+    return this.repo.delete({ userId: userId, projectId: projectId });
+  }
 }
