@@ -4,7 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { TokenType } from '../types/token.types';
+import { TokenType } from '../../account/types/token.types';
 
 @Entity('tokens')
 export class Token {
