@@ -11,6 +11,7 @@ import { Project } from '../entity/project.entity';
 import { ProjectColumn } from '../column/entity/column.entity';
 import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership/types/member-role.enum';
+import { UpdateProjectDTO } from '../dto/update-project.dto';
 
 @Injectable()
 export class ProjectService {
@@ -102,5 +103,34 @@ export class ProjectService {
     }
 
     return projects;
+  }
+
+  public async getById(projectId: string): Promise<Project> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    return project;
+  }
+
+  public async updateById(
+    projectId: string,
+    dto: UpdateProjectDTO,
+  ): Promise<Project> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    Object.assign(project, dto);
+
+    return await this.projectRepository.save(project);
   }
 }

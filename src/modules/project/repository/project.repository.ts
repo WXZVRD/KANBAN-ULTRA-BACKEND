@@ -35,4 +35,8 @@ export class ProjectRepository {
   public async findByUserId(userId: string): Promise<Project[] | null> {
     return await this.repo.findBy({ ownerId: userId });
   }
+
+  public async findById(projectId: string): Promise<Project | null> {
+    return await this.repo.findOne({ where: { id: projectId } });
+  }
 }
