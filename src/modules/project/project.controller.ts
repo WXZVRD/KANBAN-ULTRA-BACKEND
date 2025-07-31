@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { ProjectService } from './service/project.service';
@@ -17,6 +18,7 @@ import { MembershipAccessControlGuard } from './membership/guards/member-access-
 import { MembershipRoles } from './membership/decorators/membership.decorator';
 import { MemberRole } from './membership/types/member-role.enum';
 import { UpdateProjectDTO } from './dto/update-project.dto';
+import { DeleteResult } from 'typeorm';
 
 @Controller('project')
 export class ProjectController {
@@ -60,5 +62,13 @@ export class ProjectController {
     @Body() dto: UpdateProjectDTO,
   ): Promise<Project> {
     return await this.projectService.updateById(id, dto);
+  }
+
+  @UseGuards(MembershipAccessControlGuard)
+  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Delete(':projectId')
+  @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  public async delete(@Param('projectId') id: string): Promise<DeleteResult> {
+    return await this.projectService.deleteById(id);
   }
 }

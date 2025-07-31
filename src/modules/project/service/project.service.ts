@@ -12,6 +12,7 @@ import { ProjectColumn } from '../column/entity/column.entity';
 import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership/types/member-role.enum';
 import { UpdateProjectDTO } from '../dto/update-project.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
@@ -132,5 +133,17 @@ export class ProjectService {
     Object.assign(project, dto);
 
     return await this.projectRepository.save(project);
+  }
+
+  public async deleteById(projectId: string): Promise<DeleteResult> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    return await this.projectRepository.deleteById(project.id);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from '../entity/project.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 
 @Injectable()
 export class ProjectRepository {
@@ -38,5 +38,9 @@ export class ProjectRepository {
 
   public async findById(projectId: string): Promise<Project | null> {
     return await this.repo.findOne({ where: { id: projectId } });
+  }
+
+  public async deleteById(projectId: string): Promise<DeleteResult> {
+    return await this.repo.delete({ id: projectId });
   }
 }
