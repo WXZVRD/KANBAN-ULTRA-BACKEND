@@ -1,12 +1,18 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProjectRepository } from '../repository/project.repository';
 import { CreateProjectDto } from '../dto/create-project.dto';
 import { ProjectColumnService } from '../column/column.service';
 import { Project } from '../entity/project.entity';
 import { ProjectColumn } from '../column/entity/column.entity';
-import { Membership } from '../membership/entity/membership.entity';
 import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership/types/member-role.enum';
+import { UpdateProjectDTO } from '../dto/update-project.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
@@ -69,5 +75,75 @@ export class ProjectService {
     );
 
     return await this.projectRepository.save(savedProject);
+  }
+
+  public async getAll(): Promise<Project[]> {
+    const projects: Project[] | null = await this.projectRepository.findAll();
+
+    if (!projects || !projects.length) {
+      this.logger.warn(`Проектов нету, пожалуйста создайте хотя бы один`);
+      throw new NotFoundException(
+        'Проектов нету, пожалуйста создайте хотя бы один.',
+      );
+    }
+
+    return projects;
+  }
+
+  public async getByUser(userId: string): Promise<Project[]> {
+    const projects: Project[] | null =
+      await this.projectRepository.findByUserId(userId);
+
+    if (!projects || !projects.length) {
+      this.logger.warn(
+        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один`,
+      );
+      throw new NotFoundException(
+        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один.`,
+      );
+    }
+
+    return projects;
+  }
+
+  public async getById(projectId: string): Promise<Project> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    return project;
+  }
+
+  public async updateById(
+    projectId: string,
+    dto: UpdateProjectDTO,
+  ): Promise<Project> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    Object.assign(project, dto);
+
+    return await this.projectRepository.save(project);
+  }
+
+  public async deleteById(projectId: string): Promise<DeleteResult> {
+    const project: Project | null =
+      await this.projectRepository.findById(projectId);
+
+    if (!project) {
+      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
+      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+    }
+
+    return await this.projectRepository.deleteById(project.id);
   }
 }
