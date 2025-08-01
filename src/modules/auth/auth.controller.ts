@@ -35,6 +35,13 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Handles user registration.
+   *
+   * @param req - Express request object
+   * @param dto - Registration data (email, password, etc.)
+   * @returns The created User or null
+   */
   @Recaptcha()
   @Post('register')
   @HttpCode(HttpStatus.OK)
@@ -43,13 +50,20 @@ export class AuthController {
     @Body() dto: RegisterDto,
   ): Promise<User | null> {
     this.logger.log(
-      `POST /auth/register — попытка регистрации пользователя email=${dto.email}`,
+      `POST /auth/register — User registration attempt, email=${dto.email}`,
     );
     const res: any = await this.authService.register(req, dto);
-    this.logger.log(`Пользователь зарегистрирован`);
+    this.logger.log(`User registered successfully`);
     return res;
   }
 
+  /**
+   * Handles user login.
+   *
+   * @param req - Express request object
+   * @param dto - Login credentials (email, password)
+   * @returns The logged-in User or null
+   */
   @Recaptcha()
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -58,15 +72,24 @@ export class AuthController {
     @Body() dto: LoginDto,
   ): Promise<User | null> {
     this.logger.log(
-      `POST /auth/login — попытка входа пользователя email=${dto.email}`,
+      `POST /auth/login — User login attempt, email=${dto.email}`,
     );
     const user: User | null = await this.authService.login(req, dto);
     this.logger.log(
-      `Пользователь вошёл в систему: id=${user?.id}, email=${user?.email}`,
+      `User successfully logged in: id=${user?.id}, email=${user?.email}`,
     );
     return user;
   }
 
+  /**
+   * Handles OAuth provider callback.
+   *
+   * @param req - Express request object
+   * @param res - Express response object
+   * @param provider - OAuth provider name (e.g., Google, GitHub)
+   * @param code - Authorization code from the provider
+   * @returns Redirect to dashboard after successful OAuth authentication
+   */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/callback/:provider')
   public async callback(
@@ -76,34 +99,40 @@ export class AuthController {
     @Query('code') code: string,
   ): Promise<any> {
     this.logger.log(
-      `GET /oauth/callback/${provider} — обработка OAuth callback, provider=${provider}`,
+      `GET /oauth/callback/${provider} — Processing OAuth callback, provider=${provider}`,
     );
 
     if (!code) {
       this.logger.warn(
-        `OAuth callback провайдера ${provider} вызван без кода авторизации`,
+        `OAuth callback for provider ${provider} was called without an authorization code`,
       );
-      throw new BadRequestException('Не был предоставлен код авторизаций.');
+      throw new BadRequestException('Authorization code was not provided.');
     }
 
     this.logger.log(
-      `Извлечение профиля из OAuth провайдера ${provider}, код получен`,
+      `Fetching profile from OAuth provider ${provider}, code received`,
     );
     await this.authService.extractProfileFromCode(req, provider, code);
 
     const redirectUrl: string = `${this.configService.getOrThrow<string>('ALLOWED_ORIGIN')}/dashboard/settings`;
     this.logger.log(
-      `Успешная OAuth аутентификация через ${provider}, редирект на ${redirectUrl}`,
+      `OAuth authentication via ${provider} succeeded, redirecting to ${redirectUrl}`,
     );
 
     return res.redirect(redirectUrl);
   }
 
+  /**
+   * Generates an OAuth authentication URL for the specified provider.
+   *
+   * @param provider - OAuth provider name
+   * @returns Object with the authentication URL
+   */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/connect/:provider')
   public async connect(@Param('provider') provider: string): Promise<any> {
     this.logger.log(
-      `GET /oauth/connect/${provider} — запрос URL аутентификации для провайдера ${provider}`,
+      `GET /oauth/connect/${provider} — Requesting authentication URL for provider ${provider}`,
     );
 
     const providerInstance: BaseOauthService | null =
@@ -111,21 +140,25 @@ export class AuthController {
 
     if (!providerInstance) {
       this.logger.error(
-        `Провайдер ${provider} не найден в AuthProviderService`,
+        `Provider ${provider} not found in AuthProviderService`,
       );
-      throw new NotFoundException(`Провайдер "${provider}" не найден`);
+      throw new NotFoundException(`Provider "${provider}" not found`);
     }
 
     const authUrl: string = providerInstance.getAuthUrl();
-    this.logger.log(
-      `Сгенерирован URL аутентификации для ${provider}: ${authUrl}`,
-    );
+    this.logger.log(`Generated authentication URL for ${provider}: ${authUrl}`);
 
     return {
       url: authUrl,
     };
   }
 
+  /**
+   * Handles user logout.
+   *
+   * @param req - Express request object
+   * @param res - Express response object
+   */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   public async logout(
@@ -133,9 +166,9 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     this.logger.log(
-      `POST /auth/logout — попытка выхода пользователя userId=${req.session?.userId}`,
+      `POST /auth/logout — User logout attempt, userId=${req.session?.userId}`,
     );
     await this.authService.logout(req, res);
-    this.logger.log(`Пользователь успешно вышел из системы`);
+    this.logger.log(`User successfully logged out`);
   }
 }
