@@ -30,6 +30,13 @@ export class MembershipController {
     private readonly membershipInvitationService: MembershipInvitationService,
   ) {}
 
+  /**
+   * Sends a project membership invitation to a user.
+   *
+   * @param dto - DTO containing email and desired member role
+   * @param projectId - Project ID
+   * @returns True if the invitation was successfully sent
+   */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Post('/invite')
@@ -46,6 +53,12 @@ export class MembershipController {
     );
   }
 
+  /**
+   * Accepts an invitation by validating the token and creating the membership.
+   *
+   * @param req - Request object
+   * @param dto - DTO containing invite token
+   */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Post('/take-invite')
@@ -58,6 +71,13 @@ export class MembershipController {
     return this.membershipInvitationService.newVerification(dto);
   }
 
+  /**
+   * Deletes a project member.
+   *
+   * @param projectId - Project ID
+   * @param userId - User ID to delete
+   * @returns DeleteResult
+   */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Delete('/:userId')
@@ -70,6 +90,13 @@ export class MembershipController {
     return this.membershipService.deleteProjectMember(userId, projectId);
   }
 
+  /**
+   * Updates the role of a project member.
+   *
+   * @param projectId - Project ID
+   * @param dto - DTO with new role
+   * @returns Updated Membership entity
+   */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Patch('/update-member')

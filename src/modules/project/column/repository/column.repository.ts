@@ -30,16 +30,25 @@ export class ProjectColumnRepository implements IProjectColumnRepository {
     private readonly repo: Repository<ProjectColumn>,
   ) {}
 
+  /**
+   * Creates a new ProjectColumn entity instance (not saved).
+   */
   public async create(
     columnToCreate: DeepPartial<ProjectColumn>,
   ): Promise<ProjectColumn> {
     return this.repo.create(columnToCreate);
   }
 
+  /**
+   * Saves an existing ProjectColumn entity to the database.
+   */
   public async save(columnToSave: ProjectColumn): Promise<ProjectColumn> {
     return this.repo.save(columnToSave);
   }
 
+  /**
+   * Creates and saves a new ProjectColumn entity.
+   */
   public async createAndSave(
     columnToSave: DeepPartial<ProjectColumn>,
   ): Promise<ProjectColumn> {
@@ -48,10 +57,16 @@ export class ProjectColumnRepository implements IProjectColumnRepository {
     return this.repo.save(createdColumn);
   }
 
+  /**
+   * Finds a column by its title.
+   */
   public async findByTitle(title: string): Promise<ProjectColumn | null> {
     return await this.repo.findOne({ where: { title: title } });
   }
 
+  /**
+   * Finds a column by either its title or order within a specific project.
+   */
   public async findByTitleOrOrder(
     title: string,
     order: number,
@@ -62,6 +77,9 @@ export class ProjectColumnRepository implements IProjectColumnRepository {
     });
   }
 
+  /**
+   * Finds all columns belonging to a specific project.
+   */
   public async findByProjectId(
     projectId: string,
   ): Promise<ProjectColumn[] | null> {
@@ -75,10 +93,16 @@ export class ProjectColumnRepository implements IProjectColumnRepository {
     });
   }
 
+  /**
+   * Finds a single column by its ID.
+   */
   public async findById(columnId: string): Promise<ProjectColumn | null> {
     return await this.repo.findOne({ where: { id: columnId } });
   }
 
+  /**
+   * Deletes a column by its ID.
+   */
   public async delete(columnId: string): Promise<DeleteResult> {
     return await this.repo.delete({ id: columnId });
   }
