@@ -1,16 +1,13 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { ProjectColumnRepository } from './repository/column.repository';
-import { ProjectColumn } from './entity/column.entity';
-import { Project } from '../entity/project.entity';
-import { CreateColumnDTO } from './dto/create-column.dto';
-import { UpdateColumnDTO } from './dto/update-column.dto';
-import { MoveColumnDTO } from './dto/move-column.dto';
+import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
+import { Project } from '../index';
+import {
+  ProjectColumn,
+  CreateColumnDTO,
+  UpdateColumnDTO,
+  MoveColumnDTO,
+  ProjectColumnRepository,
+} from './index';
 
 interface IProjectColumnService {
   createDefaultColumns(project: Project): Promise<ProjectColumn[]>;

@@ -1,8 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Project } from '../../entity/project.entity';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
-import { ProjectColumn } from '../entity/column.entity';
+import { ProjectColumn } from '../index';
 
 interface IProjectColumnRepository {
   create(columnToCreate: DeepPartial<ProjectColumn>): Promise<ProjectColumn>;

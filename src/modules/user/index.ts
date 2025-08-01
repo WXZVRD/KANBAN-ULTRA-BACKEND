@@ -5,3 +5,4 @@ export * from './dto/update-user.dto';
 export * from './types/roles.enum';
 export * from './types/authMethods.enum';
 export * from './entity/user.entity';
+export * from './user.module';
