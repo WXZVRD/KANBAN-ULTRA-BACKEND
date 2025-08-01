@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TwoFactorAuthService } from './two-factor-auth.service';
-import { MailService } from '../../mail/mail.service';
-import { EmailConfirmationModule } from '../email-confirmation/email-confirmation.module';
-import { TokenModule } from '../../token/token.module';
+import { TokenModule } from '../../token';
+import { EmailConfirmationModule } from '../email-confirmation';
+import { TwoFactorAuthService } from './index';
+import { MailService } from '../../mail';
 
 @Module({
   imports: [EmailConfirmationModule, TokenModule],

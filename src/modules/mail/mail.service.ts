@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/components';
-import { ConfirmationTemplate } from './templates/confirmation.template';
 import { CreateEmailResponse, Resend } from 'resend';
-import { ResetPasswordTemplate } from './templates/reset-password.template';
-import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
-import { MembershipInviteTemplate } from './templates/membership-invite.template';
-import { MemberRole } from '../project/membership/types/member-role.enum';
+import { MemberRole } from '../project/membership';
+import {
+  ConfirmationTemplate,
+  TwoFactorAuthTemplate,
+  MembershipInviteTemplate,
+  ResetPasswordTemplate,
+} from './index';
 
 interface IMailService {
   sendConfirmationEmail(email: string, token: string): Promise<void>;

@@ -6,21 +6,19 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
-import { UserService } from '../user/services/user.service';
-import { AuthMethod } from '../user/types/authMethods.enum';
-import { User } from '../user/entity/user.entity';
 import { Request, Response } from 'express';
-import { LoginDto } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ConfigService } from '@nestjs/config';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
-import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
-import { AccountService } from '../account/account.service';
-import { Account } from '../account/entity/account.entity';
-import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
-import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+import { LoginDto, RegisterDto } from './index';
+import { AuthMethod, User, UserService } from '../user';
+import { Account, AccountService } from '../account';
+import {
+  AuthProviderService,
+  BaseOauthService,
+  TypeUserInfo,
+} from './OAuthProvider';
+import { EmailConfirmationService } from './email-confirmation';
+import { TwoFactorAuthService } from './two-factor-auth';
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;

@@ -6,3 +6,4 @@ export * from './services/yandex.provider';
 export * from './services/types/base-provider.options.types';
 export * from './services/types/provider-options.type';
 export * from './services/types/user-info.types';
+export * from './OAuthProvider.module';
