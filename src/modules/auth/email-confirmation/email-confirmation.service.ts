@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { TokenRepository } from '../../token/repository/token.repository';
-import { TokenType } from '../../account/types/token.types';
+import { TokenType } from '../../token/types/token.types';
 import { Token } from '../../token/entity/token.entity';
 import { ConfirmationDto } from './dto/confirmation.dto';
 import { User } from '../../user/entity/user.entity';

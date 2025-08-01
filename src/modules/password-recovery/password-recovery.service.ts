@@ -8,12 +8,14 @@ import { UserService } from '../user/services/user.service';
 import { MailService } from '../mail/mail.service';
 import { Token } from '../token/entity/token.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenType } from '../account/types/token.types';
+import { TokenType } from '../token/types/token.types';
 import { TokenRepository } from '../token/repository/token.repository';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { User } from '../user/entity/user.entity';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { hash } from 'argon2';
+import { TokenService } from '../token/token.service';
+import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
 
 @Injectable()
 export class PasswordRecoveryService {
@@ -22,7 +24,7 @@ export class PasswordRecoveryService {
   public constructor(
     private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly tokenRepository: TokenRepository,
+    private readonly tokenService: TokenService,
   ) {}
 
   public async resetPassword(dto: ResetPasswordDto): Promise<boolean> {
@@ -36,14 +38,14 @@ export class PasswordRecoveryService {
       );
     }
 
-    const passwordResetToken: Token = await this.generatePasswordResetToken(
+    const token = await this.tokenService.generateToken(
       existingUser.email,
+      TokenType.PASSWORD_RESET,
+      60 * 60 * 1000,
+      new UuidTokenGenerator(),
     );
 
-    await this.mailService.sendPasswordResetEmail(
-      passwordResetToken.email,
-      passwordResetToken.token,
-    );
+    await this.mailService.sendPasswordResetEmail(token.email, token.token);
 
     return true;
   }
@@ -53,7 +55,7 @@ export class PasswordRecoveryService {
     token: string,
   ): Promise<boolean> {
     const existingToken: Token | null =
-      await this.tokenRepository.findByTokenAndType(
+      await this.tokenService.findByTokenAndType(
         token,
         TokenType.PASSWORD_RESET,
       );
@@ -86,43 +88,11 @@ export class PasswordRecoveryService {
 
     await this.userService.updatePassword(existingUser, newHashedPassword);
 
-    await this.tokenRepository.deleteByIdAndToken(
+    await this.tokenService.consumeToken(
       existingToken.id,
       TokenType.PASSWORD_RESET,
     );
 
     return true;
-  }
-
-  private async generatePasswordResetToken(email: string): Promise<Token> {
-    this.logger.log(`Создание нового токена подтверждения для: ${email}`);
-
-    const token: string = uuidv4();
-    const expiresIn: Date = new Date(Date.now() + 3600 * 1000);
-
-    const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
-        email,
-        TokenType.PASSWORD_RESET,
-      );
-
-    if (existingToken) {
-      this.logger.warn(`Старый токен найден и удалён для: ${email}`);
-      await this.tokenRepository.deleteByIdAndToken(
-        existingToken.id,
-        TokenType.PASSWORD_RESET,
-      );
-    }
-
-    const passwordResetToken: Token = await this.tokenRepository.create(
-      email,
-      token,
-      expiresIn,
-      TokenType.PASSWORD_RESET,
-    );
-
-    this.logger.log(`Токен создан: ${passwordResetToken.token} для ${email}`);
-
-    return passwordResetToken;
   }
 }

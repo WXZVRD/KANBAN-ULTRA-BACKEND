@@ -55,8 +55,8 @@ export class MembershipController {
   public async newVerification(
     @Req() req: Request,
     @Body() dto: InviteDto,
-  ): Promise<boolean> {
-    return this.membershipInvitationService.newVerification(req, dto);
+  ): Promise<void> {
+    return this.membershipInvitationService.newVerification(dto);
   }
 
   @UseGuards(MembershipAccessControlGuard)
