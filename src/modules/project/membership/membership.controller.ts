@@ -10,18 +10,9 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { MembershipService } from './services/membership.service';
-import { MembershipInvitationService } from './services/membership-invitation.service';
-import { SendInviteDTO } from './dto/send-invite.dto';
 import { Request } from 'express';
-import { InviteDto } from './dto/invite.dto';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { MembershipAccessControlGuard } from './guards/member-access-control.guard';
-import { MembershipRoles } from './decorators/membership.decorator';
-import { MemberRole } from './types/member-role.enum';
 import { DeleteResult } from 'typeorm';
-import { UpdateMembershipDTO } from './dto/update-member-role.dto';
-import { Membership } from './entity/membership.entity';
+
 import {
   ApiTags,
   ApiBearerAuth,
@@ -33,6 +24,18 @@ import {
   ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
+import {
+  InviteDto,
+  MemberRole,
+  Membership,
+  MembershipAccessControlGuard,
+  MembershipRoles,
+  MembershipService,
+  SendInviteDTO,
+  UpdateMembershipDTO,
+} from './index';
+import { MembershipInvitationService } from './index';
+import { Authorization } from '../../auth';
 
 @ApiTags('Memberships')
 @ApiBearerAuth()
