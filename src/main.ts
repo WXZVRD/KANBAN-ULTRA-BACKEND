@@ -8,9 +8,12 @@ import session from 'express-session';
 import { getMsFromEnv } from './libs/common/utils/ms.util';
 import { parseBoolean } from './libs/common/utils/parseBoolean.util';
 import connectRedis from 'connect-redis';
+import { setupSwagger } from './configs/setupSwagger.config';
 
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
+
+  setupSwagger(app);
 
   const config: ConfigService = app.get(ConfigService);
   const redis: IORedis = new IORedis(config.getOrThrow<string>('REDIS_URI'));
