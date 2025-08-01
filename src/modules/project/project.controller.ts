@@ -8,16 +8,6 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { ProjectService } from './service/project.service';
-import { Authorization } from '../auth/decorators/auth.decorator';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { Authorized } from '../auth/decorators/authorized.decorator';
-import { UserRole } from '../user/types/roles.enum';
-import { Project } from './entity/project.entity';
-import { MembershipAccessControlGuard } from './membership/guards/member-access-control.guard';
-import { MembershipRoles } from './membership/decorators/membership.decorator';
-import { MemberRole } from './membership/types/member-role.enum';
-import { UpdateProjectDTO } from './dto/update-project.dto';
 import { DeleteResult } from 'typeorm';
 import {
   ApiTags,
@@ -29,6 +19,19 @@ import {
   ApiNotFoundResponse,
   ApiBody,
 } from '@nestjs/swagger';
+import {
+  CreateProjectDto,
+  Project,
+  ProjectService,
+  UpdateProjectDTO,
+} from './index';
+import { Authorization, Authorized } from '../auth';
+import { UserRole } from '../user';
+import {
+  MemberRole,
+  MembershipAccessControlGuard,
+  MembershipRoles,
+} from './membership';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
