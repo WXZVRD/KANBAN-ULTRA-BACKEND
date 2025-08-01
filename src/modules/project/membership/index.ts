@@ -10,3 +10,4 @@ export * from './repository/membership.repository';
 export * from './types/member-role.enum';
 export * from './guards/member-access-control.guard';
 export * from './decorators/membership.decorator';
+export * from './membership.module';
