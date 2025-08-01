@@ -116,7 +116,7 @@ export class AuthController {
       throw new NotFoundException(`Провайдер "${provider}" не найден`);
     }
 
-    const authUrl = providerInstance.getAuthUrl();
+    const authUrl: string = providerInstance.getAuthUrl();
     this.logger.log(
       `Сгенерирован URL аутентификации для ${provider}: ${authUrl}`,
     );

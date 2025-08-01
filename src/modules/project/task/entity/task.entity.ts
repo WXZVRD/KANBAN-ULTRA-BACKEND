@@ -4,11 +4,9 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AccessType } from '../../types/access.enum';
 import { TaskPriority } from '../types/priority.enum';
 import { User } from '../../../user/entity/user.entity';
 import { ProjectColumn } from '../../column/entity/column.entity';

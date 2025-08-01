@@ -24,7 +24,7 @@ import { DeleteResult } from 'typeorm';
 
 @Controller('project/:projectId/task')
 export class TaskController {
-  private readonly logger = new Logger(TaskController.name);
+  private readonly logger: Logger = new Logger(TaskController.name);
 
   constructor(private readonly taskService: TaskService) {}
 
@@ -37,7 +37,7 @@ export class TaskController {
     @Authorized('id') id: string,
   ): Promise<Task> {
     this.logger.log(`POST /create | UserId=${id} | DTO=${JSON.stringify(dto)}`);
-    const task = await this.taskService.create(dto, id);
+    const task: Task = await this.taskService.create(dto, id);
     this.logger.log(`Task created with ID=${task.id}`);
     return task;
   }
@@ -46,7 +46,7 @@ export class TaskController {
   @Authorization()
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
     this.logger.log(`PATCH /update | DTO=${JSON.stringify(dto)}`);
-    const task = await this.taskService.update(dto);
+    const task: Task = await this.taskService.update(dto);
     this.logger.log(`Task updated ID=${task.id}`);
     return task;
   }
@@ -55,7 +55,7 @@ export class TaskController {
   @Authorization()
   public async getAll(): Promise<Task[]> {
     this.logger.log('POST /getAll | Fetching all tasks');
-    const tasks = await this.taskService.getAll();
+    const tasks: Task[] = await this.taskService.getAll();
     this.logger.log(`Returned ${tasks.length} tasks`);
     return tasks;
   }
@@ -64,7 +64,7 @@ export class TaskController {
   @Authorization()
   public async getById(@Param('id') id: string): Promise<Task> {
     this.logger.log(`POST /getById | TaskID=${id}`);
-    const task = await this.taskService.getById(id);
+    const task: Task = await this.taskService.getById(id);
     this.logger.log(`Returned task: ${task?.id || 'NOT FOUND'}`);
     return task;
   }
@@ -78,7 +78,10 @@ export class TaskController {
     this.logger.log(
       `GET /getByProjectId | ProjectID=${projectId} | Filter=${JSON.stringify(filter)}`,
     );
-    const tasks = await this.taskService.findProjectTask(projectId, filter);
+    const tasks: Task[] = await this.taskService.findProjectTask(
+      projectId,
+      filter,
+    );
     this.logger.log(
       `Returned ${tasks.length} tasks for ProjectID=${projectId}`,
     );

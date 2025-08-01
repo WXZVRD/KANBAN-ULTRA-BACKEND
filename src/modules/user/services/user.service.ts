@@ -2,7 +2,6 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { User } from '../entity/user.entity';
 import { UserRepository } from '../repository/user.repository';
 import { AuthMethod } from '../types/authMethods.enum';
-import { LoginDto } from '../../auth/dto/login.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 
 interface IUserService {

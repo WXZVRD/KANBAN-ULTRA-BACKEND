@@ -78,7 +78,6 @@ export class AuthService implements IAuthService {
       `Пользователь успешно создан: id=${newUser.id}, email=${newUser.email}`,
     );
 
-    // return this.saveSession(req, newUser);
     return {
       message:
         'Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс',

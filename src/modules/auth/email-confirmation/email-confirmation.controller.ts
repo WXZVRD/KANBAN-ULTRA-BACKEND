@@ -15,7 +15,6 @@ export class EmailConfirmationController {
   constructor(
     private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
-
   @Post()
   @HttpCode(HttpStatus.OK)
   public async newVerification(
