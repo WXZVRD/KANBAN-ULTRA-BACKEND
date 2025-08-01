@@ -28,6 +28,13 @@ export class TaskController {
 
   constructor(private readonly taskService: TaskService) {}
 
+  /**
+   * Creates a new task for the specified project.
+   *
+   * @param dto - DTO with task creation data
+   * @param id - ID of the user creating the task
+   * @returns The created task entity
+   */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
   @Post('create')
@@ -42,6 +49,12 @@ export class TaskController {
     return task;
   }
 
+  /**
+   * Updates an existing task.
+   *
+   * @param dto - DTO with updated task data
+   * @returns The updated task entity
+   */
   @Patch('update')
   @Authorization()
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
@@ -51,6 +64,11 @@ export class TaskController {
     return task;
   }
 
+  /**
+   * Retrieves all tasks.
+   *
+   * @returns Array of all task entities
+   */
   @Post('getAll')
   @Authorization()
   public async getAll(): Promise<Task[]> {
@@ -60,6 +78,12 @@ export class TaskController {
     return tasks;
   }
 
+  /**
+   * Retrieves a task by its ID.
+   *
+   * @param id - Task ID
+   * @returns Task entity if found
+   */
   @Post('getById')
   @Authorization()
   public async getById(@Param('id') id: string): Promise<Task> {
@@ -69,6 +93,13 @@ export class TaskController {
     return task;
   }
 
+  /**
+   * Retrieves all tasks for a specific project with optional filters.
+   *
+   * @param projectId - Project ID
+   * @param filter - Optional task filters
+   * @returns Array of tasks for the given project
+   */
   @Get('getByProjectId')
   @Authorization()
   public async getTasksByProjectId(
@@ -88,12 +119,18 @@ export class TaskController {
     return tasks;
   }
 
+  /**
+   * Deletes a task by its ID.
+   *
+   * @param taskId - Task ID
+   * @returns DeleteResult
+   */
   @Delete('/:taskId')
   @Authorization()
   public async deleteTask(
     @Param('taskId') taskId: string,
   ): Promise<DeleteResult> {
-    this.logger.log(`Delete /:taskId  taskId=${taskId} `);
+    this.logger.log(`DELETE /:taskId | TaskID=${taskId}`);
     const res: DeleteResult = await this.taskService.delete(taskId);
 
     return res;
