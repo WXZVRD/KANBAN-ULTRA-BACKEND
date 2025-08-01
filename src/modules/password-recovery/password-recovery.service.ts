@@ -16,6 +16,7 @@ import { NewPasswordDto } from './dto/new-password.dto';
 import { hash } from 'argon2';
 import { TokenService } from '../token/token.service';
 import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
+import ms from 'ms';
 
 export interface IPasswordRecoveryService {
   resetPassword(dto: ResetPasswordDto): Promise<boolean>;
@@ -43,10 +44,10 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
       );
     }
 
-    const token = await this.tokenService.generateToken(
+    const token: Token = await this.tokenService.generateToken(
       existingUser.email,
       TokenType.PASSWORD_RESET,
-      60 * 60 * 1000,
+      ms('1h'),
       new UuidTokenGenerator(),
     );
 

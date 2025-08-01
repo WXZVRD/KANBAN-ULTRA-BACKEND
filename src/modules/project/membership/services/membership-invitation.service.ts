@@ -14,6 +14,7 @@ import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generat
 import { TokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
+import ms from 'ms';
 
 export interface IMembershipInvitationService {
   newVerification(dto: InviteDto): Promise<void>;
@@ -76,7 +77,7 @@ export class MembershipInvitationService
     const token: Token = await this.tokenService.generateToken(
       email,
       TokenType.PROJECT_INVITE,
-      60 * 60 * 1000,
+      ms('1h'),
       new UuidTokenGenerator(),
     );
 
