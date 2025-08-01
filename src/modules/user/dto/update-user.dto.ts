@@ -1,15 +1,28 @@
 import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {
-  @IsString({ message: 'Имя должно быть строкой.' })
-  @IsNotEmpty({ message: 'Имя обязательно для заполнения.' })
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'Display name of the user',
+  })
+  @IsString({ message: 'Name must be a string.' })
+  @IsNotEmpty({ message: 'Name is required.' })
   name: string;
 
-  @IsString({ message: 'Email должно быть строкой.' })
-  @IsNotEmpty({ message: 'Email обязательно для заполнения.' })
-  @IsEmail({}, { message: 'Некоректный формат Email.' })
+  @ApiProperty({
+    example: 'user@example.com',
+    description: 'Email address of the user',
+  })
+  @IsString({ message: 'Email must be a string.' })
+  @IsNotEmpty({ message: 'Email is required.' })
+  @IsEmail({}, { message: 'Invalid email format.' })
   email: string;
 
-  @IsBoolean({ message: 'isTwoFactorEnabled должно быть булевым значением.' })
+  @ApiProperty({
+    example: true,
+    description: 'Indicates if two-factor authentication is enabled',
+  })
+  @IsBoolean({ message: 'isTwoFactorEnabled must be a boolean value.' })
   isTwoFactorEnabled: boolean;
 }
