@@ -7,11 +7,6 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
-import { UserService } from './services/user.service';
-import { User } from './entity/user.entity';
-import { Authorized } from '../auth/decorators/authorized.decorator';
-import { Authorization } from '../auth/decorators/auth.decorator';
-import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -20,6 +15,8 @@ import {
   ApiUnauthorizedResponse,
   ApiBody,
 } from '@nestjs/swagger';
+import { UpdateUserDto, User, UserService } from './index';
+import { Authorization, Authorized } from '../auth';
 
 @ApiTags('Users')
 @ApiBearerAuth()
