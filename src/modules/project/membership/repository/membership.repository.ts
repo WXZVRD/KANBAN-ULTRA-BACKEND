@@ -22,26 +22,29 @@ export class MembershipRepository implements IMembershipRepository {
     private readonly repo: Repository<Membership>,
   ) {}
 
+  /** Creates a Membership entity (does not persist to DB). */
   public async create(
     memberToCreate: DeepPartial<Membership>,
   ): Promise<Membership> {
     return this.repo.create(memberToCreate);
   }
 
+  /** Saves a Membership entity to the database. */
   public async save(
     memberToSave: DeepPartial<Membership>,
   ): Promise<Membership> {
     return this.repo.save(memberToSave);
   }
 
+  /** Creates and immediately saves a Membership entity. */
   public async createAndSave(
     memberToSave: DeepPartial<Membership>,
   ): Promise<Membership> {
     const createdMember: Membership = this.repo.create(memberToSave);
-
     return this.repo.save(createdMember);
   }
 
+  /** Finds a member by user ID and project ID. */
   public async findByUserAndProject(
     userId: string,
     projectId: string,
@@ -49,6 +52,7 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.findOne({ where: { userId, projectId } });
   }
 
+  /** Deletes a member from a project. */
   public async delete(
     userId: string,
     projectId: string,
@@ -56,6 +60,7 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.delete({ userId: userId, projectId: projectId });
   }
 
+  /** Dummy method for updating user access (currently performs delete). */
   public async updateUserAccess(
     userId: string,
     projectId: string,

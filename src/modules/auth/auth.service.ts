@@ -46,22 +46,29 @@ export class AuthService implements IAuthService {
     private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
+  /**
+   * Registers a new user with the provided credentials.
+   *
+   * @param req - Express request object
+   * @param dto - Registration data (email, password, name)
+   * @returns A confirmation message about registration and email verification
+   */
   public async register(req: Request, dto: RegisterDto): Promise<any> {
-    this.logger.log(`Регистрация пользователя с email=${dto.email}`);
+    this.logger.log(`Registering user with email=${dto.email}`);
 
     const isExists: User | null = await this.userService.findByEmail(dto.email);
 
     if (isExists) {
       this.logger.warn(
-        `Регистрация отклонена: email=${dto.email} уже существует`,
+        `Registration rejected: email=${dto.email} already exists`,
       );
       throw new ConflictException(
-        'Регистрация не удалась. Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему.',
+        'Registration failed. A user with this email already exists. Please use another email or log in.',
       );
     }
 
     const hashedPassword: string = await hash(dto.password);
-    this.logger.debug(`Пароль захеширован для email=${dto.email}`);
+    this.logger.debug(`Password hashed for email=${dto.email}`);
 
     const newUser: User = await this.userService.create(
       dto.email,
@@ -75,47 +82,54 @@ export class AuthService implements IAuthService {
     await this.emailConfirmationService.sendVerificationToken(newUser.email);
 
     this.logger.log(
-      `Пользователь успешно создан: id=${newUser.id}, email=${newUser.email}`,
+      `User successfully created: id=${newUser.id}, email=${newUser.email}`,
     );
 
     return {
       message:
-        'Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс',
+        'Registration successful. Please confirm your email. A confirmation message was sent to your mailbox.',
     };
   }
 
+  /**
+   * Logs in a user with provided credentials and handles 2FA if enabled.
+   *
+   * @param req - Express request object
+   * @param dto - Login credentials (email, password, optional 2FA code)
+   * @returns The logged-in user or an object requesting 2FA code
+   */
   public async login(req: Request, dto: LoginDto): Promise<any> {
-    this.logger.log(`Попытка входа пользователя email=${dto.email}`);
+    this.logger.log(`User login attempt, email=${dto.email}`);
 
     const user: User | null = await this.userService.findByEmail(dto.email);
 
     if (!user || !user.password) {
       this.logger.warn(
-        `Вход не удался: пользователь не найден или без пароля: email=${dto.email}`,
+        `Login failed: user not found or missing password, email=${dto.email}`,
       );
       throw new NotFoundException(
-        'Пользователь не найден. Пожалуйста, проверьте введеные данные.',
+        'User not found. Please check your credentials.',
       );
     }
 
     const isValidPassword: boolean = await verify(user.password, dto.password);
     if (!isValidPassword) {
-      this.logger.warn(`Неверный пароль для пользователя email=${dto.email}`);
+      this.logger.warn(`Invalid password for user email=${dto.email}`);
       throw new UnauthorizedException(
-        'Неверный пароль. Пожалуйста, попробуйте еще раз или восстановите пароль, если забыли его.',
+        'Invalid password. Please try again or reset your password if forgotten.',
       );
     }
 
     if (!user.isVerified) {
-      this.logger.warn(`Не подтвержденна почта для email=${dto.email}`);
+      this.logger.warn(`Email not verified for email=${dto.email}`);
       await this.emailConfirmationService.sendVerificationToken(user.email);
       throw new UnauthorizedException(
-        'Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адресс.',
+        'Your email is not verified. Please check your inbox and confirm your address.',
       );
     }
 
     this.logger.log(
-      `Успешный вход пользователя id=${user.id}, email=${user.email}`,
+      `User logged in successfully, id=${user.id}, email=${user.email}`,
     );
 
     if (user.isTwoFactorEnabled) {
@@ -124,7 +138,7 @@ export class AuthService implements IAuthService {
 
         return {
           message:
-            'Проверьте почту. Требуется код двухфакторной аутентификаций.',
+            'Check your email. Two-factor authentication code is required.',
         };
       }
 
@@ -137,53 +151,59 @@ export class AuthService implements IAuthService {
     return this.saveSession(req, user);
   }
 
+  /**
+   * Extracts user profile from an OAuth provider using the authorization code.
+   *
+   * @param req - Express request object
+   * @param provider - OAuth provider name
+   * @param code - Authorization code from provider
+   * @returns The authenticated user after session is saved
+   */
   public async extractProfileFromCode(
     req: Request,
     provider: string,
     code: string,
   ): Promise<User | null> {
-    this.logger.log(`Начало обработки OAuth провайдера ${provider} с кодом`);
+    this.logger.log(`Processing OAuth provider ${provider} with code`);
 
     const providerInstance: BaseOauthService | null =
       this.providerService.findByService(provider);
 
     if (!providerInstance) {
-      this.logger.error(`Провайдер ${provider} не найден`);
-      throw new NotFoundException(`Провайдер "${provider}" не найден`);
+      this.logger.error(`Provider ${provider} not found`);
+      throw new NotFoundException(`Provider "${provider}" not found`);
     }
 
-    this.logger.debug(`Получение профиля из кода для провайдера ${provider}`);
+    this.logger.debug(`Fetching profile by code from provider ${provider}`);
     const profile: TypeUserInfo | undefined =
       await providerInstance?.findUserByCode(code);
 
     if (!profile) {
-      this.logger.warn(`Не удалось получить профиль от провайдера ${provider}`);
+      this.logger.warn(`Failed to retrieve profile from provider ${provider}`);
       throw new NotFoundException(
-        'Не удалось получить данные пользователя от провайдера',
+        'Failed to retrieve user data from the provider.',
       );
     }
 
-    this.logger.log(`Поиск существующего аккаунта для id=${profile.id}`);
+    this.logger.log(`Looking for existing account with id=${profile.id}`);
     const account: Account | null =
       await this.accountService.findByIdAndProvider(
         profile!.id,
         profile!.provider,
       );
 
-    this.logger.log(`Найден существующий акканут: ${JSON.stringify(account)}`);
+    this.logger.log(`Existing account found: ${JSON.stringify(account)}`);
 
     let user: User | null = account?.user.id
       ? await this.userService.findById(account?.user.id)
       : null;
 
     if (user) {
-      this.logger.log(
-        `Найден существующий пользователь id=${user.id}, сохранение сессии`,
-      );
+      this.logger.log(`Existing user found id=${user.id}, saving session`);
       return this.saveSession(req, user);
     }
 
-    this.logger.log(`Создание нового пользователя для провайдера ${provider}`);
+    this.logger.log(`Creating a new user for provider ${provider}`);
     user = await this.userService.create(
       profile!.email,
       '',
@@ -194,9 +214,7 @@ export class AuthService implements IAuthService {
     );
 
     if (!account) {
-      this.logger.debug(
-        `Создание новой учетной записи для пользователя id=${user.id}`,
-      );
+      this.logger.debug(`Creating new account record for user id=${user.id}`);
       await this.accountService.create(
         user,
         'oauth',
@@ -207,27 +225,29 @@ export class AuthService implements IAuthService {
       );
     }
 
-    this.logger.log(
-      `Успешная OAuth аутентификация, пользователь id=${user.id}`,
-    );
+    this.logger.log(`OAuth authentication successful, user id=${user.id}`);
     return this.saveSession(req, user);
   }
 
+  /**
+   * Logs out the current user by destroying the session and clearing cookies.
+   *
+   * @param req - Express request object
+   * @param res - Express response object
+   */
   public async logout(req: Request, res: Response): Promise<void> {
-    this.logger.log(
-      `Попытка выхода пользователя userId=${req.session?.userId}`,
-    );
+    this.logger.log(`User logout attempt, userId=${req.session?.userId}`);
 
     return new Promise<void>((resolve, reject): void => {
       req.session.destroy((err: Error | null): void => {
         if (err) {
           this.logger.error(
-            `Ошибка при завершении сессии: ${err.message}`,
+            `Error while destroying session: ${err.message}`,
             err.stack,
           );
           return reject(
             new InternalServerErrorException(
-              'Не удалось завершить сессию. Возможно, возникла проблема с сервером или сессия уже была завершена.',
+              'Failed to terminate the session. There may be a server issue or the session was already closed.',
             ),
           );
         }
@@ -237,29 +257,31 @@ export class AuthService implements IAuthService {
         res.clearCookie(cookieName);
 
         this.logger.log(
-          `Сессия успешно завершена и cookie ${cookieName} удалён`,
+          `Session successfully terminated and cookie ${cookieName} cleared`,
         );
         resolve();
       });
     });
   }
 
+  /**
+   * Saves a session for the given user.
+   *
+   * @param req - Express request object
+   * @param user - Authenticated user
+   * @returns The user after session is saved
+   */
   public async saveSession(req: Request, user: User): Promise<User | null> {
-    this.logger.debug(`Сохраняем сессию для пользователя id=${user.id}`);
+    this.logger.debug(`Saving session for user id=${user.id}`);
 
     return new Promise<User | null>((resolve, reject): void => {
       req.session.userId = user.id;
       req.session.save((err: Error | null): void => {
         if (err) {
-          this.logger.error(
-            `Ошибка при сохранении сессии: ${err.message}`,
-            err.stack,
-          );
+          this.logger.error(`Error saving session: ${err.message}`, err.stack);
           reject(err);
         } else {
-          this.logger.log(
-            `Сессия успешно сохранена для пользователя id=${user.id}`,
-          );
+          this.logger.log(`Session successfully saved for user id=${user.id}`);
           resolve(user);
         }
       });

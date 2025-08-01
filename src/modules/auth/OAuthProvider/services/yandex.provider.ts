@@ -15,6 +15,12 @@ export class YandexProvider extends BaseOauthService {
     });
   }
 
+  /**
+   * Extracts normalized user information from Yandex's profile response.
+   *
+   * @param data - Raw Yandex profile response.
+   * @returns Normalized `TypeUserInfo` with email, display name, and optional avatar.
+   */
   public async extractUserInfo(data: YandexProfile): Promise<TypeUserInfo> {
     return super.extractUserInfo({
       email: data.emails?.[0],

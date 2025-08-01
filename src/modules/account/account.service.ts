@@ -19,6 +19,17 @@ interface IAccountService {
 export class AccountService implements IAccountService {
   constructor(private readonly accountRepository: AccountRepository) {}
 
+  /**
+   * Creates a new account for the specified user with given provider and tokens.
+   *
+   * @param user - The user to whom the account will be linked
+   * @param type - The type of the account (e.g., OAuth)
+   * @param provider - The name of the provider (e.g., Google, GitHub)
+   * @param accessToken - Access token from the provider
+   * @param refreshToken - Refresh token from the provider
+   * @param expiresAt - Expiration timestamp of the access token
+   * @returns The created account entity
+   */
   public async create(
     user: User,
     type: string,
@@ -37,6 +48,13 @@ export class AccountService implements IAccountService {
     );
   }
 
+  /**
+   * Finds an account by user ID and provider name.
+   *
+   * @param id - The user ID
+   * @param provider - The account provider (e.g., Google, GitHub)
+   * @returns The found account entity or null if not found
+   */
   public async findByIdAndProvider(
     id: string,
     provider: string,

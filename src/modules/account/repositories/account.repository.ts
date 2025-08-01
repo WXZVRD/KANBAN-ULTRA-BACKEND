@@ -24,6 +24,17 @@ export class AccountRepository implements IAccountRepository {
     private readonly accountRepository: Repository<Account>,
   ) {}
 
+  /**
+   * Creates a new account entity and saves it to the database.
+   *
+   * @param user - The user to associate with this account
+   * @param type - The account type (e.g., OAuth)
+   * @param provider - The provider of the account (e.g., Google, GitHub)
+   * @param accessToken - Access token provided by the provider
+   * @param refreshToken - Refresh token provided by the provider
+   * @param expiresAt - Unix timestamp when the access token expires
+   * @returns The saved Account entity
+   */
   async create(
     user: User,
     type: string,
@@ -44,6 +55,13 @@ export class AccountRepository implements IAccountRepository {
     return await this.accountRepository.save(createdAccount);
   }
 
+  /**
+   * Finds an account by its ID and provider.
+   *
+   * @param id - The account ID
+   * @param provider - The account provider (e.g., Google, GitHub)
+   * @returns The matching Account entity or null if not found
+   */
   async findByIdAndProvider(
     id: string,
     provider: string,

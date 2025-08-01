@@ -14,6 +14,7 @@ import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generat
 import { TokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
+import ms from 'ms';
 
 export interface IMembershipInvitationService {
   newVerification(dto: InviteDto): Promise<void>;
@@ -39,8 +40,14 @@ export class MembershipInvitationService
     private readonly membershipService: MembershipService,
   ) {}
 
+  /**
+   * Verifies an invitation token and creates a new membership for the user.
+   *
+   * @param dto - DTO containing token and project data
+   * @throws NotFoundException if user is not found
+   */
   public async newVerification(dto: InviteDto): Promise<void> {
-    this.logger.log(`Попытка подтверждения токена: ${dto.token}`);
+    this.logger.log(`Attempting to confirm token: ${dto.token}`);
 
     const token: Token = await this.tokenService.validateTokenByValue(
       dto.token,
@@ -49,9 +56,9 @@ export class MembershipInvitationService
 
     const user: User | null = await this.userService.findByEmail(token.email);
     if (!user) {
-      this.logger.error(`Пользователь не найден по email: ${token.email}`);
+      this.logger.error(`User not found by email: ${token.email}`);
       throw new NotFoundException(
-        'Пользователь с таким email не найден. Проверьте правильность приглашения.',
+        'User with this email was not found. Please check the invitation.',
       );
     }
 
@@ -63,20 +70,29 @@ export class MembershipInvitationService
 
     await this.tokenService.consumeToken(token.id, TokenType.PROJECT_INVITE);
 
-    this.logger.log(`Приглашение подтверждено и токен удалён: ${dto.token}`);
+    this.logger.log(`Invitation confirmed and token consumed: ${dto.token}`);
   }
 
+  /**
+   * Sends a project invitation token to a user via email.
+   *
+   * @param email - Recipient email
+   * @param projectId - Project ID
+   * @param memberRole - Member role to assign
+   * @returns True if email sent successfully
+   * @throws BadRequestException if email could not be sent
+   */
   public async sendVerificationToken(
     email: string,
     projectId: string,
     memberRole: MemberRole,
   ): Promise<boolean> {
-    this.logger.log(`Отправка приглашения для: ${email}`);
+    this.logger.log(`Sending invitation to: ${email}`);
 
     const token: Token = await this.tokenService.generateToken(
       email,
       TokenType.PROJECT_INVITE,
-      60 * 60 * 1000,
+      ms('1h'),
       new UuidTokenGenerator(),
     );
 
@@ -87,10 +103,10 @@ export class MembershipInvitationService
         projectId,
         memberRole,
       );
-      this.logger.log(`Приглашение отправлено на: ${email}`);
+      this.logger.log(`Invitation sent to: ${email}`);
     } catch (error) {
-      this.logger.error(`Ошибка при отправке приглашения: ${error.message}`);
-      throw new BadRequestException('Не удалось отправить приглашение.');
+      this.logger.error(`Error sending invitation: ${error.message}`);
+      throw new BadRequestException('Failed to send invitation.');
     }
 
     return true;

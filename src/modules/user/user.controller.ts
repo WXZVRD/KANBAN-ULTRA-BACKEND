@@ -19,6 +19,12 @@ export class UsersController {
 
   constructor(private readonly userService: UserService) {}
 
+  /**
+   * Retrieves the profile of the currently authenticated user.
+   *
+   * @param userId - ID of the authorized user
+   * @returns The user profile or null if not found
+   */
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('profile')
@@ -38,6 +44,13 @@ export class UsersController {
     return user;
   }
 
+  /**
+   * Updates the profile of the currently authenticated user.
+   *
+   * @param userId - ID of the authorized user
+   * @param dto - Data to update the user's profile
+   * @returns The updated user entity
+   */
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Patch('profile')

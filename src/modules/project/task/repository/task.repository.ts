@@ -25,30 +25,40 @@ export class TaskRepository implements ITaskRepository {
     private readonly repo: Repository<Task>,
   ) {}
 
+  /** Creates a new Task instance (does not save to DB). */
   public async create(taskToCreate: DeepPartial<Task>): Promise<Task> {
     return this.repo.create(taskToCreate);
   }
 
+  /** Saves an existing Task entity to the database. */
   public async save(taskToSave: Task): Promise<Task> {
     return this.repo.save(taskToSave);
   }
 
+  /** Creates and immediately saves a new Task entity. */
   public async createAndSave(taskToSave: DeepPartial<Task>): Promise<Task> {
     const createdTask: Task = this.repo.create(taskToSave);
-
     return this.repo.save(createdTask);
   }
 
+  /** Finds a task by its ID. */
   public async findById(id: string): Promise<Task | null> {
     return this.repo.findOne({
       where: { id },
     });
   }
 
+  /** Retrieves all tasks. */
   public async getAll(): Promise<Task[] | null> {
     return this.repo.find();
   }
 
+  /**
+   * Finds all tasks for a given project with optional filters.
+   *
+   * @param projectId - Project ID
+   * @param filter - Optional filters (priority, assigneeId)
+   */
   public async findByProjectId(
     projectId: string,
     filter: TaskFilterDto,
@@ -77,6 +87,7 @@ export class TaskRepository implements ITaskRepository {
     return qb.getMany();
   }
 
+  /** Deletes a task by its ID. */
   public async delete(id: string): Promise<DeleteResult> {
     return this.repo.delete({ id: id });
   }
