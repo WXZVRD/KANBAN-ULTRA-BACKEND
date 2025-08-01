@@ -15,6 +15,12 @@ export class GoogleProvider extends BaseOauthService {
     });
   }
 
+  /**
+   * Extracts normalized user information from Google's profile response.
+   *
+   * @param data - Raw Google profile response.
+   * @returns Normalized `TypeUserInfo` with email, name, and picture.
+   */
   public async extractUserInfo(data: GoogleProfile): Promise<TypeUserInfo> {
     return super.extractUserInfo({
       email: data.email,
