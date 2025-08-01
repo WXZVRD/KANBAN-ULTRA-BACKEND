@@ -1,8 +1,16 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProjectColumnRepository } from './repository/column.repository';
 import { ProjectColumn } from './entity/column.entity';
 import { Project } from '../entity/project.entity';
 import { CreateColumnDTO } from './dto/create-column.dto';
+import { UpdateColumnDTO } from './dto/update-column.dto';
+import { MoveColumnDTO } from './dto/move-column.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ProjectColumnService {
@@ -69,5 +77,61 @@ export class ProjectColumnService {
     );
 
     return newColumn;
+  }
+
+  public async findByProjectId(projectId: string): Promise<ProjectColumn[]> {
+    const columns: ProjectColumn[] | null =
+      await this.projectColumnRepository.findByProjectId(projectId);
+
+    if (!columns || columns.length === 0) {
+      throw new NotFoundException(
+        `В данный момент у прроекта ${projectId} нету колоноу.`,
+      );
+    }
+
+    return columns;
+  }
+
+  public async update(
+    columnId: string,
+    dto: UpdateColumnDTO,
+  ): Promise<ProjectColumn> {
+    const column: ProjectColumn | null =
+      await this.projectColumnRepository.findById(columnId);
+
+    if (!column) {
+      throw new NotFoundException(`Такой колонки в проекте не существует!`);
+    }
+
+    Object.assign(column, dto);
+
+    return this.projectColumnRepository.save(column);
+  }
+
+  public async moveColumn(
+    columnId: string,
+    dto: MoveColumnDTO,
+  ): Promise<ProjectColumn> {
+    const column: ProjectColumn | null =
+      await this.projectColumnRepository.findById(columnId);
+
+    if (!column) {
+      throw new NotFoundException(`Такой колонки в проекте не существует!`);
+    }
+
+    Object.assign(column, dto);
+
+    return this.projectColumnRepository.save(column);
+  }
+
+  public async delete(columnId: string): Promise<DeleteResult> {
+    const column: ProjectColumn | null =
+      await this.projectColumnRepository.findById(columnId);
+
+    if (!column) {
+      throw new NotFoundException(`Такой колонки в проекте не существует!`);
+    }
+
+    return this.projectColumnRepository.delete(column.id);
   }
 }

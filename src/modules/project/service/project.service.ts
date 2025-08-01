@@ -24,7 +24,7 @@ export class ProjectService {
     private readonly membershipService: MembershipService,
   ) {}
 
-  public async create(dto: CreateProjectDto, userId: string): Promise<any> {
+  public async create(dto: CreateProjectDto, userId: string): Promise<Project> {
     this.logger.log(
       `Создание проекта с названием: "${dto.title}" для пользователя: ${userId}`,
     );

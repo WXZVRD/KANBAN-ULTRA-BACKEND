@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  DeleteResult,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { Task } from '../entity/task.entity';
+import { TaskFilterDto } from '../dto/task-filter.dto';
 
 interface ITaskRepository {
   create(taskToCreate: DeepPartial<Task>): Promise<Task>;
@@ -9,6 +15,7 @@ interface ITaskRepository {
   createAndSave(taskToSave: DeepPartial<Task>): Promise<Task>;
   findById(id: string): Promise<Task | null>;
   getAll(): Promise<Task[] | null>;
+  findByProjectId(projectId: string, filter?: TaskFilterDto): Promise<Task[]>;
 }
 
 @Injectable()
@@ -40,5 +47,37 @@ export class TaskRepository implements ITaskRepository {
 
   public async getAll(): Promise<Task[] | null> {
     return this.repo.find();
+  }
+
+  public async findByProjectId(
+    projectId: string,
+    filter: TaskFilterDto,
+  ): Promise<Task[]> {
+    const qb: SelectQueryBuilder<Task> = this.repo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.author', 'author')
+      .leftJoinAndSelect('task.assignee', 'assignee')
+      .leftJoinAndSelect('task.column', 'column')
+      .where('task.projectId = :projectId', { projectId });
+
+    if (filter.priority) {
+      qb.andWhere('task.priority = :priority', { priority: filter.priority });
+    }
+
+    if (filter.assigneeId === null) {
+      qb.andWhere('task.assigneeId IS NULL');
+    } else if (filter.assigneeId) {
+      qb.andWhere('task.assigneeId = :assigneeId', {
+        assigneeId: filter.assigneeId,
+      });
+    }
+
+    qb.orderBy('task.createdAt', 'DESC');
+
+    return qb.getMany();
+  }
+
+  public async delete(id: string): Promise<DeleteResult> {
+    return this.repo.delete({ id: id });
   }
 }
