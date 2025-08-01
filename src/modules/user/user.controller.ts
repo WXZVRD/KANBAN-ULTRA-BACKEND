@@ -12,7 +12,17 @@ import { User } from './entity/user.entity';
 import { Authorized } from '../auth/decorators/authorized.decorator';
 import { Authorization } from '../auth/decorators/auth.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   private readonly logger: Logger = new Logger(UsersController.name);
@@ -28,6 +38,12 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('profile')
+  @ApiOperation({ summary: 'Get the current user profile' })
+  @ApiOkResponse({
+    description: 'Successfully retrieved user profile',
+    type: User,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   public async findProfile(
     @Authorized('id') userId: string,
   ): Promise<User | null> {
@@ -54,6 +70,13 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Patch('profile')
+  @ApiOperation({ summary: 'Update the current user profile' })
+  @ApiOkResponse({
+    description: 'Successfully updated user profile',
+    type: User,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBody({ type: UpdateUserDto })
   public async updateProfile(
     @Authorized('id') userId: string,
     @Body() dto: UpdateUserDto,

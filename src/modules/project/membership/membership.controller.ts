@@ -22,7 +22,20 @@ import { MemberRole } from './types/member-role.enum';
 import { DeleteResult } from 'typeorm';
 import { UpdateMembershipDTO } from './dto/update-member-role.dto';
 import { Membership } from './entity/membership.entity';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 
+@ApiTags('Memberships')
+@ApiBearerAuth()
 @Controller('project/:projectId/membership')
 export class MembershipController {
   constructor(
@@ -32,16 +45,18 @@ export class MembershipController {
 
   /**
    * Sends a project membership invitation to a user.
-   *
-   * @param dto - DTO containing email and desired member role
-   * @param projectId - Project ID
-   * @returns True if the invitation was successfully sent
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Post('/invite')
   @HttpCode(HttpStatus.OK)
   @Authorization()
+  @ApiOperation({ summary: 'Send an invitation to a user to join a project' })
+  @ApiOkResponse({ description: 'Invitation successfully sent', type: Boolean })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiBody({ type: SendInviteDTO })
+  @ApiParam({ name: 'projectId', type: String, required: true })
   public async inviteUser(
     @Body() dto: SendInviteDTO,
     @Param('projectId') projectId: string,
@@ -55,15 +70,18 @@ export class MembershipController {
 
   /**
    * Accepts an invitation by validating the token and creating the membership.
-   *
-   * @param req - Request object
-   * @param dto - DTO containing invite token
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Post('/take-invite')
   @HttpCode(HttpStatus.OK)
   @Authorization()
+  @ApiOperation({ summary: 'Accept an invitation to join the project' })
+  @ApiOkResponse({ description: 'Invitation accepted' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiBody({ type: InviteDto })
+  @ApiParam({ name: 'projectId', type: String, required: true })
   public async newVerification(
     @Req() req: Request,
     @Body() dto: InviteDto,
@@ -73,16 +91,19 @@ export class MembershipController {
 
   /**
    * Deletes a project member.
-   *
-   * @param projectId - Project ID
-   * @param userId - User ID to delete
-   * @returns DeleteResult
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Delete('/:userId')
   @HttpCode(HttpStatus.OK)
   @Authorization()
+  @ApiOperation({ summary: 'Delete a project member' })
+  @ApiOkResponse({ description: 'Member deleted', type: DeleteResult })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Member not found' })
+  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiParam({ name: 'userId', type: String, required: true })
   public async deleteMember(
     @Param('projectId') projectId: string,
     @Param('userId') userId: string,
@@ -92,16 +113,18 @@ export class MembershipController {
 
   /**
    * Updates the role of a project member.
-   *
-   * @param projectId - Project ID
-   * @param dto - DTO with new role
-   * @returns Updated Membership entity
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
   @Patch('/update-member')
   @HttpCode(HttpStatus.OK)
   @Authorization()
+  @ApiOperation({ summary: 'Update project member role' })
+  @ApiOkResponse({ description: 'Member role updated', type: Membership })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied' })
+  @ApiBody({ type: UpdateMembershipDTO })
+  @ApiParam({ name: 'projectId', type: String, required: true })
   public async updateMemberRole(
     @Param('projectId') projectId: string,
     @Body() dto: UpdateMembershipDTO,

@@ -19,22 +19,32 @@ import { MembershipRoles } from './membership/decorators/membership.decorator';
 import { MemberRole } from './membership/types/member-role.enum';
 import { UpdateProjectDTO } from './dto/update-project.dto';
 import { DeleteResult } from 'typeorm';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Projects')
+@ApiBearerAuth()
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   /**
    * Creates a new project for the authenticated user.
-   *
-   * Requires the user to be authorized.
-   *
-   * @param dto - Data Transfer Object containing the project creation data
-   * @param id - The ID of the authenticated user
-   * @returns The created project entity
    */
   @Post('create')
   @Authorization()
+  @ApiOperation({ summary: 'Create a new project' })
+  @ApiOkResponse({ description: 'Project successfully created', type: Project })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBody({ type: CreateProjectDto })
   public async create(
     @Body() dto: CreateProjectDto,
     @Authorized('id') id: string,
@@ -44,62 +54,58 @@ export class ProjectController {
 
   /**
    * Retrieves all projects in the system.
-   *
-   * Only available for users with the ADMIN role.
-   *
-   * @returns An array of all projects
    */
   @Post('getAll')
   @Authorization(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get all projects (Admin only)' })
+  @ApiOkResponse({ description: 'List of all projects', type: [Project] })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Only admins can access this endpoint' })
   public async getAll(): Promise<Project[]> {
     return await this.projectService.getAll();
   }
 
   /**
    * Retrieves all projects that belong to the authenticated user.
-   *
-   * Accessible for both REGULAR and ADMIN users.
-   *
-   * @param id - The ID of the authenticated user
-   * @returns A list of the user's projects
    */
   @Post('getByUser')
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get all projects of the current user' })
+  @ApiOkResponse({ description: 'List of user projects', type: [Project] })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   public async getByUser(@Authorized('id') id: string): Promise<Project[]> {
     return await this.projectService.getByUser(id);
   }
 
   /**
    * Retrieves a specific project by its ID.
-   *
-   * Requires membership in the project with at least VISITOR role.
-   * Accessible for both REGULAR and ADMIN users.
-   *
-   * @param id - The ID of the project
-   * @returns The project entity if found
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Get(':projectId')
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get project by ID' })
+  @ApiOkResponse({ description: 'Project found', type: Project })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied for this project' })
+  @ApiNotFoundResponse({ description: 'Project not found' })
   public async getById(@Param('projectId') id: string): Promise<Project> {
     return await this.projectService.getById(id);
   }
 
   /**
    * Updates an existing project by its ID.
-   *
-   * Requires the user to be at least a MEMBER in the project.
-   * Accessible for both REGULAR and ADMIN users.
-   *
-   * @param id - The ID of the project to update
-   * @param dto - Data Transfer Object containing the updated project data
-   * @returns The updated project entity
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
   @Patch(':projectId')
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update project by ID' })
+  @ApiOkResponse({ description: 'Project successfully updated', type: Project })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied for this project' })
+  @ApiNotFoundResponse({ description: 'Project not found' })
+  @ApiBody({ type: UpdateProjectDTO })
   public async updateProject(
     @Param('projectId') id: string,
     @Body() dto: UpdateProjectDTO,
@@ -109,17 +115,19 @@ export class ProjectController {
 
   /**
    * Deletes a project by its ID.
-   *
-   * Requires the user to be at least a MEMBER in the project.
-   * Accessible for both REGULAR and ADMIN users.
-   *
-   * @param id - The ID of the project to delete
-   * @returns The result of the delete operation
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
   @Delete(':projectId')
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete project by ID' })
+  @ApiOkResponse({
+    description: 'Project successfully deleted',
+    type: DeleteResult,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Access denied for this project' })
+  @ApiNotFoundResponse({ description: 'Project not found' })
   public async delete(@Param('projectId') id: string): Promise<DeleteResult> {
     return await this.projectService.deleteById(id);
   }

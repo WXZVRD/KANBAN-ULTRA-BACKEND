@@ -24,7 +24,19 @@ import { AuthProviderGuard } from './guards/provider.guard';
 import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 import { ConfigService } from '@nestjs/config';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   private readonly logger: Logger = new Logger(AuthController.name);
@@ -37,14 +49,15 @@ export class AuthController {
 
   /**
    * Handles user registration.
-   *
-   * @param req - Express request object
-   * @param dto - Registration data (email, password, etc.)
-   * @returns The created User or null
    */
   @Recaptcha()
   @Post('register')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOkResponse({ description: 'User successfully registered', type: User })
+  @ApiBadRequestResponse({ description: 'Invalid registration data' })
+  @ApiUnauthorizedResponse({ description: 'Recaptcha failed' })
+  @ApiBody({ type: RegisterDto })
   public async register(
     @Req() req: Request,
     @Body() dto: RegisterDto,
@@ -59,14 +72,15 @@ export class AuthController {
 
   /**
    * Handles user login.
-   *
-   * @param req - Express request object
-   * @param dto - Login credentials (email, password)
-   * @returns The logged-in User or null
    */
   @Recaptcha()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User login' })
+  @ApiOkResponse({ description: 'User successfully logged in', type: User })
+  @ApiBadRequestResponse({ description: 'Invalid credentials' })
+  @ApiUnauthorizedResponse({ description: 'Recaptcha failed' })
+  @ApiBody({ type: LoginDto })
   public async login(
     @Req() req: Request,
     @Body() dto: LoginDto,
@@ -83,15 +97,19 @@ export class AuthController {
 
   /**
    * Handles OAuth provider callback.
-   *
-   * @param req - Express request object
-   * @param res - Express response object
-   * @param provider - OAuth provider name (e.g., Google, GitHub)
-   * @param code - Authorization code from the provider
-   * @returns Redirect to dashboard after successful OAuth authentication
    */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/callback/:provider')
+  @ApiOperation({ summary: 'OAuth callback handler' })
+  @ApiOkResponse({ description: 'OAuth success, redirects to dashboard' })
+  @ApiBadRequestResponse({ description: 'Authorization code was not provided' })
+  @ApiParam({ name: 'provider', type: String, description: 'OAuth provider' })
+  @ApiQuery({
+    name: 'code',
+    type: String,
+    required: true,
+    description: 'Authorization code',
+  })
   public async callback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -124,12 +142,15 @@ export class AuthController {
 
   /**
    * Generates an OAuth authentication URL for the specified provider.
-   *
-   * @param provider - OAuth provider name
-   * @returns Object with the authentication URL
    */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/connect/:provider')
+  @ApiOperation({ summary: 'Get OAuth authentication URL for provider' })
+  @ApiOkResponse({
+    description: 'Returns URL to authenticate user',
+    schema: { example: { url: 'https://...' } },
+  })
+  @ApiParam({ name: 'provider', type: String, description: 'OAuth provider' })
   public async connect(@Param('provider') provider: string): Promise<any> {
     this.logger.log(
       `GET /oauth/connect/${provider} — Requesting authentication URL for provider ${provider}`,
@@ -155,12 +176,11 @@ export class AuthController {
 
   /**
    * Handles user logout.
-   *
-   * @param req - Express request object
-   * @param res - Express response object
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Logout user' })
+  @ApiOkResponse({ description: 'User successfully logged out' })
   public async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,

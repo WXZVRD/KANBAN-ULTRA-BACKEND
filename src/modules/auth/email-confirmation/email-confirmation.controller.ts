@@ -9,7 +9,16 @@ import {
 import { EmailConfirmationService } from './email-confirmation.service';
 import { ConfirmationDto } from './dto/confirmation.dto';
 import { Request } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Auth / Email Confirmation')
 @Controller('auth/email-confirmation')
 export class EmailConfirmationController {
   constructor(
@@ -29,6 +38,11 @@ export class EmailConfirmationController {
    */
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm user email via verification token' })
+  @ApiOkResponse({ description: 'Email successfully confirmed' })
+  @ApiBadRequestResponse({ description: 'Invalid or expired token' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized request' })
+  @ApiBody({ type: ConfirmationDto })
   public async newVerification(
     @Req() req: Request,
     @Body() dto: ConfirmationDto,
