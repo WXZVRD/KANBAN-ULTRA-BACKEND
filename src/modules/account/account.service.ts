@@ -3,8 +3,20 @@ import { AccountRepository } from './repositories/account.repository';
 import { User } from '../user/entity/user.entity';
 import { Account } from './entity/account.entity';
 
+interface IAccountService {
+  create(
+    user: User,
+    type: string,
+    provider: string,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number,
+  ): Promise<Account>;
+  findByIdAndProvider(id: string, provider: string): Promise<Account | null>;
+}
+
 @Injectable()
-export class AccountService {
+export class AccountService implements IAccountService {
   constructor(private readonly accountRepository: AccountRepository) {}
 
   public async create(

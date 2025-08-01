@@ -4,8 +4,27 @@ import { Project } from '../../entity/project.entity';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 import { ProjectColumn } from '../entity/column.entity';
 
+interface IProjectColumnRepository {
+  create(columnToCreate: DeepPartial<ProjectColumn>): Promise<ProjectColumn>;
+  save(columnToSave: ProjectColumn): Promise<ProjectColumn>;
+  createAndSave(
+    columnToSave: DeepPartial<ProjectColumn>,
+  ): Promise<ProjectColumn>;
+
+  findByTitle(title: string): Promise<ProjectColumn | null>;
+  findByTitleOrOrder(
+    title: string,
+    order: number,
+    projectId: string,
+  ): Promise<ProjectColumn | null>;
+  findByProjectId(projectId: string): Promise<ProjectColumn[] | null>;
+  findById(columnId: string): Promise<ProjectColumn | null>;
+
+  delete(columnId: string): Promise<DeleteResult>;
+}
+
 @Injectable()
-export class ProjectColumnRepository {
+export class ProjectColumnRepository implements IProjectColumnRepository {
   public constructor(
     @InjectRepository(ProjectColumn)
     private readonly repo: Repository<ProjectColumn>,

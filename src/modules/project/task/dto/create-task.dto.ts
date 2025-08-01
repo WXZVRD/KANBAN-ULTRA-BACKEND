@@ -2,10 +2,8 @@ import {
   IsNotEmpty,
   IsString,
   IsOptional,
-  IsInt,
   IsUUID,
   IsEnum,
-  IsDateString,
 } from 'class-validator';
 import { TaskPriority } from '../types/priority.enum';
 

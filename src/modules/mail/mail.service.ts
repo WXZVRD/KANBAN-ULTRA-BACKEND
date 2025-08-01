@@ -1,43 +1,3 @@
-/*
-import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { SentMessageInfo } from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
-import { render } from '@react-email/components';
-import { ConfirmationTemplate } from './templates/confirmation.template';
-
-@Injectable()
-export class MailService {
-  public constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
-  ) {}
-
-  public async sendConfirmationEmail(
-    email: string,
-    token: string,
-  ): Promise<void> {
-    const domain: string =
-      this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-    const html: string = await render(ConfirmationTemplate({ domain, token }));
-
-    return this.sendMail(email, 'Подтверждение почты', html);
-  }
-
-  private sendMail(
-    email: string,
-    subject: string,
-    html: string,
-  ): Promise<SentMessageInfo> {
-    return this.mailerService.sendMail({
-      to: email,
-      subject,
-      html,
-    });
-  }
-}
-*/
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/components';
@@ -48,8 +8,20 @@ import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
 import { MembershipInviteTemplate } from './templates/membership-invite.template';
 import { MemberRole } from '../project/membership/types/member-role.enum';
 
+interface IMailService {
+  sendConfirmationEmail(email: string, token: string): Promise<void>;
+  sendMembershipInviteEmail(
+    email: string,
+    token: string,
+    projectId: string,
+    memberRole: MemberRole,
+  ): Promise<void>;
+  sendPasswordResetEmail(email: string, token: string): Promise<void>;
+  sendTwoFactorTokenEmail(email: string, token: string): Promise<void>;
+}
+
 @Injectable()
-export class MailService {
+export class MailService implements IMailService {
   private readonly resend: Resend;
   private readonly sender: string;
   private readonly logger: Logger = new Logger(MailService.name);

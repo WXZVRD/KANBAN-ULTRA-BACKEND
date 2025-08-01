@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../../user/types/roles.enum';
 import { ROLES_KEY } from '../decorators/roles.decorator';

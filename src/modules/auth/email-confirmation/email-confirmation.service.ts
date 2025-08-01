@@ -17,9 +17,14 @@ import { UserService } from '../../user/services/user.service';
 import { AuthService } from '../auth.service';
 import { Request } from 'express';
 
+interface IEmailConfirmationService {
+  newVerification(req: Request, dto: ConfirmationDto): Promise<any>;
+  sendVerificationToken(email: string): Promise<boolean>;
+}
+
 @Injectable()
-export class EmailConfirmationService {
-  private readonly logger = new Logger(EmailConfirmationService.name);
+export class EmailConfirmationService implements IEmailConfirmationService {
+  private readonly logger: Logger = new Logger(EmailConfirmationService.name);
 
   constructor(
     private readonly tokenRepository: TokenRepository,

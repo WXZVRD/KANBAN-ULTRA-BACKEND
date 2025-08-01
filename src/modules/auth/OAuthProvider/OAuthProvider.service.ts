@@ -2,13 +2,17 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ProviderOptionsSymbol, TypeOptions } from './provider.constants';
 import { BaseOauthService } from './services/base-oauth.service';
 
+interface IAuthProviderService extends OnModuleInit {
+  findByService(service: string): BaseOauthService | null;
+}
+
 @Injectable()
-export class AuthProviderService implements OnModuleInit {
+export class AuthProviderService implements IAuthProviderService {
   public constructor(
     @Inject(ProviderOptionsSymbol) private readonly options: TypeOptions,
   ) {}
 
-  public onModuleInit() {
+  public onModuleInit(): void {
     for (const provider of this.options.services) {
       provider.baseUrl = this.options.baseUrl;
     }

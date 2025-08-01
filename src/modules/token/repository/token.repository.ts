@@ -4,8 +4,23 @@ import { Token } from '../entity/token.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { TokenType } from '../types/token.types';
 
+interface ITokenRepository {
+  create(
+    email: string,
+    token: string,
+    expiresIn: Date,
+    type: TokenType,
+  ): Promise<Token>;
+
+  findByEmailAndToken(email: string, type: TokenType): Promise<Token | null>;
+
+  deleteByIdAndToken(id: string, type: TokenType): Promise<DeleteResult>;
+
+  findByTokenAndType(token: string, type: TokenType): Promise<Token | null>;
+}
+
 @Injectable()
-export class TokenRepository {
+export class TokenRepository implements ITokenRepository {
   public constructor(
     @InjectRepository(Token)
     private readonly repo: Repository<Token>,

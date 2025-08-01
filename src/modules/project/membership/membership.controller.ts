@@ -19,7 +19,6 @@ import { Authorization } from '../../auth/decorators/auth.decorator';
 import { MembershipAccessControlGuard } from './guards/member-access-control.guard';
 import { MembershipRoles } from './decorators/membership.decorator';
 import { MemberRole } from './types/member-role.enum';
-import { Authorized } from '../../auth/decorators/authorized.decorator';
 import { DeleteResult } from 'typeorm';
 import { UpdateMembershipDTO } from './dto/update-member-role.dto';
 import { Membership } from './entity/membership.entity';

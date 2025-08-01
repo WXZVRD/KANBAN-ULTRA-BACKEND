@@ -4,7 +4,7 @@ import { User } from '../entity/user.entity';
 import { AuthMethod } from '../types/authMethods.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 
-export interface IUserRepository {
+interface IUserRepository {
   findUniqueById(id: string): Promise<User | null>;
 
   findUniqueByEmail(email: string): Promise<User | null>;

@@ -1,4 +1,3 @@
-// project-permission.guard.ts
 import {
   CanActivate,
   ExecutionContext,

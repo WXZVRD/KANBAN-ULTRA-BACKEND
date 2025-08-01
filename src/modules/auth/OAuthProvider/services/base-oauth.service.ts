@@ -7,8 +7,14 @@ import { TypeBaseProviderOptions } from './types/base-provider.options.types';
 import { TypeUserInfo } from './types/user-info.types';
 import { Logger } from '@nestjs/common';
 
+interface IBaseOauthService {
+  getRedirectUrl(): string;
+  getAuthUrl(): string;
+  findUserByCode(code: string): Promise<TypeUserInfo>;
+}
+
 @Injectable()
-export class BaseOauthService {
+export class BaseOauthService implements IBaseOauthService {
   private readonly logger: Logger = new Logger(BaseOauthService.name);
   private BASE_URL: string;
 

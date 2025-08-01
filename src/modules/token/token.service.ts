@@ -10,45 +10,56 @@ import { Token } from './entity/token.entity';
 import { DeleteResult } from 'typeorm';
 import { ITokenGenerator } from './types/interfaces/token-generator.interface';
 
+interface ITokenService {
+  generateToken(
+    email: string,
+    type: TokenType,
+    expiresInMs: number,
+    generator: ITokenGenerator,
+  ): Promise<Token>;
+
+  validateToken(email: string, code: string, type: TokenType): Promise<Token>;
+
+  validateTokenByValue(tokenValue: string, type: TokenType): Promise<Token>;
+
+  findByTokenAndType(token: string, type: TokenType): Promise<Token | null>;
+
+  consumeToken(id: string, type: TokenType): Promise<void>;
+}
+
 @Injectable()
-export class TokenService {
+export class TokenService implements ITokenService {
   private logger: Logger = new Logger(TokenService.name);
 
   constructor(private readonly tokenRepository: TokenRepository) {}
 
-  /**
-   * Генерация и сохранение нового токена
-   */
   public async generateToken(
     email: string,
     type: TokenType,
     expiresInMs: number,
     generator: ITokenGenerator,
   ): Promise<Token> {
-    // Удаляем старый токен, если есть
-    const existingToken = await this.tokenRepository.findByEmailAndToken(
-      email,
-      type,
-    );
+    const existingToken: Token | null =
+      await this.tokenRepository.findByEmailAndToken(email, type);
     if (existingToken) {
       await this.tokenRepository.deleteByIdAndToken(existingToken.id, type);
     }
 
-    const tokenValue = generator.generate();
-    const expiresIn = new Date(Date.now() + expiresInMs);
+    const tokenValue: string = generator.generate();
+    const expiresIn: Date = new Date(Date.now() + expiresInMs);
 
     return this.tokenRepository.create(email, tokenValue, expiresIn, type);
   }
 
-  /**
-   * Валидируем токен по email + коду
-   */
   public async validateToken(
     email: string,
     code: string,
     type: TokenType,
   ): Promise<Token> {
-    const token = await this.tokenRepository.findByEmailAndToken(email, type);
+    const token: Token | null = await this.tokenRepository.findByEmailAndToken(
+      email,
+      type,
+    );
     if (!token) throw new NotFoundException('Токен не найден.');
     if (token.token !== code) throw new BadRequestException('Неверный токен.');
     if (new Date(token.expiresIn) < new Date()) {
@@ -58,14 +69,11 @@ export class TokenService {
     return token;
   }
 
-  /**
-   * Валидируем токен только по его значению (для приглашений)
-   */
   public async validateTokenByValue(
     tokenValue: string,
     type: TokenType,
   ): Promise<Token> {
-    const token = await this.tokenRepository.findByTokenAndType(
+    const token: Token | null = await this.tokenRepository.findByTokenAndType(
       tokenValue,
       type,
     );
@@ -84,9 +92,6 @@ export class TokenService {
     return this.tokenRepository.findByTokenAndType(token, type);
   }
 
-  /**
-   * "Съедаем" токен (удаляем)
-   */
   public async consumeToken(id: string, type: TokenType): Promise<void> {
     await this.tokenRepository.deleteByIdAndToken(id, type);
   }

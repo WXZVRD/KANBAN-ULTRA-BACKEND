@@ -26,6 +26,11 @@ export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
   login(req: Request, dto: LoginDto): Promise<User | null>;
   logout(req: Request, res: Response): Promise<void>;
+  extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ): Promise<User | null>;
 }
 
 @Injectable()
@@ -73,7 +78,6 @@ export class AuthService implements IAuthService {
       `Пользователь успешно создан: id=${newUser.id}, email=${newUser.email}`,
     );
 
-    // return this.saveSession(req, newUser);
     return {
       message:
         'Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс',

@@ -10,8 +10,22 @@ import { DeleteResult } from 'typeorm';
 import { AccessType } from '../../types/access.enum';
 import { MemberRole } from '../types/member-role.enum';
 
+interface IMembershipService {
+  createNewMember(membershipData: CreateMembershipDTO): Promise<any>;
+  getProjectMember(
+    userId: string,
+    projectId: string,
+  ): Promise<Membership | null>;
+  deleteProjectMember(userId: string, projectId: string): Promise<DeleteResult>;
+  updateUserAccess(
+    userId: string,
+    projectId: string,
+    memberRole: MemberRole,
+  ): Promise<Membership>;
+}
+
 @Injectable()
-export class MembershipService {
+export class MembershipService implements IMembershipService {
   public constructor(
     private readonly membershipRepository: MembershipRepository,
   ) {}
