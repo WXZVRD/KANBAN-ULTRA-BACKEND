@@ -10,16 +10,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { TaskService } from './service/task.service';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { Task } from './entity/task.entity';
-import { CreateTaskDTO } from './dto/create-task.dto';
-import { Authorized } from '../../auth/decorators/authorized.decorator';
-import { UpdateTaskDTO } from './dto/update-task.dto';
-import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
-import { MembershipRoles } from '../membership/decorators/membership.decorator';
-import { MemberRole } from '../membership/types/member-role.enum';
-import { TaskFilterDto } from './dto/task-filter.dto';
 import { DeleteResult } from 'typeorm';
 import {
   ApiTags,
@@ -33,6 +23,19 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
+import {
+  CreateTaskDTO,
+  Task,
+  TaskFilterDto,
+  TaskService,
+  UpdateTaskDTO,
+} from './index';
+import {
+  MemberRole,
+  MembershipAccessControlGuard,
+  MembershipRoles,
+} from '../membership';
+import { Authorization, Authorized } from '../../auth';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()

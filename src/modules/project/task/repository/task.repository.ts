@@ -6,8 +6,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { Task } from '../entity/task.entity';
-import { TaskFilterDto } from '../dto/task-filter.dto';
+import { Task, TaskFilterDto } from '../index';
 
 interface ITaskRepository {
   create(taskToCreate: DeepPartial<Task>): Promise<Task>;

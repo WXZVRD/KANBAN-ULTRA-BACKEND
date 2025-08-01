@@ -1,10 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { TaskRepository } from '../repository/task.repository';
-import { CreateTaskDTO } from '../dto/create-task.dto';
-import { Task } from '../entity/task.entity';
-import { UpdateTaskDTO } from '../dto/update-task.dto';
-import { TaskFilterDto } from '../dto/task-filter.dto';
 import { DeleteResult } from 'typeorm';
+import {
+  CreateTaskDTO,
+  Task,
+  TaskFilterDto,
+  TaskRepository,
+  UpdateTaskDTO,
+} from '../index';
 
 interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
