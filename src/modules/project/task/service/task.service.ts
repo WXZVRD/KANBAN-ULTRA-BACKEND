@@ -4,6 +4,7 @@ import { CreateTaskDTO } from '../dto/create-task.dto';
 import { Task } from '../entity/task.entity';
 import { UpdateTaskDTO } from '../dto/update-task.dto';
 import { TaskFilterDto } from '../dto/task-filter.dto';
+import { DeleteResult } from 'typeorm';
 
 interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
@@ -78,6 +79,10 @@ export class TaskService implements ITaskService {
     }
 
     return task;
+  }
+
+  public async delete(taskId: string): Promise<DeleteResult> {
+    return this.taskRepository.delete(taskId);
   }
 
   public async findProjectTask(

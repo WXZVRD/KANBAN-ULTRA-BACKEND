@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -19,6 +20,7 @@ import { MembershipAccessControlGuard } from '../membership/guards/member-access
 import { MembershipRoles } from '../membership/decorators/membership.decorator';
 import { MemberRole } from '../membership/types/member-role.enum';
 import { TaskFilterDto } from './dto/task-filter.dto';
+import { DeleteResult } from 'typeorm';
 
 @Controller('project/:projectId/task')
 export class TaskController {
@@ -81,5 +83,16 @@ export class TaskController {
       `Returned ${tasks.length} tasks for ProjectID=${projectId}`,
     );
     return tasks;
+  }
+
+  @Delete('/:taskId')
+  @Authorization()
+  public async deleteTask(
+    @Param('taskId') taskId: string,
+  ): Promise<DeleteResult> {
+    this.logger.log(`Delete /:taskId  taskId=${taskId} `);
+    const res: DeleteResult = await this.taskService.delete(taskId);
+
+    return res;
   }
 }

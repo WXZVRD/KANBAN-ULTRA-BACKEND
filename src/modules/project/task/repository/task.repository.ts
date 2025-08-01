@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  DeepPartial,
+  DeleteResult,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { Task } from '../entity/task.entity';
 import { TaskFilterDto } from '../dto/task-filter.dto';
 
@@ -70,5 +75,9 @@ export class TaskRepository implements ITaskRepository {
     qb.orderBy('task.createdAt', 'DESC');
 
     return qb.getMany();
+  }
+
+  public async delete(id: string): Promise<DeleteResult> {
+    return this.repo.delete({ id: id });
   }
 }
