@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailService } from '../../mail/mail.service';
-import { Token } from '../../token/entity/token.entity';
-import { TokenType } from '../../token/types/token.types';
-import { TokenService } from '../../token/token.service';
-import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
 import ms from 'ms';
+import { MailService } from '../../mail';
+import {
+  NumericTokenGenerator,
+  Token,
+  TokenService,
+  TokenType,
+} from '../../token';
 
 interface ITwoFactorAuthService {
   validateTwoFactorToken(email: string, code: string): Promise<any>;
