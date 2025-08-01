@@ -26,6 +26,15 @@ export class TokenRepository implements ITokenRepository {
     private readonly repo: Repository<Token>,
   ) {}
 
+  /**
+   * Creates and saves a new token entity in the database.
+   *
+   * @param email - Email associated with the token
+   * @param token - Token string
+   * @param expiresIn - Expiration date
+   * @param type - Type of token
+   * @returns The saved token entity
+   */
   public async create(
     email: string,
     token: string,
@@ -50,6 +59,13 @@ export class TokenRepository implements ITokenRepository {
     return savedToken;
   }
 
+  /**
+   * Finds a token by email and type.
+   *
+   * @param email - Email associated with the token
+   * @param type - Type of token
+   * @returns The token entity or null if not found
+   */
   public async findByEmailAndToken(
     email: string,
     type: TokenType,
@@ -67,6 +83,13 @@ export class TokenRepository implements ITokenRepository {
     return result;
   }
 
+  /**
+   * Deletes a token by its ID and type.
+   *
+   * @param id - Token ID
+   * @param type - Type of token
+   * @returns DeleteResult indicating the operation result
+   */
   public async deleteByIdAndToken(
     id: string,
     type: TokenType,
@@ -82,6 +105,13 @@ export class TokenRepository implements ITokenRepository {
     return result;
   }
 
+  /**
+   * Finds a token by its string value and type.
+   *
+   * @param token - Token string to search
+   * @param type - Type of token
+   * @returns The token entity or null if not found
+   */
   public async findByTokenAndType(
     token: string,
     type: TokenType,

@@ -7,7 +7,6 @@ import {
 import { TokenRepository } from './repository/token.repository';
 import { TokenType } from './types/token.types';
 import { Token } from './entity/token.entity';
-import { DeleteResult } from 'typeorm';
 import { ITokenGenerator } from './types/interfaces/token-generator.interface';
 
 interface ITokenService {
@@ -33,6 +32,16 @@ export class TokenService implements ITokenService {
 
   constructor(private readonly tokenRepository: TokenRepository) {}
 
+  /**
+   * Generates a new token for a given email and type.
+   * Deletes the old token if one exists for that email and type.
+   *
+   * @param email - Email to associate with the token
+   * @param type - Type of token
+   * @param expiresInMs - Expiration time in milliseconds
+   * @param generator - Token generator implementation
+   * @returns The newly created token
+   */
   public async generateToken(
     email: string,
     type: TokenType,
@@ -51,6 +60,17 @@ export class TokenService implements ITokenService {
     return this.tokenRepository.create(email, tokenValue, expiresIn, type);
   }
 
+  /**
+   * Validates a token by email and code.
+   * Throws an exception if the token is not found, invalid, or expired.
+   *
+   * @param email - Email associated with the token
+   * @param code - Token string to validate
+   * @param type - Type of token
+   * @throws NotFoundException if token does not exist
+   * @throws BadRequestException if token is invalid or expired
+   * @returns The valid token entity
+   */
   public async validateToken(
     email: string,
     code: string,
@@ -60,15 +80,25 @@ export class TokenService implements ITokenService {
       email,
       type,
     );
-    if (!token) throw new NotFoundException('Токен не найден.');
-    if (token.token !== code) throw new BadRequestException('Неверный токен.');
+    if (!token) throw new NotFoundException('Token not found.');
+    if (token.token !== code) throw new BadRequestException('Invalid token.');
     if (new Date(token.expiresIn) < new Date()) {
       await this.tokenRepository.deleteByIdAndToken(token.id, type);
-      throw new BadRequestException('Токен истёк.');
+      throw new BadRequestException('Token has expired.');
     }
     return token;
   }
 
+  /**
+   * Validates a token by its value.
+   * Throws an exception if the token is not found or expired.
+   *
+   * @param tokenValue - Token string to validate
+   * @param type - Type of token
+   * @throws NotFoundException if token does not exist
+   * @throws BadRequestException if token is expired
+   * @returns The valid token entity
+   */
   public async validateTokenByValue(
     tokenValue: string,
     type: TokenType,
@@ -77,14 +107,21 @@ export class TokenService implements ITokenService {
       tokenValue,
       type,
     );
-    if (!token) throw new NotFoundException('Токен не найден.');
+    if (!token) throw new NotFoundException('Token not found.');
     if (new Date(token.expiresIn) < new Date()) {
       await this.tokenRepository.deleteByIdAndToken(token.id, type);
-      throw new BadRequestException('Токен истёк.');
+      throw new BadRequestException('Token has expired.');
     }
     return token;
   }
 
+  /**
+   * Finds a token by its string value and type.
+   *
+   * @param token - Token string to search
+   * @param type - Type of token
+   * @returns The token entity or null if not found
+   */
   public async findByTokenAndType(
     token: string,
     type: TokenType,
@@ -92,6 +129,12 @@ export class TokenService implements ITokenService {
     return this.tokenRepository.findByTokenAndType(token, type);
   }
 
+  /**
+   * Consumes (deletes) a token by its ID and type.
+   *
+   * @param id - Token ID
+   * @param type - Type of token
+   */
   public async consumeToken(id: string, type: TokenType): Promise<void> {
     await this.tokenRepository.deleteByIdAndToken(id, type);
   }
