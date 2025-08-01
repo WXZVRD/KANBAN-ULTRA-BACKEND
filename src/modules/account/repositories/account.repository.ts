@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../user/entity/user.entity';
-import { Account } from '../entity/account.entity';
+import { User } from '../../user';
+import { Account } from '../index';
 
 export interface IAccountRepository {
   create(

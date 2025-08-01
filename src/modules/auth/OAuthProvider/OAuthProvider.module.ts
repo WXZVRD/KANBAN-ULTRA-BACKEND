@@ -1,11 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { AuthProviderService } from './OAuthProvider.service';
-import { TypeProviderOptions } from './services/types/provider-options.type';
 import {
   ProviderOptionsSymbol,
   TypeAsyncOptions,
   TypeOptions,
-} from './provider.constants';
+  AuthProviderService,
+} from './index';
 
 @Module({})
 export class AuthProviderModule {

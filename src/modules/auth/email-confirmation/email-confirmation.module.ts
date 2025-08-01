@@ -1,12 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { EmailConfirmationService } from './email-confirmation.service';
-import { EmailConfirmationController } from './email-confirmation.controller';
-import { MailModule } from '../../mail/mail.module';
+import { MailModule, MailService } from '../../mail';
+import { UserModule, UserService } from '../../user';
+import { TokenModule } from '../../token';
 import { AuthModule } from '../auth.module';
-import { UserModule } from '../../user/user.module';
-import { UserService } from '../../user/services/user.service';
-import { MailService } from '../../mail/mail.service';
-import { TokenModule } from '../../token/token.module';
+import { EmailConfirmationController, EmailConfirmationService } from './index';
 
 @Module({
   imports: [MailModule, UserModule, TokenModule, forwardRef(() => AuthModule)],

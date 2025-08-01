@@ -6,8 +6,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { EmailConfirmationService } from './email-confirmation.service';
-import { ConfirmationDto } from './dto/confirmation.dto';
+import { EmailConfirmationService, ConfirmationDto } from './index';
 import { Request } from 'express';
 import {
   ApiTags,

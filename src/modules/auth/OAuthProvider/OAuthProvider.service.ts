@@ -1,6 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ProviderOptionsSymbol, TypeOptions } from './provider.constants';
-import { BaseOauthService } from './services/base-oauth.service';
+import { ProviderOptionsSymbol, TypeOptions, BaseOauthService } from './index';
 
 interface IAuthProviderService extends OnModuleInit {
   findByService(service: string): BaseOauthService | null;

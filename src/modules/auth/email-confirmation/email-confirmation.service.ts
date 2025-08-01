@@ -7,15 +7,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenRepository } from '../../token/repository/token.repository';
-import { TokenType } from '../../token/types/token.types';
-import { Token } from '../../token/entity/token.entity';
-import { ConfirmationDto } from './dto/confirmation.dto';
-import { User } from '../../user/entity/user.entity';
-import { MailService } from '../../mail/mail.service';
-import { UserService } from '../../user/services/user.service';
-import { AuthService } from '../auth.service';
 import { Request } from 'express';
+import { ConfirmationDto } from './index';
+import { Token, TokenRepository, TokenType } from '../../token';
+import { MailService } from '../../mail';
+import { User, UserService } from '../../user';
+import { AuthService } from '../auth.service';
 
 interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;

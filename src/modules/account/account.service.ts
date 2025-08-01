@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { AccountRepository } from './repositories/account.repository';
-import { User } from '../user/entity/user.entity';
-import { Account } from './entity/account.entity';
+import { User } from '../user';
+import { Account, AccountRepository } from './index';
 
 interface IAccountService {
   create(
