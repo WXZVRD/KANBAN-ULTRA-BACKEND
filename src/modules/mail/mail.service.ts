@@ -36,6 +36,13 @@ export class MailService implements IMailService {
     this.logger.log(`MailService initialized with sender: ${this.sender}`);
   }
 
+  /**
+   * Sends an email with a confirmation token to verify the user's email address.
+   *
+   * @param email - Recipient's email address
+   * @param token - Verification token
+   * @throws {Error} If email sending fails
+   */
   public async sendConfirmationEmail(
     email: string,
     token: string,
@@ -50,7 +57,7 @@ export class MailService implements IMailService {
       );
       this.logger.debug(`Confirmation email HTML rendered for ${email}`);
 
-      await this.sendMail(email, 'Подтверждение почты', html);
+      await this.sendMail(email, 'Email Confirmation', html);
       this.logger.log(`Confirmation email sent to ${email}`);
     } catch (error) {
       this.logger.error(
@@ -61,6 +68,15 @@ export class MailService implements IMailService {
     }
   }
 
+  /**
+   * Sends an invitation email to join a project.
+   *
+   * @param email - Recipient's email address
+   * @param token - Invitation token
+   * @param projectId - Project ID the user is invited to
+   * @param memberRole - Role assigned to the invited member
+   * @throws {Error} If email sending fails
+   */
   public async sendMembershipInviteEmail(
     email: string,
     token: string,
@@ -75,21 +91,25 @@ export class MailService implements IMailService {
       const html: string = await render(
         MembershipInviteTemplate({ domain, token, projectId, memberRole }),
       );
-      this.logger.debug(
-        `sendMembershipInviteEmail email HTML rendered for ${email}`,
-      );
+      this.logger.debug(`Membership invite email HTML rendered for ${email}`);
 
-      await this.sendMail(email, 'Приглашения в проект', html);
-      this.logger.log(`sendMembershipInviteEmail email sent to ${email}`);
+      await this.sendMail(email, 'Project Invitation', html);
+      this.logger.log(`Membership invitation email sent to ${email}`);
     } catch (error) {
       this.logger.error(
-        `Failed to send sendMembershipInviteEmail email to ${email}`,
+        `Failed to send membership invitation email to ${email}`,
         error.stack || error.message,
       );
       throw error;
     }
   }
 
+  /**
+   * Sends a password reset email with a reset token.
+   *
+   * @param email - Recipient's email address
+   * @param token - Password reset token
+   */
   public async sendPasswordResetEmail(
     email: string,
     token: string,
@@ -98,18 +118,32 @@ export class MailService implements IMailService {
       this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
     const html: string = await render(ResetPasswordTemplate({ domain, token }));
 
-    await this.sendMail(email, 'Сброс пароля', html);
+    await this.sendMail(email, 'Password Reset', html);
   }
 
+  /**
+   * Sends a two-factor authentication (2FA) token email.
+   *
+   * @param email - Recipient's email address
+   * @param token - 2FA token
+   */
   public async sendTwoFactorTokenEmail(
     email: string,
     token: string,
   ): Promise<void> {
     const html: string = await render(TwoFactorAuthTemplate({ token }));
 
-    await this.sendMail(email, 'Подтверждение вашей личности', html);
+    await this.sendMail(email, 'Two-Factor Authentication Code', html);
   }
 
+  /**
+   * Sends an email using the Resend service.
+   *
+   * @param email - Recipient's email address
+   * @param subject - Email subject line
+   * @param html - Email body in HTML format
+   * @throws {Error} If sending the email fails
+   */
   private async sendMail(
     email: string,
     subject: string,
