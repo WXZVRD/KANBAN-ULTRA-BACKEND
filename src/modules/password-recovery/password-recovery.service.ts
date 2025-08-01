@@ -17,8 +17,13 @@ import { hash } from 'argon2';
 import { TokenService } from '../token/token.service';
 import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
 
+export interface IPasswordRecoveryService {
+  resetPassword(dto: ResetPasswordDto): Promise<boolean>;
+  newPassword(dto: NewPasswordDto, token: string): Promise<boolean>;
+}
+
 @Injectable()
-export class PasswordRecoveryService {
+export class PasswordRecoveryService implements IPasswordRecoveryService {
   private readonly logger: Logger = new Logger(PasswordRecoveryService.name);
 
   public constructor(

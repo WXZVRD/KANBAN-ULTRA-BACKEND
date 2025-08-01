@@ -12,8 +12,17 @@ import { UpdateColumnDTO } from './dto/update-column.dto';
 import { MoveColumnDTO } from './dto/move-column.dto';
 import { DeleteResult } from 'typeorm';
 
+interface IProjectColumnService {
+  createDefaultColumns(project: Project): Promise<ProjectColumn[]>;
+  createNewColumn(dto: CreateColumnDTO): Promise<ProjectColumn>;
+  findByProjectId(projectId: string): Promise<ProjectColumn[]>;
+  update(columnId: string, dto: UpdateColumnDTO): Promise<ProjectColumn>;
+  moveColumn(columnId: string, dto: MoveColumnDTO): Promise<ProjectColumn>;
+  delete(columnId: string): Promise<DeleteResult>;
+}
+
 @Injectable()
-export class ProjectColumnService {
+export class ProjectColumnService implements IProjectColumnService {
   private readonly logger = new Logger(ProjectColumnService.name);
 
   public constructor(

@@ -15,8 +15,19 @@ import { TokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
 
+export interface IMembershipInvitationService {
+  newVerification(dto: InviteDto): Promise<void>;
+  sendVerificationToken(
+    email: string,
+    projectId: string,
+    memberRole: MemberRole,
+  ): Promise<boolean>;
+}
+
 @Injectable()
-export class MembershipInvitationService {
+export class MembershipInvitationService
+  implements IMembershipInvitationService
+{
   private readonly logger: Logger = new Logger(
     MembershipInvitationService.name,
   );

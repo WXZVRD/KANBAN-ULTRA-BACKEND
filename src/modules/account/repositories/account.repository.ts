@@ -4,8 +4,21 @@ import { Account } from '../entity/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../user/entity/user.entity';
 
+export interface IAccountRepository {
+  create(
+    user: User,
+    type: string,
+    provider: string,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number,
+  ): Promise<Account>;
+
+  findByIdAndProvider(id: string, provider: string): Promise<Account | null>;
+}
+
 @Injectable()
-export class AccountRepository {
+export class AccountRepository implements IAccountRepository {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,

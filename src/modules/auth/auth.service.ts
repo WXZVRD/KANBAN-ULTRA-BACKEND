@@ -26,6 +26,11 @@ export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
   login(req: Request, dto: LoginDto): Promise<User | null>;
   logout(req: Request, res: Response): Promise<void>;
+  extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ): Promise<User | null>;
 }
 
 @Injectable()

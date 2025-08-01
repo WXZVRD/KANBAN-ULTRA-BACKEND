@@ -3,8 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from '../entity/project.entity';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 
+export interface IProjectRepository {
+  create(projectToCreate: DeepPartial<Project>): Promise<Project>;
+  save(projectToSave: Project): Promise<Project>;
+  createAndSave(projectToSave: Project): Promise<Project>;
+  findByTitle(title: string): Promise<Project | null>;
+  findAll(): Promise<Project[] | null>;
+  findByUserId(userId: string): Promise<Project[] | null>;
+  findById(projectId: string): Promise<Project | null>;
+  deleteById(projectId: string): Promise<DeleteResult>;
+}
+
 @Injectable()
-export class ProjectRepository {
+export class ProjectRepository implements IProjectRepository {
   public constructor(
     @InjectRepository(Project)
     private readonly repo: Repository<Project>,

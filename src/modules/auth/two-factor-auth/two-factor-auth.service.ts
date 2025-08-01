@@ -11,8 +11,13 @@ import { TokenType } from '../../token/types/token.types';
 import { TokenService } from '../../token/token.service';
 import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
 
+interface ITwoFactorAuthService {
+  validateTwoFactorToken(email: string, code: string): Promise<any>;
+  sendTwoFactorToken(email: string): Promise<any>;
+}
+
 @Injectable()
-export class TwoFactorAuthService {
+export class TwoFactorAuthService implements ITwoFactorAuthService {
   private readonly logger: Logger = new Logger(TwoFactorAuthService.name);
 
   public constructor(

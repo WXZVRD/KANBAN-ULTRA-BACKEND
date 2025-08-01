@@ -14,8 +14,17 @@ import { MemberRole } from '../membership/types/member-role.enum';
 import { UpdateProjectDTO } from '../dto/update-project.dto';
 import { DeleteResult } from 'typeorm';
 
+export interface IProjectService {
+  create(dto: CreateProjectDto, userId: string): Promise<Project>;
+  getAll(): Promise<Project[]>;
+  getByUser(userId: string): Promise<Project[]>;
+  getById(projectId: string): Promise<Project>;
+  updateById(projectId: string, dto: UpdateProjectDTO): Promise<Project>;
+  deleteById(projectId: string): Promise<DeleteResult>;
+}
+
 @Injectable()
-export class ProjectService {
+export class ProjectService implements IProjectService {
   private readonly logger: Logger = new Logger(ProjectService.name);
 
   public constructor(
