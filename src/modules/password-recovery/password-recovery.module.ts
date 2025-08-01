@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { PasswordRecoveryService } from './password-recovery.service';
-import { PasswordRecoveryController } from './password-recovery.controller';
-import { UserModule } from '../user/user.module';
+import { EmailConfirmationModule } from '../auth/email-confirmation';
+import { TokenModule } from '../token';
 import { MailModule } from '../mail/mail.module';
-import { EmailConfirmationModule } from '../auth/email-confirmation/email-confirmation.module';
-import { TokenModule } from '../token/token.module';
+import { UserModule } from '../user';
+import { PasswordRecoveryController } from './password-recovery.controller';
+import { PasswordRecoveryService } from './password-recovery.service';
 
 @Module({
   imports: [UserModule, MailModule, EmailConfirmationModule, TokenModule],

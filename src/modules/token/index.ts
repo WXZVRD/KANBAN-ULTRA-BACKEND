@@ -5,3 +5,4 @@ export * from './entity/token.entity';
 export * from './repository/token.repository';
 export * from './types/token.types';
 export * from './types/interfaces/token-generator.interface';
+export * from './token.module';
