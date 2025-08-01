@@ -4,65 +4,45 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { Token } from '../../../account/entity/token.entity';
-import { TokenType } from '../../../account/types/token.types';
-import { User } from '../../../user/entity/user.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { TokenRepository } from '../../../account/repositories/token.repository';
-import { MailService } from '../../../mail/mail.service';
 import { UserService } from '../../../user/services/user.service';
+import { MailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
 import { MembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
+import { TokenType } from '../../../token/types/token.types';
+import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generator';
+import { TokenService } from '../../../token/token.service';
+import { Token } from '../../../token/entity/token.entity';
+import { User } from '../../../user/entity/user.entity';
 
 @Injectable()
 export class MembershipInvitationService {
-  private logger: Logger = new Logger(MembershipInvitationService.name);
-  public constructor(
-    private readonly tokenRepository: TokenRepository,
+  private readonly logger: Logger = new Logger(
+    MembershipInvitationService.name,
+  );
+
+  constructor(
+    private readonly tokenService: TokenService,
     private readonly mailService: MailService,
     private readonly userService: UserService,
     private readonly membershipService: MembershipService,
   ) {}
 
-  public async newVerification(req: Request, dto: InviteDto): Promise<any> {
+  public async newVerification(dto: InviteDto): Promise<void> {
     this.logger.log(`Попытка подтверждения токена: ${dto.token}`);
 
-    const existingToken: Token | null =
-      await this.tokenRepository.findByTokenAndType(
-        dto.token,
-        TokenType.PROJECT_INVITE,
-      );
-
-    if (!existingToken) {
-      this.logger.warn(`Токен не найден: ${dto.token}`);
-      throw new NotFoundException(
-        'Токен подтверждения не найден. Пожалуйста, убедитесь, что у вас правильный токен.',
-      );
-    }
-
-    const isExpired: boolean = new Date(existingToken.expiresIn) < new Date();
-    if (isExpired) {
-      this.logger.warn(`Токен истёк: ${dto.token}`);
-      throw new BadRequestException(
-        'Токен подтверждения истек. Пожалуйста, запросите новый токен для подтверждения.',
-      );
-    }
-
-    const user: User | null = await this.userService.findByEmail(
-      existingToken.email,
+    const token: Token = await this.tokenService.validateTokenByValue(
+      dto.token,
+      TokenType.PROJECT_INVITE,
     );
+
+    const user: User | null = await this.userService.findByEmail(token.email);
     if (!user) {
-      this.logger.error(
-        `Пользователь не найден по email: ${existingToken.email}`,
-      );
+      this.logger.error(`Пользователь не найден по email: ${token.email}`);
       throw new NotFoundException(
-        'Пользователь с указаным адресом почты не найден. Пожалуйста, убедитесь, что вы ввели корректный email.',
+        'Пользователь с таким email не найден. Проверьте правильность приглашения.',
       );
     }
-
-    this.logger.log(`Подтверждён email: ${user.email}`);
 
     await this.membershipService.createNewMember({
       userId: user.id,
@@ -70,14 +50,9 @@ export class MembershipInvitationService {
       memberRole: dto.memberRole,
     });
 
-    await this.tokenRepository.deleteByIdAndToken(
-      existingToken.id,
-      TokenType.PROJECT_INVITE,
-    );
+    await this.tokenService.consumeToken(token.id, TokenType.PROJECT_INVITE);
 
-    this.logger.log(`Токен удалён после подтверждения: ${dto.token}`);
-
-    return;
+    this.logger.log(`Приглашение подтверждено и токен удалён: ${dto.token}`);
   }
 
   public async sendVerificationToken(
@@ -85,9 +60,14 @@ export class MembershipInvitationService {
     projectId: string,
     memberRole: MemberRole,
   ): Promise<boolean> {
-    this.logger.log(`Генерация и отправка токена подтверждения для: ${email}`);
+    this.logger.log(`Отправка приглашения для: ${email}`);
 
-    const token: Token = await this.generateVerificationToken(email);
+    const token: Token = await this.tokenService.generateToken(
+      email,
+      TokenType.PROJECT_INVITE,
+      60 * 60 * 1000,
+      new UuidTokenGenerator(),
+    );
 
     try {
       await this.mailService.sendMembershipInviteEmail(
@@ -96,48 +76,12 @@ export class MembershipInvitationService {
         projectId,
         memberRole,
       );
-      this.logger.log(`Письмо с подтверждением отправлено: ${token.email}`);
+      this.logger.log(`Приглашение отправлено на: ${email}`);
     } catch (error) {
-      this.logger.error(
-        `Ошибка при отправке письма на ${token.email}: ${error.message}`,
-      );
-      throw new BadRequestException(
-        'Не удалось отправить письмо с подтверждением.',
-      );
+      this.logger.error(`Ошибка при отправке приглашения: ${error.message}`);
+      throw new BadRequestException('Не удалось отправить приглашение.');
     }
 
     return true;
-  }
-
-  private async generateVerificationToken(email: string): Promise<Token> {
-    this.logger.log(`Создание нового токена подтверждения для: ${email}`);
-
-    const token: string = uuidv4();
-    const expiresIn: Date = new Date(Date.now() + 3600 * 1000);
-
-    const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
-        email,
-        TokenType.PROJECT_INVITE,
-      );
-
-    if (existingToken) {
-      this.logger.warn(`Старый токен найден и удалён для: ${email}`);
-      await this.tokenRepository.deleteByIdAndToken(
-        existingToken.id,
-        TokenType.PROJECT_INVITE,
-      );
-    }
-
-    const newToken: Token = await this.tokenRepository.create(
-      email,
-      token,
-      expiresIn,
-      TokenType.PROJECT_INVITE,
-    );
-
-    this.logger.log(`Токен создан: ${newToken.token} для ${email}`);
-
-    return newToken;
   }
 }
