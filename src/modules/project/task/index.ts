@@ -5,3 +5,4 @@ export * from './dto/create-task.dto';
 export * from './dto/task-filter.dto';
 export * from './dto/update-task.dto';
 export * from './entity/task.entity';
+export * from './task.module';
