@@ -1,7 +1,10 @@
-import { Controller } from '@nestjs/common';
-import { AnalyticService } from './analytic.service';
+import { Controller, Inject } from '@nestjs/common';
+import { IAnalyticService } from './analytic.service';
 
 @Controller('analytic')
 export class AnalyticController {
-  constructor(private readonly analyticService: AnalyticService) {}
+  constructor(
+    @Inject('IAnalyticService')
+    private readonly analyticService: IAnalyticService,
+  ) {}
 }
