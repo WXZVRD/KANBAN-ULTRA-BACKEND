@@ -4,6 +4,8 @@ import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProjectDTO } from '../dto/update-project.dto';
 import { SwaggerMap } from '../../../libs/common/types/swagger-map.type';
 import { ProjectController } from '../project.controller';
+import { UpdateAssigneeDTO } from '../task/dto/update-assignee.dto';
+import { Task } from '../task';
 
 export const ProjectMapSwagger: SwaggerMap<ProjectController> = {
   create: {
