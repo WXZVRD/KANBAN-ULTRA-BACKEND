@@ -6,7 +6,16 @@ import { TokenService } from './token.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Token])],
-  providers: [TokenService, TokenRepository],
-  exports: [TokenService, TokenRepository],
+  providers: [
+    {
+      provide: 'ITokenService',
+      useClass: TokenService,
+    },
+    {
+      provide: 'ITokenRepository',
+      useClass: TokenRepository,
+    },
+  ],
+  exports: ['ITokenService', 'ITokenRepository'],
 })
 export class TokenModule {}

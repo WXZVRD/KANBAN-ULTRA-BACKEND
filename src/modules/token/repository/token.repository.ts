@@ -4,7 +4,7 @@ import { Token } from '../entity/token.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { TokenType } from '../types/token.types';
 
-interface ITokenRepository {
+export interface ITokenRepository {
   create(
     email: string,
     token: string,

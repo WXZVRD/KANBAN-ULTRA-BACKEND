@@ -11,7 +11,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { MailService } from '../mail/mail.service';
 import { IUserService, UserService } from '../user/services/user.service';
-import { TokenService } from '../token/token.service';
+import { ITokenService, TokenService } from '../token/token.service';
 import { User } from '../user/entity/user.entity';
 import { TokenType } from '../token/types/token.types';
 import { Token } from '../token/entity/token.entity';
@@ -30,7 +30,8 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
     @Inject('IUserService')
     private readonly userService: IUserService,
     private readonly mailService: MailService,
-    private readonly tokenService: TokenService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
   ) {}
 
   /**

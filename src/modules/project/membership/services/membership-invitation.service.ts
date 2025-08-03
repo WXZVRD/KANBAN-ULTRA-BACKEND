@@ -12,7 +12,7 @@ import { MembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
 import { TokenType } from '../../../token/types/token.types';
 import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generator';
-import { TokenService } from '../../../token/token.service';
+import { ITokenService, TokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
 import ms from 'ms';
@@ -35,7 +35,8 @@ export class MembershipInvitationService
   );
 
   constructor(
-    private readonly tokenService: TokenService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
     private readonly mailService: MailService,
     @Inject('IUserService')
     private readonly userService: IUserService,

@@ -10,12 +10,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
 import { ConfirmationDto } from './dto/confirmation.dto';
-import { TokenRepository } from '../../token/repository/token.repository';
 import { MailService } from '../../mail/mail.service';
-import { IUserService, UserService } from '../../user/services/user.service';
+import { IUserService } from '../../user/services/user.service';
 import { Token } from '../../token/entity/token.entity';
 import { TokenType } from '../../token/types/token.types';
 import { User } from '../../user/entity/user.entity';
+import { ITokenService } from '../../token/token.service';
 
 interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;
@@ -27,7 +27,8 @@ export class EmailConfirmationService implements IEmailConfirmationService {
   private readonly logger: Logger = new Logger(EmailConfirmationService.name);
 
   constructor(
-    private readonly tokenRepository: TokenRepository,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
     private readonly mailService: MailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
@@ -54,7 +55,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     this.logger.log(`Attempting to confirm token: ${dto.token}`);
 
     const existingToken: Token | null =
-      await this.tokenRepository.findByTokenAndType(
+      await this.tokenService.findByTokenAndType(
         dto.token,
         TokenType.VERIFICATION,
       );
@@ -87,7 +88,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     this.logger.log(`Email confirmed: ${user.email}`);
 
     await this.userService.updateVerified(user, true);
-    await this.tokenRepository.deleteByIdAndToken(
+    await this.tokenService.deleteByIdAndToken(
       existingToken.id,
       TokenType.VERIFICATION,
     );
@@ -140,20 +141,20 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     const expiresIn: Date = new Date(Date.now() + 3600 * 1000);
 
     const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
+      await this.tokenService.findByEmailAndToken(
         email,
         TokenType.VERIFICATION,
       );
 
     if (existingToken) {
       this.logger.warn(`Old token found and deleted for: ${email}`);
-      await this.tokenRepository.deleteByIdAndToken(
+      await this.tokenService.deleteByIdAndToken(
         existingToken.id,
         TokenType.VERIFICATION,
       );
     }
 
-    const newToken: Token = await this.tokenRepository.create(
+    const newToken: Token = await this.tokenService.create(
       email,
       token,
       expiresIn,
