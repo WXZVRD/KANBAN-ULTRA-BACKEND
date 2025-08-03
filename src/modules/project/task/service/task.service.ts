@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -12,7 +13,7 @@ import { RedisKey } from '../../../../libs/common/types/redis.types';
 import ms from 'ms';
 import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
 import { MailService } from '../../../mail/mail.service';
-import { UserService } from '../../../user/services/user.service';
+import { IUserService, UserService } from '../../../user/services/user.service';
 import { User } from '../../../user/entity/user.entity';
 
 interface ITaskService {
@@ -31,7 +32,8 @@ export class TaskService implements ITaskService {
     private readonly taskRepository: TaskRepository,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
-    private readonly userService: UserService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
   ) {}
 
   /**

@@ -1,10 +1,11 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserService } from '../../../user/services/user.service';
+import { IUserService, UserService } from '../../../user/services/user.service';
 import { MailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
 import { MembershipService } from './membership.service';
@@ -36,7 +37,8 @@ export class MembershipInvitationService
   constructor(
     private readonly tokenService: TokenService,
     private readonly mailService: MailService,
-    private readonly userService: UserService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
     private readonly membershipService: MembershipService,
   ) {}
 

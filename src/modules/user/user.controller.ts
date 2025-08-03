@@ -4,11 +4,12 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Logger,
   Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { UserService } from './services/user.service';
+import { IUserService } from './services/user.service';
 import { User } from './entity/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
@@ -21,7 +22,10 @@ import { Authorization, Authorized } from '../auth';
 export class UsersController {
   private readonly logger: Logger = new Logger(UsersController.name);
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    @Inject('IUserService')
+    private readonly userService: IUserService,
+  ) {}
 
   /**
    * Retrieves the profile of the currently authenticated user.

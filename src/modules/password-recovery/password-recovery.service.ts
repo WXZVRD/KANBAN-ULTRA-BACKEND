@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -9,7 +10,7 @@ import ms from 'ms';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { MailService } from '../mail/mail.service';
-import { UserService } from '../user/services/user.service';
+import { IUserService, UserService } from '../user/services/user.service';
 import { TokenService } from '../token/token.service';
 import { User } from '../user/entity/user.entity';
 import { TokenType } from '../token/types/token.types';
@@ -26,7 +27,8 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
   private readonly logger: Logger = new Logger(PasswordRecoveryService.name);
 
   public constructor(
-    private readonly userService: UserService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
     private readonly mailService: MailService,
     private readonly tokenService: TokenService,
   ) {}

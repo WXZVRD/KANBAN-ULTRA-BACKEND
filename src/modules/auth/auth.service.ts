@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../user/entity/user.entity';
-import { UserService } from '../user/services/user.service';
+import { IUserService, UserService } from '../user/services/user.service';
 import { AccountService } from '../account/account.service';
 import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
@@ -41,7 +41,8 @@ export class AuthService implements IAuthService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
     private readonly accountService: AccountService,
     private readonly providerService: AuthProviderService,
     @Inject(forwardRef(() => EmailConfirmationService))

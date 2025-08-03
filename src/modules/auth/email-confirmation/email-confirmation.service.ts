@@ -12,7 +12,7 @@ import { AuthService } from '../auth.service';
 import { ConfirmationDto } from './dto/confirmation.dto';
 import { TokenRepository } from '../../token/repository/token.repository';
 import { MailService } from '../../mail/mail.service';
-import { UserService } from '../../user/services/user.service';
+import { IUserService, UserService } from '../../user/services/user.service';
 import { Token } from '../../token/entity/token.entity';
 import { TokenType } from '../../token/types/token.types';
 import { User } from '../../user/entity/user.entity';
@@ -29,7 +29,8 @@ export class EmailConfirmationService implements IEmailConfirmationService {
   constructor(
     private readonly tokenRepository: TokenRepository,
     private readonly mailService: MailService,
-    private readonly userService: UserService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
