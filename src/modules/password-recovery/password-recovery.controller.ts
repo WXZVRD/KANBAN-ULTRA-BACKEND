@@ -3,10 +3,14 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Post,
 } from '@nestjs/common';
-import { PasswordRecoveryService } from './password-recovery.service';
+import {
+  IPasswordRecoveryService,
+  PasswordRecoveryService,
+} from './password-recovery.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 import { NewPasswordDto } from './dto/new-password.dto';
@@ -18,7 +22,8 @@ import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli
 @Controller('auth/password-recovery')
 export class PasswordRecoveryController {
   constructor(
-    private readonly passwordRecoveryService: PasswordRecoveryService,
+    @Inject('IPasswordRecoveryService')
+    private readonly passwordRecoveryService: IPasswordRecoveryService,
   ) {}
 
   /**
