@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -10,9 +11,12 @@ import { CreateColumnDTO } from './dto/create-column.dto';
 import { ProjectColumn } from './entity/column.entity';
 import { UpdateColumnDTO } from './dto/update-column.dto';
 import { MoveColumnDTO } from './dto/move-column.dto';
-import { ProjectColumnRepository } from './repository/column.repository';
+import {
+  IProjectColumnRepository,
+  ProjectColumnRepository,
+} from './repository/column.repository';
 
-interface IProjectColumnService {
+export interface IProjectColumnService {
   createDefaultColumns(project: Project): Promise<ProjectColumn[]>;
   createNewColumn(dto: CreateColumnDTO): Promise<ProjectColumn>;
   findByProjectId(projectId: string): Promise<ProjectColumn[]>;
@@ -26,7 +30,8 @@ export class ProjectColumnService implements IProjectColumnService {
   private readonly logger: Logger = new Logger(ProjectColumnService.name);
 
   public constructor(
-    private readonly projectColumnRepository: ProjectColumnRepository,
+    @Inject('IProjectColumnRepository')
+    private readonly projectColumnRepository: IProjectColumnRepository,
   ) {}
 
   /**

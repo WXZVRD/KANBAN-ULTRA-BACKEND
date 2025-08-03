@@ -7,7 +7,10 @@ import {
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 import { IProjectRepository } from '../repository/project.repository';
-import { ProjectColumnService } from '../column/column.service';
+import {
+  IProjectColumnService,
+  ProjectColumnService,
+} from '../column/column.service';
 import {
   IMembershipService,
   MembershipService,
@@ -18,6 +21,7 @@ import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
 import { IRedisService } from '../../redis/redis.service';
 import { RedisKey } from '../../../libs/common/types/redis.types';
 import ms from 'ms';
+import { IProjectColumnRepository } from '../column/repository/column.repository';
 
 export interface IProjectService {
   create(dto: CreateProjectDto, userId: string): Promise<Project>;
@@ -35,7 +39,8 @@ export class ProjectService implements IProjectService {
   public constructor(
     @Inject('IProjectRepository')
     private readonly projectRepository: IProjectRepository,
-    private readonly projectColumnService: ProjectColumnService,
+    @Inject('IProjectColumnService')
+    private readonly projectColumnService: IProjectColumnService,
     @Inject('IMembershipService')
     private readonly membershipService: IMembershipService,
     @Inject('IRedisService')

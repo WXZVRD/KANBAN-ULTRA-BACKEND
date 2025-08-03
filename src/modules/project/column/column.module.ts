@@ -14,7 +14,16 @@ import { ProjectColumnRepository } from './repository/column.repository';
     MembershipModule,
   ],
   controllers: [ProjectColumnController],
-  providers: [ProjectColumnService, ProjectColumnRepository],
-  exports: [ProjectColumnService, ProjectColumnRepository],
+  providers: [
+    {
+      provide: 'IProjectColumnService',
+      useClass: ProjectColumnService,
+    },
+    {
+      provide: 'IProjectColumnRepository',
+      useClass: ProjectColumnRepository,
+    },
+  ],
+  exports: ['IProjectColumnService', 'IProjectColumnRepository'],
 })
 export class ColumnModule {}
