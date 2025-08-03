@@ -10,6 +10,7 @@ import { ProjectService } from './service/project.service';
 import { ProjectRepository } from './repository/project.repository';
 import { ProjectColumnService } from './column/column.service';
 import { MembershipService } from './membership/services/membership.service';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MembershipService } from './membership/services/membership.service';
     TaskModule,
     UserModule,
     MembershipModule,
+    RedisModule,
   ],
   controllers: [ProjectController],
   providers: [

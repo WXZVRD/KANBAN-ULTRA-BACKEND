@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import { RedisKey, RedisValueMap } from '../../libs/common/types/redis.types';
 
 @Injectable()
 export class RedisService {
@@ -9,19 +10,32 @@ export class RedisService {
     return this.redis;
   }
 
-  async set(key: string, value: string, ttl?: number): Promise<void> {
-    if (ttl) {
-      await this.redis.set(key, value, 'EX', ttl);
+  async set<K extends keyof RedisValueMap>(
+    key: K,
+    value: RedisValueMap[K],
+    ttlSeconds?: number,
+    suffix?: string,
+  ): Promise<void> {
+    const redisKey: string = suffix ? `${key}:${suffix}` : key;
+    const json: string = JSON.stringify(value);
+
+    if (ttlSeconds) {
+      await this.redis.set(redisKey, json, 'EX', ttlSeconds);
     } else {
-      await this.redis.set(key, value);
+      await this.redis.set(redisKey, json);
     }
   }
 
-  async get(key: string): Promise<string | null> {
-    return this.redis.get(key);
+  async get<K extends keyof RedisValueMap>(
+    key: K,
+    suffix?: string,
+  ): Promise<RedisValueMap[K] | null> {
+    const redisKey: string = suffix ? `${key}:${suffix}` : key;
+    const data: string | null = await this.redis.get(redisKey);
+    return data ? (JSON.parse(data) as RedisValueMap[K]) : null;
   }
 
-  async del(key: string): Promise<number> {
-    return this.redis.del(key);
+  async del(key: string | string[]): Promise<number> {
+    return this.redis.del(Array.isArray(key) ? key : [key]);
   }
 }
