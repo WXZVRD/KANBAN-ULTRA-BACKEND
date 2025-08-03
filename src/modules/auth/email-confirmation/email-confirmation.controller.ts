@@ -6,10 +6,14 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 import { EmailConfirmationService } from './email-confirmation.service';
 import { ConfirmationDto } from './dto/confirmation.dto';
-import { Request } from 'express';
+import { EmailConfirmationMapSwagger } from './maps/email-confirmation-map.swagger';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 
+@ApiTags('Auth / Email Confirmation')
 @Controller('auth/email-confirmation')
 export class EmailConfirmationController {
   constructor(
@@ -29,6 +33,7 @@ export class EmailConfirmationController {
    */
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(EmailConfirmationMapSwagger.newVerification)
   public async newVerification(
     @Req() req: Request,
     @Body() dto: ConfirmationDto,

@@ -21,8 +21,8 @@ export class MembershipAccessControlGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const handler = context.getHandler().name;
-    const controller = context.getClass().name;
+    const handler: string = context.getHandler().name;
+    const controller: string = context.getClass().name;
 
     this.logger.debug(
       `[${controller}.${handler}] Checking project membership access...`,

@@ -7,12 +7,16 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './services/user.service';
 import { User } from './entity/user.entity';
-import { Authorized } from '../auth/decorators/authorized.decorator';
-import { Authorization } from '../auth/decorators/auth.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
+import { UsersSwagger } from './maps/user-map.swagger';
+import { Authorization, Authorized } from '../auth';
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   private readonly logger: Logger = new Logger(UsersController.name);
@@ -28,6 +32,7 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('profile')
+  @ApiAuthEndpoint(UsersSwagger.findProfile)
   public async findProfile(
     @Authorized('id') userId: string,
   ): Promise<User | null> {
@@ -54,6 +59,7 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Patch('profile')
+  @ApiAuthEndpoint(UsersSwagger.updateProfile)
   public async updateProfile(
     @Authorized('id') userId: string,
     @Body() dto: UpdateUserDto,

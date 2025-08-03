@@ -4,15 +4,16 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ProjectRepository } from '../repository/project.repository';
-import { CreateProjectDto } from '../dto/create-project.dto';
-import { ProjectColumnService } from '../column/column.service';
-import { Project } from '../entity/project.entity';
-import { ProjectColumn } from '../column/entity/column.entity';
-import { MembershipService } from '../membership/services/membership.service';
-import { MemberRole } from '../membership/types/member-role.enum';
-import { UpdateProjectDTO } from '../dto/update-project.dto';
 import { DeleteResult } from 'typeorm';
+import { ProjectRepository } from '../repository/project.repository';
+import { ProjectColumnService } from '../column/column.service';
+import { MembershipService } from '../membership/services/membership.service';
+import { MemberRole } from '../membership';
+import { ProjectColumn } from '../column';
+import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
+import { RedisService } from '../../redis/redis.service';
+import { RedisKey } from '../../../libs/common/types/redis.types';
+import ms from 'ms';
 
 export interface IProjectService {
   create(dto: CreateProjectDto, userId: string): Promise<Project>;
@@ -31,6 +32,7 @@ export class ProjectService implements IProjectService {
     private readonly projectRepository: ProjectRepository,
     private readonly projectColumnService: ProjectColumnService,
     private readonly membershipService: MembershipService,
+    private readonly redisService: RedisService,
   ) {}
 
   /**
@@ -105,6 +107,15 @@ export class ProjectService implements IProjectService {
    * @throws NotFoundException if there are no projects
    */
   public async getAll(): Promise<Project[]> {
+    const cachedProjects: Project[] | null = await this.redisService.get(
+      RedisKey.ProjectAll,
+    );
+
+    if (cachedProjects) {
+      this.logger.log('Returning projects from Redis cache');
+      return cachedProjects;
+    }
+
     const projects: Project[] | null = await this.projectRepository.findAll();
 
     if (!projects || !projects.length) {
@@ -113,6 +124,8 @@ export class ProjectService implements IProjectService {
         'No projects found, please create at least one.',
       );
     }
+
+    await this.redisService.set(RedisKey.ProjectAll, projects, ms('1m'));
 
     return projects;
   }
@@ -148,6 +161,14 @@ export class ProjectService implements IProjectService {
    * @throws NotFoundException if the project does not exist
    */
   public async getById(projectId: string): Promise<Project> {
+    const cached: Project | null = await this.redisService.get(
+      RedisKey.Project,
+      projectId,
+    );
+    if (cached) {
+      this.logger.log(`Returning project ${projectId} from Redis cache`);
+      return cached;
+    }
     const project: Project | null =
       await this.projectRepository.findById(projectId);
 

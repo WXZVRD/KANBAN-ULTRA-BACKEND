@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MembershipRepository } from '../repository/membership.repository';
+import { DeleteResult } from 'typeorm';
 import { CreateMembershipDTO } from '../dto/create-membership.dto';
 import { Membership } from '../entity/membership.entity';
-import { DeleteResult } from 'typeorm';
 import { MemberRole } from '../types/member-role.enum';
+import { MembershipRepository } from '../repository/membership.repository';
 
 interface IMembershipService {
   createNewMember(membershipData: CreateMembershipDTO): Promise<any>;

@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 import { User } from '../../../user/entity/user.entity';
 import { Project } from '../../entity/project.entity';
-import { AccessType } from '../../types/access.enum';
 import { MemberRole } from '../types/member-role.enum';
 
 @Entity('membership')

@@ -1,23 +1,33 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { TaskRepository } from '../repository/task.repository';
-import { CreateTaskDTO } from '../dto/create-task.dto';
-import { Task } from '../entity/task.entity';
-import { UpdateTaskDTO } from '../dto/update-task.dto';
-import { TaskFilterDto } from '../dto/task-filter.dto';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
+import { TaskRepository } from '../repository/task.repository';
+import { CreateTaskDTO, Task, TaskFilterDto, UpdateTaskDTO } from '../index';
+import { RedisService } from '../../../redis/redis.service';
+import { RedisKey } from '../../../../libs/common/types/redis.types';
+import ms from 'ms';
+import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
 
 interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
   update(dto: UpdateTaskDTO): Promise<Task>;
   getAll(): Promise<Task[]>;
   getById(id: string): Promise<Task>;
+  findProjectTask(projectId: string, filter: TaskFilterDto): Promise<Task[]>;
 }
 
 @Injectable()
 export class TaskService implements ITaskService {
   private readonly logger: Logger = new Logger(TaskService.name);
 
-  public constructor(private readonly taskRepository: TaskRepository) {}
+  public constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly redisService: RedisService,
+  ) {}
 
   /**
    * Creates a new task and saves it to the database.
@@ -70,12 +80,70 @@ export class TaskService implements ITaskService {
   }
 
   /**
+   * Updates an existing task.
+   *
+   * @param dto - DTO containing updated fields
+   * @returns Updated task entity
+   * @throws NotFoundException if task does not exist
+   */
+  public async updateAssignee(
+    assigneeId: string,
+    dto: UpdateAssigneeDTO,
+  ): Promise<Task> {
+    this.logger.log(
+      `Received request to update assignee for task ID: ${dto.taskId} → new assignee: ${assigneeId}`,
+    );
+
+    const task: Task | null = await this.taskRepository.findById(dto.taskId);
+
+    if (!task) {
+      this.logger.warn(
+        `Task with ID ${dto.taskId} not found. Cannot reassign to user ${assigneeId}.`,
+      );
+      throw new NotFoundException(
+        `Task with ID ${dto.taskId} was not found. Please check the provided ID.`,
+      );
+    }
+
+    if (task.assigneeId === assigneeId) {
+      this.logger.warn(
+        `Task ${task.id} already assigned to user ${assigneeId}. Reassignment skipped.`,
+      );
+      throw new ConflictException(`Task is already assigned to this user.`);
+    }
+
+    this.logger.debug(
+      `Original task state: ${JSON.stringify(
+        { id: task.id, assigneeId: task.assigneeId },
+        null,
+        2,
+      )}`,
+    );
+
+    task.assigneeId = assigneeId;
+
+    const updated: Task = await this.taskRepository.save(task);
+
+    this.logger.log(
+      `Task with ID ${updated.id} successfully reassigned from ${
+        task.assigneeId || 'unassigned'
+      } → ${assigneeId}`,
+    );
+
+    this.logger.log(`Task with ID ${updated.id} successfully updated.`);
+    return updated;
+  }
+
+  /**
    * Retrieves all tasks from the database.
    *
    * @returns Array of all tasks
    * @throws NotFoundException if there are no tasks
    */
   public async getAll(): Promise<Task[]> {
+    const cached: Task[] | null = await this.redisService.get(RedisKey.TaskAll);
+    if (cached) return cached;
+
     const tasks: Task[] | null = await this.taskRepository.getAll();
 
     if (!tasks || tasks.length === 0) {
@@ -85,6 +153,7 @@ export class TaskService implements ITaskService {
       );
     }
 
+    await this.redisService.set(RedisKey.TaskAll, tasks, ms('1m'));
     return tasks;
   }
 
@@ -96,6 +165,9 @@ export class TaskService implements ITaskService {
    * @throws NotFoundException if task does not exist
    */
   public async getById(id: string): Promise<Task> {
+    const cached: Task | null = await this.redisService.get(RedisKey.Task, id);
+    if (cached) return cached;
+
     const task: Task | null = await this.taskRepository.findById(id);
 
     if (!task) {
@@ -104,6 +176,8 @@ export class TaskService implements ITaskService {
         `Task with ID ${id} was not found. Please check the provided ID.`,
       );
     }
+
+    await this.redisService.set(RedisKey.Task, task, ms('1m'), id);
 
     return task;
   }
@@ -130,6 +204,12 @@ export class TaskService implements ITaskService {
     projectId: string,
     filter: TaskFilterDto,
   ): Promise<Task[]> {
+    const cached: Task[] | null = await this.redisService.get(
+      RedisKey.ProjectTasks,
+      projectId,
+    );
+    if (cached) return cached;
+
     const tasks: Task[] | null = await this.taskRepository.findByProjectId(
       projectId,
       filter,
@@ -141,6 +221,13 @@ export class TaskService implements ITaskService {
         `Tasks for project ${projectId} were not found.`,
       );
     }
+
+    await this.redisService.set(
+      RedisKey.ProjectTasks,
+      tasks,
+      ms('1m'),
+      projectId,
+    );
 
     return tasks;
   }

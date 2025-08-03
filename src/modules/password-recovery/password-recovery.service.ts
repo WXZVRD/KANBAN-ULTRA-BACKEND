@@ -4,17 +4,17 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserService } from '../user/services/user.service';
-import { MailService } from '../mail/mail.service';
-import { Token } from '../token/entity/token.entity';
-import { TokenType } from '../token/types/token.types';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { User } from '../user/entity/user.entity';
-import { NewPasswordDto } from './dto/new-password.dto';
 import { hash } from 'argon2';
-import { TokenService } from '../token/token.service';
-import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
 import ms from 'ms';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
+import { MailService } from '../mail/mail.service';
+import { UserService } from '../user/services/user.service';
+import { TokenService } from '../token/token.service';
+import { User } from '../user/entity/user.entity';
+import { TokenType } from '../token/types/token.types';
+import { Token } from '../token/entity/token.entity';
+import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
 
 export interface IPasswordRecoveryService {
   resetPassword(dto: ResetPasswordDto): Promise<boolean>;

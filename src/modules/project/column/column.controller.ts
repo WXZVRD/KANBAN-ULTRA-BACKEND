@@ -6,47 +6,46 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import { ProjectColumnService } from './column.service';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { CreateColumnDTO } from './dto/create-column.dto';
-import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
-import { MembershipRoles } from '../membership/decorators/membership.decorator';
-import { MemberRole } from '../membership/types/member-role.enum';
-import { ProjectColumn } from './entity/column.entity';
-import { UpdateColumnDTO } from './dto/update-column.dto';
-import { MoveColumnDTO } from './dto/move-column.dto';
 import { DeleteResult } from 'typeorm';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ProjectColumnService } from './column.service';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
+import { MemberACL, MemberRole } from '../membership';
+import { Authorization } from '../../auth';
+import {
+  ColumnMapSwagger,
+  CreateColumnDTO,
+  MoveColumnDTO,
+  ProjectColumn,
+  UpdateColumnDTO,
+} from './index';
 
+@ApiTags('Project Columns')
+@ApiBearerAuth()
 @Controller('project/:projectId/project_column')
 export class ProjectColumnController {
   constructor(private readonly projectColumnService: ProjectColumnService) {}
 
   /**
    * Creates a new project column.
-   *
-   * @param dto - DTO containing column title, order, and project ID
-   * @returns The created project column
    */
-  @Post('newOne')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Post('newOne')
+  @ApiAuthEndpoint(ColumnMapSwagger.newOne)
   public async newOne(@Body() dto: CreateColumnDTO): Promise<any> {
     return this.projectColumnService.createNewColumn(dto);
   }
 
   /**
    * Retrieves all columns for a specific project.
-   *
-   * Requires the user to have ADMIN or VISITOR role in the project.
-   *
-   * @param projectId - ID of the project to fetch columns for
-   * @returns Array of ProjectColumn objects
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
   @Get(':projectId')
   @Authorization()
+  @ApiAuthEndpoint(ColumnMapSwagger.getByProjectId)
   public async getByProjectId(
     @Param('projectId') projectId: string,
   ): Promise<ProjectColumn[]> {
@@ -55,17 +54,11 @@ export class ProjectColumnController {
 
   /**
    * Updates an existing project column.
-   *
-   * Requires the user to have ADMIN or VISITOR role.
-   *
-   * @param columnId - ID of the column to update
-   * @param dto - DTO containing updated column data
-   * @returns The updated ProjectColumn object
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Patch(':columnId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Patch(':columnId')
+  @ApiAuthEndpoint(ColumnMapSwagger.update)
   public async update(
     @Param('columnId') columnId: string,
     @Body() dto: UpdateColumnDTO,
@@ -75,17 +68,11 @@ export class ProjectColumnController {
 
   /**
    * Moves a column to a new order in the project.
-   *
-   * Requires the user to have ADMIN or VISITOR role.
-   *
-   * @param columnId - ID of the column to move
-   * @param dto - DTO containing new order information
-   * @returns The moved ProjectColumn object
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Patch(':columnId/move-column')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Patch(':columnId/move-column')
+  @ApiAuthEndpoint(ColumnMapSwagger.moveColumn)
   public async moveColumn(
     @Param('columnId') columnId: string,
     @Body() dto: MoveColumnDTO,
@@ -95,16 +82,11 @@ export class ProjectColumnController {
 
   /**
    * Deletes a project column by its ID.
-   *
-   * Requires the user to have ADMIN or VISITOR role.
-   *
-   * @param columnId - ID of the column to delete
-   * @returns DeleteResult indicating the operation result
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Delete(':columnId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Delete(':columnId')
+  @ApiAuthEndpoint(ColumnMapSwagger.deleteColumn)
   public async deleteColumn(
     @Param('columnId') columnId: string,
   ): Promise<DeleteResult> {

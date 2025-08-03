@@ -1,26 +1,28 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
-import { UserService } from '../user/services/user.service';
-import { AuthMethod } from '../user/types/authMethods.enum';
-import { User } from '../user/entity/user.entity';
 import { Request, Response } from 'express';
-import { LoginDto } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ConfigService } from '@nestjs/config';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
-import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { User } from '../user/entity/user.entity';
+import { UserService } from '../user/services/user.service';
 import { AccountService } from '../account/account.service';
-import { Account } from '../account/entity/account.entity';
+import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
 import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+import { AuthMethod } from '../user/types/authMethods.enum';
+import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
+import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
+import { Account } from '../account/entity/account.entity';
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
@@ -42,6 +44,7 @@ export class AuthService implements IAuthService {
     private readonly userService: UserService,
     private readonly accountService: AccountService,
     private readonly providerService: AuthProviderService,
+    @Inject(forwardRef(() => EmailConfirmationService))
     private readonly emailConfirmationService: EmailConfirmationService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}

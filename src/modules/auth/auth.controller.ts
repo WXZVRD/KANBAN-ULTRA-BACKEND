@@ -14,17 +14,30 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { User } from '../user/entity/user.entity';
 import { Request, Response } from 'express';
 import { Recaptcha } from '@nestlab/google-recaptcha';
-import { AuthProviderGuard } from './guards/provider.guard';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 import { ConfigService } from '@nestjs/config';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { AuthProviderGuard } from './guards/provider.guard';
+import { AuthService } from './auth.service';
+import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { RegisterDto } from './dto/register.dto';
+import { User } from '../user/entity/user.entity';
+import { LoginDto } from './dto/login.dto';
+import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
+import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
+import { AuthMapSwagger } from './maps/auth-map.swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   private readonly logger: Logger = new Logger(AuthController.name);
@@ -37,14 +50,11 @@ export class AuthController {
 
   /**
    * Handles user registration.
-   *
-   * @param req - Express request object
-   * @param dto - Registration data (email, password, etc.)
-   * @returns The created User or null
    */
   @Recaptcha()
   @Post('register')
   @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(AuthMapSwagger.register)
   public async register(
     @Req() req: Request,
     @Body() dto: RegisterDto,
@@ -59,14 +69,11 @@ export class AuthController {
 
   /**
    * Handles user login.
-   *
-   * @param req - Express request object
-   * @param dto - Login credentials (email, password)
-   * @returns The logged-in User or null
    */
   @Recaptcha()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(AuthMapSwagger.login)
   public async login(
     @Req() req: Request,
     @Body() dto: LoginDto,
@@ -83,15 +90,10 @@ export class AuthController {
 
   /**
    * Handles OAuth provider callback.
-   *
-   * @param req - Express request object
-   * @param res - Express response object
-   * @param provider - OAuth provider name (e.g., Google, GitHub)
-   * @param code - Authorization code from the provider
-   * @returns Redirect to dashboard after successful OAuth authentication
    */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/callback/:provider')
+  @ApiAuthEndpoint(AuthMapSwagger.callback)
   public async callback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -124,12 +126,10 @@ export class AuthController {
 
   /**
    * Generates an OAuth authentication URL for the specified provider.
-   *
-   * @param provider - OAuth provider name
-   * @returns Object with the authentication URL
    */
   @UseGuards(AuthProviderGuard)
   @Get('/oauth/connect/:provider')
+  @ApiAuthEndpoint(AuthMapSwagger.connect)
   public async connect(@Param('provider') provider: string): Promise<any> {
     this.logger.log(
       `GET /oauth/connect/${provider} — Requesting authentication URL for provider ${provider}`,
@@ -155,12 +155,10 @@ export class AuthController {
 
   /**
    * Handles user logout.
-   *
-   * @param req - Express request object
-   * @param res - Express response object
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(AuthMapSwagger.logout)
   public async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,

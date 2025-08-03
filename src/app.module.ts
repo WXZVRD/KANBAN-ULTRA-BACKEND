@@ -11,6 +11,7 @@ import { PasswordRecoveryModule } from './modules/password-recovery/password-rec
 import { TwoFactorAuthModule } from './modules/auth/two-factor-auth/two-factor-auth.module';
 import { ProjectModule } from './modules/project/project.module';
 import { TokenModule } from './modules/token/token.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TokenModule } from './modules/token/token.module';
     TwoFactorAuthModule,
     ProjectModule,
     TokenModule,
+    RedisModule,
   ],
 })
 export class AppModule {}
