@@ -4,6 +4,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -13,8 +14,8 @@ import {
 import { Request } from 'express';
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { MembershipService } from './services/membership.service';
-import { MembershipInvitationService } from './services/membership-invitation.service';
+import { IMembershipService } from './services/membership.service';
+import { IMembershipInvitationService } from './services/membership-invitation.service';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { Authorization } from '../../auth';
 import {
@@ -34,8 +35,10 @@ import {
 @Controller('project/:projectId/membership')
 export class MembershipController {
   constructor(
-    private readonly membershipService: MembershipService,
-    private readonly membershipInvitationService: MembershipInvitationService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
+    @Inject('IMembershipInvitationService')
+    private readonly membershipInvitationService: IMembershipInvitationService,
   ) {}
 
   /**

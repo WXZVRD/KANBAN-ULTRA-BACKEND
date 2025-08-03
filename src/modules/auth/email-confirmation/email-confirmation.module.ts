@@ -9,7 +9,12 @@ import { AuthModule } from '../auth.module';
 @Module({
   imports: [MailModule, UserModule, TokenModule, forwardRef(() => AuthModule)],
   controllers: [EmailConfirmationController],
-  providers: [EmailConfirmationService],
-  exports: [EmailConfirmationService],
+  providers: [
+    {
+      provide: 'IEmailConfirmationService',
+      useClass: EmailConfirmationService,
+    },
+  ],
+  exports: ['IEmailConfirmationService'],
 })
 export class EmailConfirmationModule {}

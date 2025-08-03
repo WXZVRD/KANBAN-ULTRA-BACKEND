@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,7 +10,7 @@ import { Membership } from '../entity/membership.entity';
 import { MemberRole } from '../types/member-role.enum';
 import { MembershipRepository } from '../repository/membership.repository';
 
-interface IMembershipService {
+export interface IMembershipService {
   createNewMember(membershipData: CreateMembershipDTO): Promise<any>;
   getProjectMember(
     userId: string,
@@ -26,6 +27,7 @@ interface IMembershipService {
 @Injectable()
 export class MembershipService implements IMembershipService {
   public constructor(
+    @Inject('IMembershipRepository')
     private readonly membershipRepository: MembershipRepository,
   ) {}
 

@@ -1,23 +1,33 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { TaskRepository } from '../repository/task.repository';
+import { ITaskRepository } from '../repository/task.repository';
 import { CreateTaskDTO, Task, TaskFilterDto, UpdateTaskDTO } from '../index';
-import { RedisService } from '../../../redis/redis.service';
+import { IRedisService } from '../../../redis/redis.service';
 import { RedisKey } from '../../../../libs/common/types/redis.types';
 import ms from 'ms';
 import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
+import { IMailService } from '../../../mail/mail.service';
+import { IUserService } from '../../../user/services/user.service';
+import { User } from '../../../user/entity/user.entity';
 
-interface ITaskService {
+export interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
   update(dto: UpdateTaskDTO): Promise<Task>;
   getAll(): Promise<Task[]>;
   getById(id: string): Promise<Task>;
   findProjectTask(projectId: string, filter: TaskFilterDto): Promise<Task[]>;
+  updateAssignee(
+    assigneeId: string,
+    projectId: string,
+    dto: UpdateAssigneeDTO,
+  ): Promise<Task>;
+  delete(taskId: string): Promise<DeleteResult>;
 }
 
 @Injectable()
@@ -25,8 +35,14 @@ export class TaskService implements ITaskService {
   private readonly logger: Logger = new Logger(TaskService.name);
 
   public constructor(
-    private readonly taskRepository: TaskRepository,
-    private readonly redisService: RedisService,
+    @Inject('ITaskRepository')
+    private readonly taskRepository: ITaskRepository,
+    @Inject('IRedisService')
+    private readonly redisService: IRedisService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
   ) {}
 
   /**
@@ -82,12 +98,15 @@ export class TaskService implements ITaskService {
   /**
    * Updates an existing task.
    *
+   * @param assigneeId
+   * @param projectId
    * @param dto - DTO containing updated fields
    * @returns Updated task entity
    * @throws NotFoundException if task does not exist
    */
   public async updateAssignee(
     assigneeId: string,
+    projectId: string,
     dto: UpdateAssigneeDTO,
   ): Promise<Task> {
     this.logger.log(
@@ -131,6 +150,28 @@ export class TaskService implements ITaskService {
     );
 
     this.logger.log(`Task with ID ${updated.id} successfully updated.`);
+
+    const assigneeUser: User | null =
+      await this.userService.findById(assigneeId);
+
+    if (!assigneeUser) {
+      this.logger.warn(`User with ID ${assigneeId} not found.`);
+      throw new NotFoundException(
+        `User with ID ${assigneeId} was not found. Please check the provided ID.`,
+      );
+    }
+
+    await this.mailService.sendTaskAssigneeEmail(
+      assigneeUser.email,
+      projectId,
+      updated.id,
+      updated.title,
+    );
+
+    this.logger.log(
+      `Sending task assignment email: "${updated.title}" to ${assigneeUser.email}`,
+    );
+
     return updated;
   }
 

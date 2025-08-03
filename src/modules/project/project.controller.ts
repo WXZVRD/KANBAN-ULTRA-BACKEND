@@ -1,6 +1,6 @@
 import { DeleteResult } from 'typeorm';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ProjectService } from './service/project.service';
+import { IProjectService, ProjectService } from './service/project.service';
 import { UserRole } from '../user/types/roles.enum';
 import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
 import { MemberACL, MemberRole } from './membership';
@@ -16,6 +16,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -25,7 +26,10 @@ import {
 @ApiBearerAuth()
 @Controller('project')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    @Inject('IProjectService')
+    private readonly projectService: IProjectService,
+  ) {}
 
   /**
    * Creates a new project for the authenticated user.

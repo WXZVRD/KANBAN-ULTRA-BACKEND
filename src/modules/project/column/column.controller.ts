@@ -3,13 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { ProjectColumnService } from './column.service';
+import { IProjectColumnService, ProjectColumnService } from './column.service';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { MemberACL, MemberRole } from '../membership';
 import { Authorization } from '../../auth';
@@ -25,7 +26,10 @@ import {
 @ApiBearerAuth()
 @Controller('project/:projectId/project_column')
 export class ProjectColumnController {
-  constructor(private readonly projectColumnService: ProjectColumnService) {}
+  constructor(
+    @Inject('IProjectColumnService')
+    private readonly projectColumnService: IProjectColumnService,
+  ) {}
 
   /**
    * Creates a new project column.

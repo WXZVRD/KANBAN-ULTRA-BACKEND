@@ -4,7 +4,7 @@ import { User } from '../entity/user.entity';
 import { AuthMethod } from '../types/authMethods.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 
-interface IUserRepository {
+export interface IUserRepository {
   findUniqueById(id: string): Promise<User | null>;
   findUniqueByEmail(email: string): Promise<User | null>;
   createUser(
@@ -15,6 +15,9 @@ interface IUserRepository {
     method: AuthMethod,
     isVerified: boolean,
   ): Promise<User>;
+  updateVerified(user: User, isVerified: boolean): Promise<User>;
+  save(user: User): Promise<User>;
+  updatePassword(user: User, newPassword: string): Promise<User>;
 }
 
 @Injectable()

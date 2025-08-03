@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 import { ProjectColumn } from '../entity/column.entity';
 
-interface IProjectColumnRepository {
+export interface IProjectColumnRepository {
   create(columnToCreate: DeepPartial<ProjectColumn>): Promise<ProjectColumn>;
   save(columnToSave: ProjectColumn): Promise<ProjectColumn>;
   createAndSave(

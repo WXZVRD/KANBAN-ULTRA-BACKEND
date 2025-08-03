@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -8,9 +9,9 @@ import { hash } from 'argon2';
 import ms from 'ms';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
-import { MailService } from '../mail/mail.service';
-import { UserService } from '../user/services/user.service';
-import { TokenService } from '../token/token.service';
+import { IMailService, MailService } from '../mail/mail.service';
+import { IUserService } from '../user/services/user.service';
+import { ITokenService } from '../token/token.service';
 import { User } from '../user/entity/user.entity';
 import { TokenType } from '../token/types/token.types';
 import { Token } from '../token/entity/token.entity';
@@ -26,9 +27,12 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
   private readonly logger: Logger = new Logger(PasswordRecoveryService.name);
 
   public constructor(
-    private readonly userService: UserService,
-    private readonly mailService: MailService,
-    private readonly tokenService: TokenService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
   ) {}
 
   /**

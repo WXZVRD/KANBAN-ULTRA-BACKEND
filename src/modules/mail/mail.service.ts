@@ -2,13 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/components';
 import { CreateEmailResponse, Resend } from 'resend';
-import { MemberRole } from '../project/membership/types/member-role.enum';
 import { ConfirmationTemplate } from './templates/confirmation.template';
 import { MembershipInviteTemplate } from './templates/membership-invite.template';
 import { ResetPasswordTemplate } from './templates/reset-password.template';
 import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
+import { MemberRole } from '../project/membership';
+import { TaskAssignedTemplate } from './templates/task-assignee.template';
 
-interface IMailService {
+export interface IMailService {
   sendConfirmationEmail(email: string, token: string): Promise<void>;
   sendMembershipInviteEmail(
     email: string,
@@ -18,6 +19,12 @@ interface IMailService {
   ): Promise<void>;
   sendPasswordResetEmail(email: string, token: string): Promise<void>;
   sendTwoFactorTokenEmail(email: string, token: string): Promise<void>;
+  sendTaskAssigneeEmail(
+    email: string,
+    projectId: string,
+    taskId: string,
+    taskTitle: string,
+  ): Promise<void>;
 }
 
 @Injectable()
@@ -134,6 +141,30 @@ export class MailService implements IMailService {
     const html: string = await render(TwoFactorAuthTemplate({ token }));
 
     await this.sendMail(email, 'Two-Factor Authentication Code', html);
+  }
+
+  /**
+   * Sends a task assignee notification.
+   *
+   * @param email
+   * @param projectId
+   * @param taskId
+   * @param taskTitle
+   */
+  public async sendTaskAssigneeEmail(
+    email: string,
+    projectId: string,
+    taskId: string,
+    taskTitle: string,
+  ): Promise<void> {
+    const domain: string =
+      this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
+
+    const html: string = await render(
+      TaskAssignedTemplate({ domain, projectId, taskId, taskTitle }),
+    );
+
+    await this.sendMail(email, 'You have been assignee to a new task!', html);
   }
 
   /**

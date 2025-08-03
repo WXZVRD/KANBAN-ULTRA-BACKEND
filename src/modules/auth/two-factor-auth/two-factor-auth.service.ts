@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import ms from 'ms';
-import { MailService } from '../../mail/mail.service';
-import { TokenService } from '../../token/token.service';
+import { IMailService, MailService } from '../../mail/mail.service';
+import { ITokenService, TokenService } from '../../token/token.service';
 import { TokenType } from '../../token/types/token.types';
 import { Token } from '../../token/entity/token.entity';
 import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
 
-interface ITwoFactorAuthService {
+export interface ITwoFactorAuthService {
   validateTwoFactorToken(email: string, code: string): Promise<any>;
   sendTwoFactorToken(email: string): Promise<any>;
 }
@@ -16,8 +16,10 @@ export class TwoFactorAuthService implements ITwoFactorAuthService {
   private readonly logger: Logger = new Logger(TwoFactorAuthService.name);
 
   public constructor(
-    private readonly mailService: MailService,
-    private readonly tokenService: TokenService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
   ) {}
 
   /**

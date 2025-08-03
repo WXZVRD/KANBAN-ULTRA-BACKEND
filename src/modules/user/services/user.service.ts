@@ -1,10 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { User } from '../entity/user.entity';
 import { AuthMethod } from '../types/authMethods.enum';
-import { UserRepository } from '../repository/user.repository';
+import { IUserRepository } from '../repository/user.repository';
 import { UpdateUserDto } from '../dto/update-user.dto';
 
-interface IUserService {
+export interface IUserService {
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
   create(
@@ -15,13 +15,19 @@ interface IUserService {
     method: AuthMethod,
     isVerified: boolean,
   ): Promise<User>;
+  updateVerified(user: User, isVerfied: boolean): Promise<User>;
+  updatePassword(user: User, newPassword: string): Promise<User>;
+  update(id: string, dto: UpdateUserDto): Promise<User>;
 }
 
 @Injectable()
 export class UserService implements IUserService {
   private readonly logger: Logger = new Logger(UserService.name);
 
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    @Inject('IUserRepository')
+    private readonly userRepository: IUserRepository,
+  ) {}
 
   /**
    * Finds a user by ID.

@@ -14,11 +14,11 @@ import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../user/entity/user.entity';
-import { UserService } from '../user/services/user.service';
-import { AccountService } from '../account/account.service';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
-import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+import { IUserService } from '../user/services/user.service';
+import { IAccountService } from '../account/account.service';
+import { IAuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { IEmailConfirmationService } from './email-confirmation/email-confirmation.service';
+import { ITwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
 import { AuthMethod } from '../user/types/authMethods.enum';
 import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
@@ -41,12 +41,16 @@ export class AuthService implements IAuthService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
-    private readonly accountService: AccountService,
-    private readonly providerService: AuthProviderService,
-    @Inject(forwardRef(() => EmailConfirmationService))
-    private readonly emailConfirmationService: EmailConfirmationService,
-    private readonly twoFactorAuthService: TwoFactorAuthService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
+    @Inject('IAccountService')
+    private readonly accountService: IAccountService,
+    @Inject('IAuthProviderService')
+    private readonly providerService: IAuthProviderService,
+    @Inject(forwardRef(() => 'IEmailConfirmationService'))
+    private readonly emailConfirmationService: IEmailConfirmationService,
+    @Inject('ITwoFactorAuthService')
+    private readonly twoFactorAuthService: ITwoFactorAuthService,
   ) {}
 
   /**

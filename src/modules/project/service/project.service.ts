@@ -1,19 +1,27 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { ProjectRepository } from '../repository/project.repository';
-import { ProjectColumnService } from '../column/column.service';
-import { MembershipService } from '../membership/services/membership.service';
+import { IProjectRepository } from '../repository/project.repository';
+import {
+  IProjectColumnService,
+  ProjectColumnService,
+} from '../column/column.service';
+import {
+  IMembershipService,
+  MembershipService,
+} from '../membership/services/membership.service';
 import { MemberRole } from '../membership';
 import { ProjectColumn } from '../column';
 import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
-import { RedisService } from '../../redis/redis.service';
+import { IRedisService } from '../../redis/redis.service';
 import { RedisKey } from '../../../libs/common/types/redis.types';
 import ms from 'ms';
+import { IProjectColumnRepository } from '../column/repository/column.repository';
 
 export interface IProjectService {
   create(dto: CreateProjectDto, userId: string): Promise<Project>;
@@ -29,10 +37,14 @@ export class ProjectService implements IProjectService {
   private readonly logger: Logger = new Logger(ProjectService.name);
 
   public constructor(
-    private readonly projectRepository: ProjectRepository,
-    private readonly projectColumnService: ProjectColumnService,
-    private readonly membershipService: MembershipService,
-    private readonly redisService: RedisService,
+    @Inject('IProjectRepository')
+    private readonly projectRepository: IProjectRepository,
+    @Inject('IProjectColumnService')
+    private readonly projectColumnService: IProjectColumnService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
+    @Inject('IRedisService')
+    private readonly redisService: IRedisService,
   ) {}
 
   /**

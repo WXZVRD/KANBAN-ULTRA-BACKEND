@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -17,19 +18,10 @@ import {
 import { Request, Response } from 'express';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 import { ConfigService } from '@nestjs/config';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiOkResponse,
-  ApiBadRequestResponse,
-  ApiUnauthorizedResponse,
-  ApiBody,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthProviderGuard } from './guards/provider.guard';
-import { AuthService } from './auth.service';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { IAuthService } from './auth.service';
+import { IAuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../user/entity/user.entity';
 import { LoginDto } from './dto/login.dto';
@@ -43,8 +35,10 @@ export class AuthController {
   private readonly logger: Logger = new Logger(AuthController.name);
 
   constructor(
-    private readonly authService: AuthService,
-    private readonly authProviderService: AuthProviderService,
+    @Inject('IAuthService')
+    private readonly authService: IAuthService,
+    @Inject('IAuthProviderService')
+    private readonly authProviderService: IAuthProviderService,
     private readonly configService: ConfigService,
   ) {}
 

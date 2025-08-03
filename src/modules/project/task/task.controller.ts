@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { TaskService } from './service/task.service';
+import { ITaskService, TaskService } from './service/task.service';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { MemberACL, MemberRole } from '../membership';
 import {
@@ -30,7 +31,10 @@ import { UpdateAssigneeDTO } from './dto/update-assignee.dto';
 export class TaskController {
   private readonly logger: Logger = new Logger(TaskController.name);
 
-  constructor(private readonly taskService: TaskService) {}
+  constructor(
+    @Inject('ITaskService')
+    private readonly taskService: ITaskService,
+  ) {}
 
   /**
    * Creates a new task for the specified project.
@@ -71,6 +75,7 @@ export class TaskController {
    * Only members with `ADMIN` or `MEMBER` roles are allowed.
    *
    * @param assigneeId - The ID of the new assignee
+   * @param projectId
    * @param dto - DTO containing the task ID and additional data
    * @returns The updated `Task` entity
    *
@@ -78,10 +83,11 @@ export class TaskController {
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
-  @Patch('update-assignee/:assigneeId')
+  @Patch('update-assignee')
   @ApiAuthEndpoint(TaskMapSwagger.updateAssignee)
   public async updateAssignee(
-    @Param('assigneeId') assigneeId: string,
+    @Query('assigneeId') assigneeId: string,
+    @Param('projectId') projectId: string,
     @Body() dto: UpdateAssigneeDTO,
   ): Promise<Task> {
     this.logger.log(
@@ -90,6 +96,7 @@ export class TaskController {
 
     const updatedTask: Task = await this.taskService.updateAssignee(
       assigneeId,
+      projectId,
       dto,
     );
 

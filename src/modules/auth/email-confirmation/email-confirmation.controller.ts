@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   Req,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-sim
 @Controller('auth/email-confirmation')
 export class EmailConfirmationController {
   constructor(
+    @Inject('IEmailConfirmationService')
     private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
 

@@ -37,11 +37,12 @@ import { EmailConfirmationService } from './email-confirmation/email-confirmatio
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
-    TwoFactorAuthService,
-    EmailConfirmationService,
+    {
+      provide: 'IAuthService',
+      useClass: AuthService,
+    },
     AuthProviderGuard,
   ],
-  exports: [AuthService],
+  exports: ['IAuthService'],
 })
 export class AuthModule {}

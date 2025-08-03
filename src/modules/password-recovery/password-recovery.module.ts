@@ -9,6 +9,12 @@ import { TokenModule } from '../token/token.module';
 @Module({
   imports: [UserModule, MailModule, EmailConfirmationModule, TokenModule],
   controllers: [PasswordRecoveryController],
-  providers: [PasswordRecoveryService],
+  providers: [
+    {
+      provide: 'IPasswordRecoveryService',
+      useClass: PasswordRecoveryService,
+    },
+  ],
+  exports: ['IPasswordRecoveryService'],
 })
 export class PasswordRecoveryModule {}

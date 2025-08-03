@@ -1,17 +1,18 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserService } from '../../../user/services/user.service';
-import { MailService } from '../../../mail/mail.service';
+import { IUserService } from '../../../user/services/user.service';
+import { IMailService, MailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
-import { MembershipService } from './membership.service';
+import { IMembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
 import { TokenType } from '../../../token/types/token.types';
 import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generator';
-import { TokenService } from '../../../token/token.service';
+import { ITokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
 import ms from 'ms';
@@ -34,10 +35,14 @@ export class MembershipInvitationService
   );
 
   constructor(
-    private readonly tokenService: TokenService,
-    private readonly mailService: MailService,
-    private readonly userService: UserService,
-    private readonly membershipService: MembershipService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
+    @Inject('IUserService')
+    private readonly userService: IUserService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
   ) {}
 
   /**
