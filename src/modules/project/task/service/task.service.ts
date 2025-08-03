@@ -143,7 +143,6 @@ export class TaskService implements ITaskService {
     projectId: string,
     filter: TaskFilterDto,
   ): Promise<Task[]> {
-    const cacheKey: string = `${RedisKey.ProjectTasks}:${projectId}`;
     const cached: Task[] | null = await this.redisService.get(
       RedisKey.ProjectTasks,
       projectId,
