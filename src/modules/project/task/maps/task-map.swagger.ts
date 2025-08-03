@@ -4,6 +4,7 @@ import { CreateTaskDTO } from '../dto/create-task.dto';
 import { UpdateTaskDTO } from '../dto/update-task.dto';
 import { SwaggerMap } from '../../../../libs/common/types/swagger-map.type';
 import { TaskController } from '../task.controller';
+import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
 
 export const TaskMapSwagger: SwaggerMap<TaskController> = {
   create: {
@@ -42,5 +43,11 @@ export const TaskMapSwagger: SwaggerMap<TaskController> = {
     summary: 'Delete task by ID',
     okDescription: 'Task successfully deleted',
     okType: DeleteResult,
+  },
+  updateAssignee: {
+    summary: 'Update task assignee',
+    okDescription: 'Task assignee successfully updated',
+    okType: Task,
+    bodyType: UpdateAssigneeDTO,
   },
 };
