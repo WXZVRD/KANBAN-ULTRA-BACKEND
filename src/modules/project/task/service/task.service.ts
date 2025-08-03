@@ -12,7 +12,7 @@ import { IRedisService } from '../../../redis/redis.service';
 import { RedisKey } from '../../../../libs/common/types/redis.types';
 import ms from 'ms';
 import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
-import { MailService } from '../../../mail/mail.service';
+import { IMailService } from '../../../mail/mail.service';
 import { IUserService } from '../../../user/services/user.service';
 import { User } from '../../../user/entity/user.entity';
 
@@ -39,7 +39,8 @@ export class TaskService implements ITaskService {
     private readonly taskRepository: ITaskRepository,
     @Inject('IRedisService')
     private readonly redisService: IRedisService,
-    private readonly mailService: MailService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
   ) {}

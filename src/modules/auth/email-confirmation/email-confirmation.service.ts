@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
 import { ConfirmationDto } from './dto/confirmation.dto';
-import { MailService } from '../../mail/mail.service';
+import { IMailService, MailService } from '../../mail/mail.service';
 import { IUserService } from '../../user/services/user.service';
 import { Token } from '../../token/entity/token.entity';
 import { TokenType } from '../../token/types/token.types';
@@ -29,7 +29,8 @@ export class EmailConfirmationService implements IEmailConfirmationService {
   constructor(
     @Inject('ITokenService')
     private readonly tokenService: ITokenService,
-    private readonly mailService: MailService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
     @Inject(forwardRef(() => AuthService))

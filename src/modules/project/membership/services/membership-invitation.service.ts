@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { IUserService } from '../../../user/services/user.service';
-import { MailService } from '../../../mail/mail.service';
+import { IMailService, MailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
 import { IMembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
@@ -37,7 +37,8 @@ export class MembershipInvitationService
   constructor(
     @Inject('ITokenService')
     private readonly tokenService: ITokenService,
-    private readonly mailService: MailService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
     @Inject('IMembershipService')

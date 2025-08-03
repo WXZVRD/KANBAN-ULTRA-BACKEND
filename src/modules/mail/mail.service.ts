@@ -9,7 +9,7 @@ import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
 import { MemberRole } from '../project/membership';
 import { TaskAssignedTemplate } from './templates/task-assignee.template';
 
-interface IMailService {
+export interface IMailService {
   sendConfirmationEmail(email: string, token: string): Promise<void>;
   sendMembershipInviteEmail(
     email: string,
@@ -19,6 +19,12 @@ interface IMailService {
   ): Promise<void>;
   sendPasswordResetEmail(email: string, token: string): Promise<void>;
   sendTwoFactorTokenEmail(email: string, token: string): Promise<void>;
+  sendTaskAssigneeEmail(
+    email: string,
+    projectId: string,
+    taskId: string,
+    taskTitle: string,
+  ): Promise<void>;
 }
 
 @Injectable()
@@ -141,7 +147,6 @@ export class MailService implements IMailService {
    * Sends a task assignee notification.
    *
    * @param email
-   * @param domain
    * @param projectId
    * @param taskId
    * @param taskTitle

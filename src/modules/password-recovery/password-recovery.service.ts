@@ -9,7 +9,7 @@ import { hash } from 'argon2';
 import ms from 'ms';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
-import { MailService } from '../mail/mail.service';
+import { IMailService, MailService } from '../mail/mail.service';
 import { IUserService } from '../user/services/user.service';
 import { ITokenService } from '../token/token.service';
 import { User } from '../user/entity/user.entity';
@@ -29,7 +29,8 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
   public constructor(
     @Inject('IUserService')
     private readonly userService: IUserService,
-    private readonly mailService: MailService,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
     @Inject('ITokenService')
     private readonly tokenService: ITokenService,
   ) {}
