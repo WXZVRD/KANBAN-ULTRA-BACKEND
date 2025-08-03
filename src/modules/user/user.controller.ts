@@ -20,6 +20,8 @@ import { Authorization } from '../auth/decorators/auth.decorator';
 import { User } from './entity/user.entity';
 import { Authorized } from '../auth/decorators/authorized.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
+import { UsersSwagger } from './maps/user-map.swagger';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -38,12 +40,7 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('profile')
-  @ApiOperation({ summary: 'Get the current user profile' })
-  @ApiOkResponse({
-    description: 'Successfully retrieved user profile',
-    type: User,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiAuthEndpoint(UsersSwagger.findProfile)
   public async findProfile(
     @Authorized('id') userId: string,
   ): Promise<User | null> {
@@ -70,13 +67,7 @@ export class UsersController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Patch('profile')
-  @ApiOperation({ summary: 'Update the current user profile' })
-  @ApiOkResponse({
-    description: 'Successfully updated user profile',
-    type: User,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiBody({ type: UpdateUserDto })
+  @ApiAuthEndpoint(UsersSwagger.updateProfile)
   public async updateProfile(
     @Authorized('id') userId: string,
     @Body() dto: UpdateUserDto,

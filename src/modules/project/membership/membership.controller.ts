@@ -34,6 +34,8 @@ import { SendInviteDTO } from './dto/send-invite.dto';
 import { InviteDto } from './dto/invite.dto';
 import { UpdateMembershipDTO } from './dto/update-member-role.dto';
 import { Membership } from './entity/membership.entity';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
+import { MembershipMapSwagger } from './maps/membership-map.swagger';
 
 @ApiTags('Memberships')
 @ApiBearerAuth()
@@ -52,12 +54,7 @@ export class MembershipController {
   @Post('/invite')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  @ApiOperation({ summary: 'Send an invitation to a user to join a project' })
-  @ApiOkResponse({ description: 'Invitation successfully sent', type: Boolean })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiBody({ type: SendInviteDTO })
-  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiAuthEndpoint(MembershipMapSwagger.inviteUser)
   public async inviteUser(
     @Body() dto: SendInviteDTO,
     @Param('projectId') projectId: string,
@@ -77,12 +74,7 @@ export class MembershipController {
   @Post('/take-invite')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  @ApiOperation({ summary: 'Accept an invitation to join the project' })
-  @ApiOkResponse({ description: 'Invitation accepted' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiBody({ type: InviteDto })
-  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiAuthEndpoint(MembershipMapSwagger.newVerification)
   public async newVerification(
     @Req() req: Request,
     @Body() dto: InviteDto,
@@ -98,13 +90,7 @@ export class MembershipController {
   @Delete('/:userId')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  @ApiOperation({ summary: 'Delete a project member' })
-  @ApiOkResponse({ description: 'Member deleted', type: DeleteResult })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiNotFoundResponse({ description: 'Member not found' })
-  @ApiParam({ name: 'projectId', type: String, required: true })
-  @ApiParam({ name: 'userId', type: String, required: true })
+  @ApiAuthEndpoint(MembershipMapSwagger.deleteMember)
   public async deleteMember(
     @Param('projectId') projectId: string,
     @Param('userId') userId: string,
@@ -120,12 +106,7 @@ export class MembershipController {
   @Patch('/update-member')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  @ApiOperation({ summary: 'Update project member role' })
-  @ApiOkResponse({ description: 'Member role updated', type: Membership })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiBody({ type: UpdateMembershipDTO })
-  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiAuthEndpoint(MembershipMapSwagger.updateMemberRole)
   public async updateMemberRole(
     @Param('projectId') projectId: string,
     @Body() dto: UpdateMembershipDTO,

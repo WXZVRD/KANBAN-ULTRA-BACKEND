@@ -29,6 +29,8 @@ import { MemberRole } from '../membership/types/member-role.enum';
 import { MembershipRoles } from '../membership/decorators/membership.decorator';
 import { UpdateColumnDTO } from './dto/update-column.dto';
 import { MoveColumnDTO } from './dto/move-column.dto';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
+import { ColumnMapSwagger } from './maps/project-map.swagger';
 
 @ApiTags('Project Columns')
 @ApiBearerAuth()
@@ -41,14 +43,7 @@ export class ProjectColumnController {
    */
   @Post('newOne')
   @Authorization()
-  @ApiOperation({ summary: 'Create a new project column' })
-  @ApiOkResponse({
-    description: 'Column created successfully',
-    type: ProjectColumn,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiBody({ type: CreateColumnDTO })
+  @ApiAuthEndpoint(ColumnMapSwagger.newOne)
   public async newOne(@Body() dto: CreateColumnDTO): Promise<any> {
     return this.projectColumnService.createNewColumn(dto);
   }
@@ -60,14 +55,7 @@ export class ProjectColumnController {
   @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
   @Get(':projectId')
   @Authorization()
-  @ApiOperation({ summary: 'Get all columns for a project' })
-  @ApiOkResponse({
-    description: 'Columns fetched successfully',
-    type: [ProjectColumn],
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiAuthEndpoint(ColumnMapSwagger.getByProjectId)
   public async getByProjectId(
     @Param('projectId') projectId: string,
   ): Promise<ProjectColumn[]> {
@@ -81,16 +69,7 @@ export class ProjectColumnController {
   @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
   @Patch(':columnId')
   @Authorization()
-  @ApiOperation({ summary: 'Update a project column' })
-  @ApiOkResponse({
-    description: 'Column updated successfully',
-    type: ProjectColumn,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiNotFoundResponse({ description: 'Column not found' })
-  @ApiParam({ name: 'columnId', type: String, required: true })
-  @ApiBody({ type: UpdateColumnDTO })
+  @ApiAuthEndpoint(ColumnMapSwagger.update)
   public async update(
     @Param('columnId') columnId: string,
     @Body() dto: UpdateColumnDTO,
@@ -105,15 +84,7 @@ export class ProjectColumnController {
   @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
   @Patch(':columnId/move-column')
   @Authorization()
-  @ApiOperation({ summary: 'Move column to new position' })
-  @ApiOkResponse({
-    description: 'Column moved successfully',
-    type: ProjectColumn,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiParam({ name: 'columnId', type: String, required: true })
-  @ApiBody({ type: MoveColumnDTO })
+  @ApiAuthEndpoint(ColumnMapSwagger.moveColumn)
   public async moveColumn(
     @Param('columnId') columnId: string,
     @Body() dto: MoveColumnDTO,
@@ -128,15 +99,7 @@ export class ProjectColumnController {
   @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
   @Delete(':columnId')
   @Authorization()
-  @ApiOperation({ summary: 'Delete a project column' })
-  @ApiOkResponse({
-    description: 'Column deleted successfully',
-    type: DeleteResult,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiNotFoundResponse({ description: 'Column not found' })
-  @ApiParam({ name: 'columnId', type: String, required: true })
+  @ApiAuthEndpoint(ColumnMapSwagger.deleteColumn)
   public async deleteColumn(
     @Param('columnId') columnId: string,
   ): Promise<DeleteResult> {

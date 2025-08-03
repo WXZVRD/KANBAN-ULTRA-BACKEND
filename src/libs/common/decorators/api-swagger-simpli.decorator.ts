@@ -5,6 +5,8 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiBody,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 
 interface ApiAuthOptions {
@@ -20,6 +22,8 @@ export function ApiAuthEndpoint(options: ApiAuthOptions) {
     ApiOperation({ summary: options.summary }),
     ApiOkResponse({ description: options.okDescription, type: options.okType }),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiNotFoundResponse({ description: 'Not Found' }),
+    ApiForbiddenResponse({ description: 'Forbidden' }),
   ];
 
   if (options.bodyType) {

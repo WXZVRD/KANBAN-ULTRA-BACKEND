@@ -10,16 +10,9 @@ import { PasswordRecoveryService } from './password-recovery.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Recaptcha } from '@nestlab/google-recaptcha';
 import { NewPasswordDto } from './dto/new-password.dto';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiOkResponse,
-  ApiBadRequestResponse,
-  ApiUnauthorizedResponse,
-  ApiNotFoundResponse,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { PasswordRecoveryMapSwagger } from './maps/pass-recovery-map.swagger';
+import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
 
 @ApiTags('Password Recovery')
 @Controller('auth/password-recovery')
@@ -38,14 +31,7 @@ export class PasswordRecoveryController {
   @Recaptcha()
   @Post('reset')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Send password reset email' })
-  @ApiOkResponse({
-    description: 'Password reset email sent successfully',
-    type: Boolean,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid email or request data' })
-  @ApiUnauthorizedResponse({ description: 'Recaptcha verification failed' })
-  @ApiBody({ type: ResetPasswordDto })
+  @ApiAuthEndpoint(PasswordRecoveryMapSwagger.resetPassword)
   public async resetPassword(@Body() dto: ResetPasswordDto): Promise<boolean> {
     return await this.passwordRecoveryService.resetPassword(dto);
   }
@@ -56,21 +42,7 @@ export class PasswordRecoveryController {
   @Recaptcha()
   @Post('new/:token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Set new password using reset token' })
-  @ApiOkResponse({
-    description: 'Password successfully changed',
-    type: Boolean,
-  })
-  @ApiBadRequestResponse({ description: 'Invalid data or expired token' })
-  @ApiUnauthorizedResponse({ description: 'Recaptcha verification failed' })
-  @ApiNotFoundResponse({ description: 'Reset token not found or already used' })
-  @ApiParam({
-    name: 'token',
-    type: String,
-    required: true,
-    description: 'Password reset token',
-  })
-  @ApiBody({ type: NewPasswordDto })
+  @ApiAuthEndpoint(PasswordRecoveryMapSwagger.newPassword)
   public async newPassword(
     @Body() dto: NewPasswordDto,
     @Param('token') token: string,

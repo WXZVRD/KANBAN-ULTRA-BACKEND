@@ -23,16 +23,18 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
-import { TaskService } from '@/modules/project/task/service/task.service';
-import { MembershipAccessControlGuard } from '@/modules/project/membership/guards/member-access-control.guard';
-import { MemberRole } from '@/modules/project/membership/types/member-role.enum';
-import { MembershipRoles } from '@/modules/project/membership/decorators/membership.decorator';
-import { Authorization } from '@/modules/auth/decorators/auth.decorator';
-import { CreateTaskDTO } from '@/modules/project/task/dto/create-task.dto';
-import { Authorized } from '@/modules/auth/decorators/authorized.decorator';
-import { Task } from '@/modules/project/task/entity/task.entity';
-import { UpdateTaskDTO } from '@/modules/project/task/dto/update-task.dto';
-import { TaskFilterDto } from '@/modules/project/task/dto/task-filter.dto';
+import { TaskService } from './service/task.service';
+import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
+import { MemberRole } from '../membership/types/member-role.enum';
+import { MembershipRoles } from '../membership/decorators/membership.decorator';
+import { Authorization } from '../../auth/decorators/auth.decorator';
+import { CreateTaskDTO } from './dto/create-task.dto';
+import { Authorized } from '../../auth/decorators/authorized.decorator';
+import { Task } from './entity/task.entity';
+import { UpdateTaskDTO } from './dto/update-task.dto';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
+import { TaskMapSwagger } from './maps/task-map.swagger';
+import { TaskFilterDto } from './dto/task-filter.dto';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -49,11 +51,7 @@ export class TaskController {
   @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
   @Post('create')
   @Authorization()
-  @ApiOperation({ summary: 'Create a new task in a project' })
-  @ApiOkResponse({ description: 'Task successfully created', type: Task })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Access denied to this project' })
-  @ApiBody({ type: CreateTaskDTO })
+  @ApiAuthEndpoint(TaskMapSwagger.create)
   public async create(
     @Body() dto: CreateTaskDTO,
     @Authorized('id') id: string,
@@ -69,10 +67,7 @@ export class TaskController {
    */
   @Patch('update')
   @Authorization()
-  @ApiOperation({ summary: 'Update task by DTO' })
-  @ApiOkResponse({ description: 'Task successfully updated', type: Task })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiBody({ type: UpdateTaskDTO })
+  @ApiAuthEndpoint(TaskMapSwagger.update)
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
     this.logger.log(`PATCH /update | DTO=${JSON.stringify(dto)}`);
     const task: Task = await this.taskService.update(dto);
@@ -85,9 +80,7 @@ export class TaskController {
    */
   @Post('getAll')
   @Authorization()
-  @ApiOperation({ summary: 'Get all tasks' })
-  @ApiOkResponse({ description: 'List of all tasks', type: [Task] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiAuthEndpoint(TaskMapSwagger.getAll)
   public async getAll(): Promise<Task[]> {
     this.logger.log('POST /getAll | Fetching all tasks');
     const tasks: Task[] = await this.taskService.getAll();
@@ -100,16 +93,7 @@ export class TaskController {
    */
   @Post('getById')
   @Authorization()
-  @ApiOperation({ summary: 'Get task by ID' })
-  @ApiOkResponse({ description: 'Task found', type: Task })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiNotFoundResponse({ description: 'Task not found' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-    description: 'Task ID',
-  })
+  @ApiAuthEndpoint(TaskMapSwagger.getById)
   public async getById(@Param('id') id: string): Promise<Task> {
     this.logger.log(`POST /getById | TaskID=${id}`);
     const task: Task = await this.taskService.getById(id);
@@ -122,16 +106,7 @@ export class TaskController {
    */
   @Get('getByProjectId')
   @Authorization()
-  @ApiOperation({ summary: 'Get tasks by project ID with filters' })
-  @ApiOkResponse({ description: 'List of project tasks', type: [Task] })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiQuery({
-    name: 'priority',
-    required: false,
-    enum: ['LOW', 'MEDIUM', 'HIGH'],
-  })
-  @ApiQuery({ name: 'assigneeId', required: false, type: String })
-  @ApiParam({ name: 'projectId', type: String, required: true })
+  @ApiAuthEndpoint(TaskMapSwagger.getTasksByProjectId)
   public async getTasksByProjectId(
     @Param('projectId') projectId: string,
     @Query() filter: TaskFilterDto,
@@ -154,14 +129,7 @@ export class TaskController {
    */
   @Delete('/:taskId')
   @Authorization()
-  @ApiOperation({ summary: 'Delete task by ID' })
-  @ApiOkResponse({
-    description: 'Task successfully deleted',
-    type: DeleteResult,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiNotFoundResponse({ description: 'Task not found' })
-  @ApiParam({ name: 'taskId', type: String, required: true })
+  @ApiAuthEndpoint(TaskMapSwagger.deleteTask)
   public async deleteTask(
     @Param('taskId') taskId: string,
   ): Promise<DeleteResult> {
