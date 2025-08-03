@@ -1,27 +1,25 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
-  Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './service/project.service';
 import { Authorization } from '../auth/decorators/auth.decorator';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Project } from './entity/project.entity';
 import { Authorized } from '../auth/decorators/authorized.decorator';
 import { UserRole } from '../user/types/roles.enum';
-import { MembershipAccessControlGuard } from './membership/guards/member-access-control.guard';
-import { MembershipRoles } from './membership/decorators/membership.decorator';
 import { MemberRole } from './membership/types/member-role.enum';
 import { UpdateProjectDTO } from './dto/update-project.dto';
 import { ProjectMapSwagger } from './maps/project-map.swagger';
 import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
+import { MemberACL } from './membership/decorators/member-access-control.decorator';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -55,8 +53,8 @@ export class ProjectController {
   /**
    * Retrieves all projects that belong to the authenticated user.
    */
-  @Post('getByUser')
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @Post('getByUser')
   @ApiAuthEndpoint(ProjectMapSwagger.getByUser)
   public async getByUser(@Authorized('id') id: string): Promise<Project[]> {
     return await this.projectService.getByUser(id);
@@ -65,10 +63,9 @@ export class ProjectController {
   /**
    * Retrieves a specific project by its ID.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
-  @Get(':projectId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @Get(':projectId')
   @ApiAuthEndpoint(ProjectMapSwagger.getById)
   public async getById(@Param('projectId') id: string): Promise<Project> {
     return await this.projectService.getById(id);
@@ -77,10 +74,9 @@ export class ProjectController {
   /**
    * Updates an existing project by its ID.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
-  @Patch(':projectId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @Patch(':projectId')
   @ApiAuthEndpoint(ProjectMapSwagger.updateProject)
   public async updateProject(
     @Param('projectId') id: string,
@@ -92,10 +88,9 @@ export class ProjectController {
   /**
    * Deletes a project by its ID.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
-  @Delete(':projectId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization(UserRole.REGULAR, UserRole.ADMIN)
+  @Delete(':projectId')
   @ApiAuthEndpoint(ProjectMapSwagger.delete)
   public async delete(@Param('projectId') id: string): Promise<DeleteResult> {
     return await this.projectService.deleteById(id);

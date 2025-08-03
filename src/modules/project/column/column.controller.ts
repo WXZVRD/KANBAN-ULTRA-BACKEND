@@ -6,31 +6,19 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiOkResponse,
-  ApiUnauthorizedResponse,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectColumnService } from './column.service';
 import { ProjectColumn } from './entity/column.entity';
 import { Authorization } from '../../auth/decorators/auth.decorator';
 import { CreateColumnDTO } from './dto/create-column.dto';
-import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
 import { MemberRole } from '../membership/types/member-role.enum';
-import { MembershipRoles } from '../membership/decorators/membership.decorator';
 import { UpdateColumnDTO } from './dto/update-column.dto';
 import { MoveColumnDTO } from './dto/move-column.dto';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { ColumnMapSwagger } from './maps/project-map.swagger';
+import { MemberACL } from '../membership/decorators/member-access-control.decorator';
 
 @ApiTags('Project Columns')
 @ApiBearerAuth()
@@ -41,8 +29,9 @@ export class ProjectColumnController {
   /**
    * Creates a new project column.
    */
-  @Post('newOne')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Post('newOne')
   @ApiAuthEndpoint(ColumnMapSwagger.newOne)
   public async newOne(@Body() dto: CreateColumnDTO): Promise<any> {
     return this.projectColumnService.createNewColumn(dto);
@@ -51,8 +40,8 @@ export class ProjectColumnController {
   /**
    * Retrieves all columns for a specific project.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
   @Get(':projectId')
   @Authorization()
   @ApiAuthEndpoint(ColumnMapSwagger.getByProjectId)
@@ -65,10 +54,9 @@ export class ProjectColumnController {
   /**
    * Updates an existing project column.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Patch(':columnId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Patch(':columnId')
   @ApiAuthEndpoint(ColumnMapSwagger.update)
   public async update(
     @Param('columnId') columnId: string,
@@ -80,10 +68,9 @@ export class ProjectColumnController {
   /**
    * Moves a column to a new order in the project.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Patch(':columnId/move-column')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Patch(':columnId/move-column')
   @ApiAuthEndpoint(ColumnMapSwagger.moveColumn)
   public async moveColumn(
     @Param('columnId') columnId: string,
@@ -95,10 +82,9 @@ export class ProjectColumnController {
   /**
    * Deletes a project column by its ID.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.VISITOR)
-  @Delete(':columnId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Delete(':columnId')
   @ApiAuthEndpoint(ColumnMapSwagger.deleteColumn)
   public async deleteColumn(
     @Param('columnId') columnId: string,

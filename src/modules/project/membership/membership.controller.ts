@@ -13,17 +13,7 @@ import {
 import { Request } from 'express';
 import { DeleteResult } from 'typeorm';
 
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiOkResponse,
-  ApiUnauthorizedResponse,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { MembershipService } from './services/membership.service';
 import { MembershipInvitationService } from './services/membership-invitation.service';
 import { MembershipAccessControlGuard } from './guards/member-access-control.guard';
@@ -36,6 +26,7 @@ import { UpdateMembershipDTO } from './dto/update-member-role.dto';
 import { Membership } from './entity/membership.entity';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { MembershipMapSwagger } from './maps/membership-map.swagger';
+import { MemberACL } from './decorators/member-access-control.decorator';
 
 @ApiTags('Memberships')
 @ApiBearerAuth()
@@ -69,11 +60,10 @@ export class MembershipController {
   /**
    * Accepts an invitation by validating the token and creating the membership.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN)
+  @MemberACL(MemberRole.ADMIN)
+  @Authorization()
   @Post('/take-invite')
   @HttpCode(HttpStatus.OK)
-  @Authorization()
   @ApiAuthEndpoint(MembershipMapSwagger.newVerification)
   public async newVerification(
     @Req() req: Request,
@@ -85,11 +75,10 @@ export class MembershipController {
   /**
    * Deletes a project member.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN)
+  @MemberACL(MemberRole.ADMIN)
+  @Authorization()
   @Delete('/:userId')
   @HttpCode(HttpStatus.OK)
-  @Authorization()
   @ApiAuthEndpoint(MembershipMapSwagger.deleteMember)
   public async deleteMember(
     @Param('projectId') projectId: string,
@@ -101,11 +90,10 @@ export class MembershipController {
   /**
    * Updates the role of a project member.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN)
+  @MemberACL(MemberRole.ADMIN)
+  @Authorization()
   @Patch('/update-member')
   @HttpCode(HttpStatus.OK)
-  @Authorization()
   @ApiAuthEndpoint(MembershipMapSwagger.updateMemberRole)
   public async updateMemberRole(
     @Param('projectId') projectId: string,

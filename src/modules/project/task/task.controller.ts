@@ -8,25 +8,11 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiOkResponse,
-  ApiUnauthorizedResponse,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
-  ApiBody,
-  ApiQuery,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TaskService } from './service/task.service';
-import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
 import { MemberRole } from '../membership/types/member-role.enum';
-import { MembershipRoles } from '../membership/decorators/membership.decorator';
 import { Authorization } from '../../auth/decorators/auth.decorator';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { Authorized } from '../../auth/decorators/authorized.decorator';
@@ -35,6 +21,7 @@ import { UpdateTaskDTO } from './dto/update-task.dto';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { TaskMapSwagger } from './maps/task-map.swagger';
 import { TaskFilterDto } from './dto/task-filter.dto';
+import { MemberACL } from '../membership/decorators/member-access-control.decorator';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -47,10 +34,9 @@ export class TaskController {
   /**
    * Creates a new task for the specified project.
    */
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
-  @Post('create')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Post('create')
   @ApiAuthEndpoint(TaskMapSwagger.create)
   public async create(
     @Body() dto: CreateTaskDTO,
@@ -65,8 +51,9 @@ export class TaskController {
   /**
    * Updates an existing task.
    */
-  @Patch('update')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Patch('update')
   @ApiAuthEndpoint(TaskMapSwagger.update)
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
     this.logger.log(`PATCH /update | DTO=${JSON.stringify(dto)}`);
@@ -78,8 +65,9 @@ export class TaskController {
   /**
    * Retrieves all tasks.
    */
-  @Post('getAll')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
+  @Post('getAll')
   @ApiAuthEndpoint(TaskMapSwagger.getAll)
   public async getAll(): Promise<Task[]> {
     this.logger.log('POST /getAll | Fetching all tasks');
@@ -91,8 +79,9 @@ export class TaskController {
   /**
    * Retrieves a task by its ID.
    */
-  @Post('getById')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
+  @Post('getById')
   @ApiAuthEndpoint(TaskMapSwagger.getById)
   public async getById(@Param('id') id: string): Promise<Task> {
     this.logger.log(`POST /getById | TaskID=${id}`);
@@ -104,8 +93,9 @@ export class TaskController {
   /**
    * Retrieves all tasks for a specific project with optional filters.
    */
-  @Get('getByProjectId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
+  @Get('getByProjectId')
   @ApiAuthEndpoint(TaskMapSwagger.getTasksByProjectId)
   public async getTasksByProjectId(
     @Param('projectId') projectId: string,
@@ -127,8 +117,9 @@ export class TaskController {
   /**
    * Deletes a task by its ID.
    */
-  @Delete('/:taskId')
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Delete('/:taskId')
   @ApiAuthEndpoint(TaskMapSwagger.deleteTask)
   public async deleteTask(
     @Param('taskId') taskId: string,
