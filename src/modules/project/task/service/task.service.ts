@@ -1,23 +1,27 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { CreateTaskDTO } from '../dto/create-task.dto';
-import { Task } from '../entity/task.entity';
-import { UpdateTaskDTO } from '../dto/update-task.dto';
 import { TaskRepository } from '../repository/task.repository';
-import { TaskFilterDto } from '../dto/task-filter.dto';
+import { CreateTaskDTO, Task, TaskFilterDto, UpdateTaskDTO } from '../index';
+import { RedisService } from '../../../redis/redis.service';
+import { RedisKey } from '../../../../libs/common/types/redis.types';
+import ms from 'ms';
 
 interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
   update(dto: UpdateTaskDTO): Promise<Task>;
   getAll(): Promise<Task[]>;
   getById(id: string): Promise<Task>;
+  findProjectTask(projectId: string, filter: TaskFilterDto): Promise<Task[]>;
 }
 
 @Injectable()
 export class TaskService implements ITaskService {
   private readonly logger: Logger = new Logger(TaskService.name);
 
-  public constructor(private readonly taskRepository: TaskRepository) {}
+  public constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly redisService: RedisService,
+  ) {}
 
   /**
    * Creates a new task and saves it to the database.
@@ -76,6 +80,9 @@ export class TaskService implements ITaskService {
    * @throws NotFoundException if there are no tasks
    */
   public async getAll(): Promise<Task[]> {
+    const cached: Task[] | null = await this.redisService.get(RedisKey.TaskAll);
+    if (cached) return cached;
+
     const tasks: Task[] | null = await this.taskRepository.getAll();
 
     if (!tasks || tasks.length === 0) {
@@ -85,6 +92,7 @@ export class TaskService implements ITaskService {
       );
     }
 
+    await this.redisService.set(RedisKey.TaskAll, tasks, ms('1m'));
     return tasks;
   }
 
@@ -96,6 +104,9 @@ export class TaskService implements ITaskService {
    * @throws NotFoundException if task does not exist
    */
   public async getById(id: string): Promise<Task> {
+    const cached: Task | null = await this.redisService.get(RedisKey.Task, id);
+    if (cached) return cached;
+
     const task: Task | null = await this.taskRepository.findById(id);
 
     if (!task) {
@@ -104,6 +115,8 @@ export class TaskService implements ITaskService {
         `Task with ID ${id} was not found. Please check the provided ID.`,
       );
     }
+
+    await this.redisService.set(RedisKey.Task, task, ms('1m'), id);
 
     return task;
   }
@@ -130,6 +143,13 @@ export class TaskService implements ITaskService {
     projectId: string,
     filter: TaskFilterDto,
   ): Promise<Task[]> {
+    const cacheKey: string = `${RedisKey.ProjectTasks}:${projectId}`;
+    const cached: Task[] | null = await this.redisService.get(
+      RedisKey.ProjectTasks,
+      projectId,
+    );
+    if (cached) return cached;
+
     const tasks: Task[] | null = await this.taskRepository.findByProjectId(
       projectId,
       filter,
@@ -141,6 +161,13 @@ export class TaskService implements ITaskService {
         `Tasks for project ${projectId} were not found.`,
       );
     }
+
+    await this.redisService.set(
+      RedisKey.ProjectTasks,
+      tasks,
+      ms('1m'),
+      projectId,
+    );
 
     return tasks;
   }
