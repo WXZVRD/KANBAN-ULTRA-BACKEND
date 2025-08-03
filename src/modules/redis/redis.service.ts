@@ -1,6 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { RedisKey, RedisValueMap } from '../../libs/common/types/redis.types';
+import { RedisValueMap } from '../../libs/common/types/redis.types';
+
+export interface IRedisService {
+  getClient(): Redis;
+  set<K extends keyof RedisValueMap>(
+    key: K,
+    value: RedisValueMap[K],
+    ttlSeconds?: number,
+    suffix?: string,
+  ): Promise<void>;
+  get<K extends keyof RedisValueMap>(
+    key: K,
+    suffix?: string,
+  ): Promise<RedisValueMap[K] | null>;
+  del(key: string | string[]): Promise<number>;
+}
 
 @Injectable()
 export class RedisService {

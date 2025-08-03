@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -11,7 +12,7 @@ import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership';
 import { ProjectColumn } from '../column';
 import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
-import { RedisService } from '../../redis/redis.service';
+import { IRedisService } from '../../redis/redis.service';
 import { RedisKey } from '../../../libs/common/types/redis.types';
 import ms from 'ms';
 
@@ -32,7 +33,8 @@ export class ProjectService implements IProjectService {
     private readonly projectRepository: ProjectRepository,
     private readonly projectColumnService: ProjectColumnService,
     private readonly membershipService: MembershipService,
-    private readonly redisService: RedisService,
+    @Inject('IRedisService')
+    private readonly redisService: IRedisService,
   ) {}
 
   /**

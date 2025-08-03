@@ -8,12 +8,12 @@ import {
 import { DeleteResult } from 'typeorm';
 import { TaskRepository } from '../repository/task.repository';
 import { CreateTaskDTO, Task, TaskFilterDto, UpdateTaskDTO } from '../index';
-import { RedisService } from '../../../redis/redis.service';
+import { IRedisService } from '../../../redis/redis.service';
 import { RedisKey } from '../../../../libs/common/types/redis.types';
 import ms from 'ms';
 import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
 import { MailService } from '../../../mail/mail.service';
-import { IUserService, UserService } from '../../../user/services/user.service';
+import { IUserService } from '../../../user/services/user.service';
 import { User } from '../../../user/entity/user.entity';
 
 interface ITaskService {
@@ -30,7 +30,8 @@ export class TaskService implements ITaskService {
 
   public constructor(
     private readonly taskRepository: TaskRepository,
-    private readonly redisService: RedisService,
+    @Inject('IRedisService')
+    private readonly redisService: IRedisService,
     private readonly mailService: MailService,
     @Inject('IUserService')
     private readonly userService: IUserService,

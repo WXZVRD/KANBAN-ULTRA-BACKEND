@@ -25,8 +25,11 @@ import { RedisService } from './redis.service';
         return client;
       },
     },
-    RedisService,
+    {
+      provide: 'IRedisService',
+      useClass: RedisService,
+    },
   ],
-  exports: ['REDIS_CLIENT', RedisService],
+  exports: ['REDIS_CLIENT', 'IRedisService'],
 })
 export class RedisModule {}
