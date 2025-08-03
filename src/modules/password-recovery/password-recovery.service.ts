@@ -6,10 +6,15 @@ import {
 } from '@nestjs/common';
 import { hash } from 'argon2';
 import ms from 'ms';
-import { NewPasswordDto, ResetPasswordDto } from './index';
-import { User, UserService } from '../user';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 import { MailService } from '../mail/mail.service';
-import { Token, TokenService, TokenType, UuidTokenGenerator } from '../token';
+import { UserService } from '../user/services/user.service';
+import { TokenService } from '../token/token.service';
+import { User } from '../user/entity/user.entity';
+import { TokenType } from '../token/types/token.types';
+import { Token } from '../token/entity/token.entity';
+import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
 
 export interface IPasswordRecoveryService {
   resetPassword(dto: ResetPasswordDto): Promise<boolean>;

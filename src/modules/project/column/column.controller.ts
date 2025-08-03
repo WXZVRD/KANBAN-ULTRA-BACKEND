@@ -20,19 +20,15 @@ import {
   ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
-import {
-  CreateColumnDTO,
-  MoveColumnDTO,
-  ProjectColumn,
-  ProjectColumnService,
-  UpdateColumnDTO,
-} from './index';
-import { Authorization } from '../../auth';
-import {
-  MemberRole,
-  MembershipAccessControlGuard,
-  MembershipRoles,
-} from '../membership';
+import { ProjectColumnService } from './column.service';
+import { ProjectColumn } from './entity/column.entity';
+import { Authorization } from '../../auth/decorators/auth.decorator';
+import { CreateColumnDTO } from './dto/create-column.dto';
+import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
+import { MemberRole } from '../membership/types/member-role.enum';
+import { MembershipRoles } from '../membership/decorators/membership.decorator';
+import { UpdateColumnDTO } from './dto/update-column.dto';
+import { MoveColumnDTO } from './dto/move-column.dto';
 
 @ApiTags('Project Columns')
 @ApiBearerAuth()

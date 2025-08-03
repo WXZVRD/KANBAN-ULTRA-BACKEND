@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { User } from '../entity/user.entity';
 import { AuthMethod } from '../types/authMethods.enum';
-import { UpdateUserDto, User, UserRepository } from '../index';
+import { UserRepository } from '../repository/user.repository';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 interface IUserService {
   findById(id: string): Promise<User | null>;

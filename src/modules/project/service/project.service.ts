@@ -5,14 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import {
-  CreateProjectDto,
-  Project,
-  ProjectRepository,
-  UpdateProjectDTO,
-} from '../index';
-import { ProjectColumn, ProjectColumnService } from '../column';
-import { MemberRole, MembershipService } from '../membership';
+import { CreateProjectDto } from '../dto/create-project.dto';
+import { Project } from '../entity/project.entity';
+import { UpdateProjectDTO } from '../dto/update-project.dto';
+import { ProjectRepository } from '../repository/project.repository';
+import { ProjectColumnService } from '../column/column.service';
+import { MembershipService } from '../membership/services/membership.service';
+import { MemberRole } from '../membership/types/member-role.enum';
+import { ProjectColumn } from '../column/entity/column.entity';
 
 export interface IProjectService {
   create(dto: CreateProjectDto, userId: string): Promise<Project>;

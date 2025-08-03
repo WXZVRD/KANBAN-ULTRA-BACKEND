@@ -3,8 +3,8 @@ import {
   ProviderOptionsSymbol,
   TypeAsyncOptions,
   TypeOptions,
-  AuthProviderService,
-} from './index';
+} from './provider.constants';
+import { AuthProviderService } from './OAuthProvider.service';
 
 @Module({})
 export class AuthProviderModule {

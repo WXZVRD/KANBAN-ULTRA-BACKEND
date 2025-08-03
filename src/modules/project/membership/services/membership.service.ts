@@ -4,12 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
+import { CreateMembershipDTO } from '../dto/create-membership.dto';
+import { Membership } from '../entity/membership.entity';
 import { MemberRole } from '../types/member-role.enum';
-import {
-  CreateMembershipDTO,
-  Membership,
-  MembershipRepository,
-} from '../index';
+import { MembershipRepository } from '../repository/membership.repository';
 
 interface IMembershipService {
   createNewMember(membershipData: CreateMembershipDTO): Promise<any>;

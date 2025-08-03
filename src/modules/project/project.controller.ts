@@ -19,19 +19,16 @@ import {
   ApiNotFoundResponse,
   ApiBody,
 } from '@nestjs/swagger';
-import {
-  CreateProjectDto,
-  Project,
-  ProjectService,
-  UpdateProjectDTO,
-} from './index';
-import { Authorization, Authorized } from '../auth';
-import { UserRole } from '../user';
-import {
-  MemberRole,
-  MembershipAccessControlGuard,
-  MembershipRoles,
-} from './membership';
+import { MemberRole } from '@/modules/project/membership/types/member-role.enum';
+import { ProjectService } from '@/modules/project/service/project.service';
+import { Authorization } from '@/modules/auth/decorators/auth.decorator';
+import { CreateProjectDto } from '@/modules/project/dto/create-project.dto';
+import { Project } from '@/modules/project/entity/project.entity';
+import { Authorized } from '@/modules/auth/decorators/authorized.decorator';
+import { UserRole } from '@/modules/user/types/roles.enum';
+import { MembershipAccessControlGuard } from '@/modules/project/membership/guards/member-access-control.guard';
+import { MembershipRoles } from '@/modules/project/membership/decorators/membership.decorator';
+import { UpdateProjectDTO } from '@/modules/project/dto/update-project.dto';
 
 @ApiTags('Projects')
 @ApiBearerAuth()

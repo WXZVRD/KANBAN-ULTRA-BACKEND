@@ -15,8 +15,11 @@ import {
   ApiUnauthorizedResponse,
   ApiBody,
 } from '@nestjs/swagger';
-import { UpdateUserDto, User, UserService } from './index';
-import { Authorization, Authorized } from '../auth';
+import { UserService } from './services/user.service';
+import { Authorization } from '../auth/decorators/auth.decorator';
+import { User } from './entity/user.entity';
+import { Authorized } from '../auth/decorators/authorized.decorator';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()

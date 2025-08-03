@@ -27,9 +27,13 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { AuthProviderGuard, AuthService, LoginDto, RegisterDto } from './index';
-import { AuthProviderService, BaseOauthService } from './OAuthProvider';
-import { User } from '../user';
+import { AuthProviderGuard } from './guards/provider.guard';
+import { AuthService } from './auth.service';
+import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { RegisterDto } from './dto/register.dto';
+import { User } from '../user/entity/user.entity';
+import { LoginDto } from './dto/login.dto';
+import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 
 @ApiTags('Auth')
 @Controller('auth')

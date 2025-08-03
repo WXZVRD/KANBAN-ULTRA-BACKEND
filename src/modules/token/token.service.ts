@@ -4,7 +4,10 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ITokenGenerator, Token, TokenRepository, TokenType } from './index';
+import { ITokenGenerator } from './types/interfaces/token-generator.interface';
+import { TokenType } from './types/token.types';
+import { Token } from './entity/token.entity';
+import { TokenRepository } from './repository/token.repository';
 
 interface ITokenService {
   generateToken(

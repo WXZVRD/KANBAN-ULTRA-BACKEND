@@ -6,7 +6,6 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { EmailConfirmationService, ConfirmationDto } from './index';
 import { Request } from 'express';
 import {
   ApiTags,
@@ -16,6 +15,8 @@ import {
   ApiUnauthorizedResponse,
   ApiBody,
 } from '@nestjs/swagger';
+import { EmailConfirmationService } from './email-confirmation.service';
+import { ConfirmationDto } from './dto/confirmation.dto';
 
 @ApiTags('Auth / Email Confirmation')
 @Controller('auth/email-confirmation')

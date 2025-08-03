@@ -8,11 +8,14 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
-import { ConfirmationDto } from './index';
-import { Token, TokenRepository, TokenType } from '../../token';
-import { MailService } from '../../mail';
-import { User, UserService } from '../../user';
 import { AuthService } from '../auth.service';
+import { ConfirmationDto } from './dto/confirmation.dto';
+import { TokenRepository } from '../../token/repository/token.repository';
+import { MailService } from '../../mail/mail.service';
+import { UserService } from '../../user/services/user.service';
+import { Token } from '../../token/entity/token.entity';
+import { TokenType } from '../../token/types/token.types';
+import { User } from '../../user/entity/user.entity';
 
 interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;

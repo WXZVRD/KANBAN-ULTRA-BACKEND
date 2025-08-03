@@ -23,19 +23,16 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
-import {
-  CreateTaskDTO,
-  Task,
-  TaskFilterDto,
-  TaskService,
-  UpdateTaskDTO,
-} from './index';
-import {
-  MemberRole,
-  MembershipAccessControlGuard,
-  MembershipRoles,
-} from '../membership';
-import { Authorization, Authorized } from '../../auth';
+import { TaskService } from '@/modules/project/task/service/task.service';
+import { MembershipAccessControlGuard } from '@/modules/project/membership/guards/member-access-control.guard';
+import { MemberRole } from '@/modules/project/membership/types/member-role.enum';
+import { MembershipRoles } from '@/modules/project/membership/decorators/membership.decorator';
+import { Authorization } from '@/modules/auth/decorators/auth.decorator';
+import { CreateTaskDTO } from '@/modules/project/task/dto/create-task.dto';
+import { Authorized } from '@/modules/auth/decorators/authorized.decorator';
+import { Task } from '@/modules/project/task/entity/task.entity';
+import { UpdateTaskDTO } from '@/modules/project/task/dto/update-task.dto';
+import { TaskFilterDto } from '@/modules/project/task/dto/task-filter.dto';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
