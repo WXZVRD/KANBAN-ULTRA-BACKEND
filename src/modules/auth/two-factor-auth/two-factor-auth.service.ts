@@ -6,7 +6,7 @@ import { TokenType } from '../../token/types/token.types';
 import { Token } from '../../token/entity/token.entity';
 import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
 
-interface ITwoFactorAuthService {
+export interface ITwoFactorAuthService {
   validateTwoFactorToken(email: string, code: string): Promise<any>;
   sendTwoFactorToken(email: string): Promise<any>;
 }

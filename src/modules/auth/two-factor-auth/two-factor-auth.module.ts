@@ -6,6 +6,12 @@ import { MailModule } from '../../mail/mail.module';
 
 @Module({
   imports: [EmailConfirmationModule, MailModule, TokenModule],
-  providers: [TwoFactorAuthService],
+  providers: [
+    {
+      provide: 'ITwoFactorAuthService',
+      useClass: TwoFactorAuthService,
+    },
+  ],
+  exports: ['ITwoFactorAuthService'],
 })
 export class TwoFactorAuthModule {}

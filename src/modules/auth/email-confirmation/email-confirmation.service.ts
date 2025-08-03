@@ -33,7 +33,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     private readonly mailService: IMailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
-    @Inject(forwardRef(() => AuthService))
+    @Inject(forwardRef(() => 'IAuthService'))
     private readonly authService: AuthService,
   ) {}
 

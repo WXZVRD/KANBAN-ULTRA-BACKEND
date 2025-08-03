@@ -18,7 +18,10 @@ import { IUserService, UserService } from '../user/services/user.service';
 import { AccountService } from '../account/account.service';
 import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
-import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+import {
+  ITwoFactorAuthService,
+  TwoFactorAuthService,
+} from './two-factor-auth/two-factor-auth.service';
 import { AuthMethod } from '../user/types/authMethods.enum';
 import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
 import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
@@ -47,7 +50,8 @@ export class AuthService implements IAuthService {
     private readonly providerService: AuthProviderService,
     @Inject(forwardRef(() => EmailConfirmationService))
     private readonly emailConfirmationService: EmailConfirmationService,
-    private readonly twoFactorAuthService: TwoFactorAuthService,
+    @Inject('ITwoFactorAuthService')
+    private readonly twoFactorAuthService: ITwoFactorAuthService,
   ) {}
 
   /**
