@@ -1,17 +1,19 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AuthProviderService } from '../OAuthProvider/OAuthProvider.service';
+import { IAuthProviderService } from '../OAuthProvider/OAuthProvider.service';
 import { BaseOauthService } from '../OAuthProvider/services/base-oauth.service';
 import { Request } from 'express';
 
 @Injectable()
 export class AuthProviderGuard implements CanActivate {
   public constructor(
-    private readonly authProviderService: AuthProviderService,
+    @Inject('IAuthProviderService')
+    private readonly authProviderService: IAuthProviderService,
   ) {}
 
   public canActivate(context: ExecutionContext): boolean {

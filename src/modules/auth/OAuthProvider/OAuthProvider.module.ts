@@ -16,9 +16,12 @@ export class AuthProviderModule {
           useValue: options.services,
           provide: ProviderOptionsSymbol,
         },
-        AuthProviderService,
+        {
+          provide: 'IAuthProviderService',
+          useClass: AuthProviderService,
+        },
       ],
-      exports: [AuthProviderService],
+      exports: ['IAuthProviderService'],
     };
   }
 
@@ -32,9 +35,12 @@ export class AuthProviderModule {
           provide: ProviderOptionsSymbol,
           inject: options.inject,
         },
-        AuthProviderService,
+        {
+          provide: 'IAuthProviderService',
+          useClass: AuthProviderService,
+        },
       ],
-      exports: [AuthProviderService],
+      exports: ['IAuthProviderService'],
     };
   }
 }

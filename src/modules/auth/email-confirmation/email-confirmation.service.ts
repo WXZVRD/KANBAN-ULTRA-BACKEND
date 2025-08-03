@@ -17,7 +17,7 @@ import { TokenType } from '../../token/types/token.types';
 import { User } from '../../user/entity/user.entity';
 import { ITokenService } from '../../token/token.service';
 
-interface IEmailConfirmationService {
+export interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;
   sendVerificationToken(email: string): Promise<boolean>;
 }

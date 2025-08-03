@@ -20,8 +20,8 @@ import { Recaptcha } from '@nestlab/google-recaptcha';
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthProviderGuard } from './guards/provider.guard';
-import { AuthService } from './auth.service';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
+import { IAuthService } from './auth.service';
+import { IAuthProviderService } from './OAuthProvider/OAuthProvider.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../user/entity/user.entity';
 import { LoginDto } from './dto/login.dto';
@@ -36,8 +36,9 @@ export class AuthController {
 
   constructor(
     @Inject('IAuthService')
-    private readonly authService: AuthService,
-    private readonly authProviderService: AuthProviderService,
+    private readonly authService: IAuthService,
+    @Inject('IAuthProviderService')
+    private readonly authProviderService: IAuthProviderService,
     private readonly configService: ConfigService,
   ) {}
 

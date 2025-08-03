@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../user/entity/user.entity';
 import { Account } from './entity/account.entity';
-import { AccountRepository } from './repositories/account.repository';
+import { IAccountRepository } from './repositories/account.repository';
 
-interface IAccountService {
+export interface IAccountService {
   create(
     user: User,
     type: string,
@@ -17,7 +17,10 @@ interface IAccountService {
 
 @Injectable()
 export class AccountService implements IAccountService {
-  constructor(private readonly accountRepository: AccountRepository) {}
+  constructor(
+    @Inject('IAccountRepository')
+    private readonly accountRepository: IAccountRepository,
+  ) {}
 
   /**
    * Creates a new account for the specified user with given provider and tokens.

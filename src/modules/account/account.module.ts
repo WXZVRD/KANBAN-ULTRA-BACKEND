@@ -6,7 +6,16 @@ import { AccountRepository } from './repositories/account.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account])],
-  providers: [AccountService, AccountRepository],
-  exports: [AccountService],
+  providers: [
+    {
+      provide: 'IAccountService',
+      useClass: AccountService,
+    },
+    {
+      provide: 'IAccountRepository',
+      useClass: AccountRepository,
+    },
+  ],
+  exports: ['IAccountService', 'IAccountRepository'],
 })
 export class AccountModule {}
