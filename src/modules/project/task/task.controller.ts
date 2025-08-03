@@ -22,6 +22,7 @@ import {
   UpdateTaskDTO,
 } from './index';
 import { Authorization, Authorized } from '../../auth';
+import { UpdateAssigneeDTO } from './dto/update-assignee.dto';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -60,6 +61,43 @@ export class TaskController {
     const task: Task = await this.taskService.update(dto);
     this.logger.log(`Task updated ID=${task.id}`);
     return task;
+  }
+
+  /**
+   * Updates the assignee of a specific task.
+   *
+   * @description
+   * Changes the assignee of a task to another user.
+   * Only members with `ADMIN` or `MEMBER` roles are allowed.
+   *
+   * @param assigneeId - The ID of the new assignee
+   * @param dto - DTO containing the task ID and additional data
+   * @returns The updated `Task` entity
+   *
+   * @throws NotFoundException if the task does not exist
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
+  @Patch('update-assignee/:assigneeId')
+  @ApiAuthEndpoint(TaskMapSwagger.updateAssignee)
+  public async updateAssignee(
+    @Param('assigneeId') assigneeId: string,
+    @Body() dto: UpdateAssigneeDTO,
+  ): Promise<Task> {
+    this.logger.log(
+      `Received request to update assignee for task ID: ${dto.taskId} → new assignee: ${assigneeId}`,
+    );
+
+    const updatedTask: Task = await this.taskService.updateAssignee(
+      assigneeId,
+      dto,
+    );
+
+    this.logger.log(
+      `Task ${updatedTask.id} successfully reassigned to user ${assigneeId}`,
+    );
+
+    return updatedTask;
   }
 
   /**
