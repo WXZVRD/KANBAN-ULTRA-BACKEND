@@ -12,21 +12,22 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { DeleteResult } from 'typeorm';
-
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { MembershipService } from './services/membership.service';
 import { MembershipInvitationService } from './services/membership-invitation.service';
-import { MembershipAccessControlGuard } from './guards/member-access-control.guard';
-import { MemberRole } from './types/member-role.enum';
-import { MembershipRoles } from './decorators/membership.decorator';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { SendInviteDTO } from './dto/send-invite.dto';
-import { InviteDto } from './dto/invite.dto';
-import { UpdateMembershipDTO } from './dto/update-member-role.dto';
-import { Membership } from './entity/membership.entity';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
-import { MembershipMapSwagger } from './maps/membership-map.swagger';
-import { MemberACL } from './decorators/member-access-control.decorator';
+import { Authorization } from '../../auth';
+import {
+  InviteDto,
+  MemberACL,
+  MemberRole,
+  Membership,
+  MembershipAccessControlGuard,
+  MembershipMapSwagger,
+  MembershipRoles,
+  SendInviteDTO,
+  UpdateMembershipDTO,
+} from './index';
 
 @ApiTags('Memberships')
 @ApiBearerAuth()

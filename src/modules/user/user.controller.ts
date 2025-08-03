@@ -7,21 +7,13 @@ import {
   Logger,
   Patch,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiOkResponse,
-  ApiUnauthorizedResponse,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './services/user.service';
-import { Authorization } from '../auth/decorators/auth.decorator';
 import { User } from './entity/user.entity';
-import { Authorized } from '../auth/decorators/authorized.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
 import { UsersSwagger } from './maps/user-map.swagger';
+import { Authorization, Authorized } from '../auth';
 
 @ApiTags('Users')
 @ApiBearerAuth()

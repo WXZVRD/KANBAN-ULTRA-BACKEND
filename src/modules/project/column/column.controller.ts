@@ -10,15 +10,16 @@ import {
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ProjectColumnService } from './column.service';
-import { ProjectColumn } from './entity/column.entity';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { CreateColumnDTO } from './dto/create-column.dto';
-import { MemberRole } from '../membership/types/member-role.enum';
-import { UpdateColumnDTO } from './dto/update-column.dto';
-import { MoveColumnDTO } from './dto/move-column.dto';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
-import { ColumnMapSwagger } from './maps/project-map.swagger';
-import { MemberACL } from '../membership/decorators/member-access-control.decorator';
+import { MemberACL, MemberRole } from '../membership';
+import { Authorization } from '../../auth';
+import {
+  ColumnMapSwagger,
+  CreateColumnDTO,
+  MoveColumnDTO,
+  ProjectColumn,
+  UpdateColumnDTO,
+} from './index';
 
 @ApiTags('Project Columns')
 @ApiBearerAuth()

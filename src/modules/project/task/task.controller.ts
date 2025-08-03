@@ -12,16 +12,17 @@ import {
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TaskService } from './service/task.service';
-import { MemberRole } from '../membership/types/member-role.enum';
 import { Authorization } from '../../auth/decorators/auth.decorator';
-import { CreateTaskDTO } from './dto/create-task.dto';
 import { Authorized } from '../../auth/decorators/authorized.decorator';
-import { Task } from './entity/task.entity';
-import { UpdateTaskDTO } from './dto/update-task.dto';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
-import { TaskMapSwagger } from './maps/task-map.swagger';
-import { TaskFilterDto } from './dto/task-filter.dto';
-import { MemberACL } from '../membership/decorators/member-access-control.decorator';
+import { MemberACL, MemberRole } from '../membership';
+import {
+  CreateTaskDTO,
+  Task,
+  TaskFilterDto,
+  TaskMapSwagger,
+  UpdateTaskDTO,
+} from './index';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()

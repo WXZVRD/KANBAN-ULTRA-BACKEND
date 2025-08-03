@@ -1,3 +1,16 @@
+import { DeleteResult } from 'typeorm';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ProjectService } from './service/project.service';
+import { UserRole } from '../user/types/roles.enum';
+import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
+import { MemberACL, MemberRole } from './membership';
+import { Authorization, Authorized } from '../auth';
+import {
+  CreateProjectDto,
+  Project,
+  ProjectMapSwagger,
+  UpdateProjectDTO,
+} from './index';
 import {
   Body,
   Controller,
@@ -7,19 +20,6 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { DeleteResult } from 'typeorm';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { ProjectService } from './service/project.service';
-import { Authorization } from '../auth/decorators/auth.decorator';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { Project } from './entity/project.entity';
-import { Authorized } from '../auth/decorators/authorized.decorator';
-import { UserRole } from '../user/types/roles.enum';
-import { MemberRole } from './membership/types/member-role.enum';
-import { UpdateProjectDTO } from './dto/update-project.dto';
-import { ProjectMapSwagger } from './maps/project-map.swagger';
-import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
-import { MemberACL } from './membership/decorators/member-access-control.decorator';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
