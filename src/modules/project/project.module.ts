@@ -8,8 +8,6 @@ import { MembershipModule } from './membership/membership.module';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './service/project.service';
 import { ProjectRepository } from './repository/project.repository';
-import { ProjectColumnService } from './column/column.service';
-import { MembershipService } from './membership/services/membership.service';
 import { RedisModule } from '../redis/redis.module';
 
 @Module({
@@ -23,10 +21,15 @@ import { RedisModule } from '../redis/redis.module';
   ],
   controllers: [ProjectController],
   providers: [
-    ProjectService,
-    ProjectRepository,
-    ProjectColumnService,
-    MembershipService,
+    {
+      provide: 'IProjectService',
+      useClass: ProjectService,
+    },
+    {
+      provide: 'IProjectRepository',
+      useClass: ProjectRepository,
+    },
   ],
+  exports: ['IProjectRepository', 'IProjectService'],
 })
 export class ProjectModule {}

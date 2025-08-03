@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { ProjectRepository } from '../repository/project.repository';
+import { IProjectRepository } from '../repository/project.repository';
 import { ProjectColumnService } from '../column/column.service';
 import { MembershipService } from '../membership/services/membership.service';
 import { MemberRole } from '../membership';
@@ -30,7 +30,8 @@ export class ProjectService implements IProjectService {
   private readonly logger: Logger = new Logger(ProjectService.name);
 
   public constructor(
-    private readonly projectRepository: ProjectRepository,
+    @Inject('IProjectRepository')
+    private readonly projectRepository: IProjectRepository,
     private readonly projectColumnService: ProjectColumnService,
     private readonly membershipService: MembershipService,
     @Inject('IRedisService')
