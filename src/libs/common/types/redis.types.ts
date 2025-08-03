@@ -1,9 +1,9 @@
 import { Project } from '../../../modules/project';
 
 export enum RedisKey {
+  // Projects
   Project = 'project',
   ProjectAll = 'project:all',
-  UserProjects = 'user:projects',
 }
 
 export interface RedisValueMap {
