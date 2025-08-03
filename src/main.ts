@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import IORedis from 'ioredis';
+import IORedis, { Redis } from 'ioredis';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { getMsFromEnv } from './libs/common/utils/ms.util';
@@ -16,7 +16,7 @@ async function bootstrap(): Promise<void> {
   setupSwagger(app);
 
   const config: ConfigService = app.get(ConfigService);
-  const redis: IORedis = new IORedis(config.getOrThrow<string>('REDIS_URI'));
+  const redis: Redis = app.get('REDIS_CLIENT');
   const RedisStore: connectRedis.RedisStore = connectRedis(session);
 
   redis.on('connect', () => {
