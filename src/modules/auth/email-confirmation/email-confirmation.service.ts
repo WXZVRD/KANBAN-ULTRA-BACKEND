@@ -16,6 +16,10 @@ import { Token } from '../../token/entity/token.entity';
 import { TokenType } from '../../token/types/token.types';
 import { User } from '../../user/entity/user.entity';
 import { ITokenService } from '../../token/token.service';
+import {
+  ConfirmationEmail,
+  ConfirmationEmailData,
+} from '../../mail/templates/confirmation/confirmation.email';
 
 export interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;
@@ -114,7 +118,13 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     const token: Token = await this.generateVerificationToken(email);
 
     try {
-      await this.mailService.sendConfirmationEmail(token.email, token.token);
+      await this.mailService.send<ConfirmationEmailData>(
+        token.email,
+        new ConfirmationEmail(),
+        {
+          token: token.token,
+        },
+      );
       this.logger.log(`Verification email sent to: ${token.email}`);
     } catch (error) {
       this.logger.error(
