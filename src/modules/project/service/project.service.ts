@@ -8,7 +8,10 @@ import {
 import { DeleteResult } from 'typeorm';
 import { IProjectRepository } from '../repository/project.repository';
 import { ProjectColumnService } from '../column/column.service';
-import { MembershipService } from '../membership/services/membership.service';
+import {
+  IMembershipService,
+  MembershipService,
+} from '../membership/services/membership.service';
 import { MemberRole } from '../membership';
 import { ProjectColumn } from '../column';
 import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
@@ -33,7 +36,8 @@ export class ProjectService implements IProjectService {
     @Inject('IProjectRepository')
     private readonly projectRepository: IProjectRepository,
     private readonly projectColumnService: ProjectColumnService,
-    private readonly membershipService: MembershipService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
     @Inject('IRedisService')
     private readonly redisService: IRedisService,
   ) {}

@@ -5,14 +5,14 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { IUserService, UserService } from '../../../user/services/user.service';
+import { IUserService } from '../../../user/services/user.service';
 import { MailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
-import { MembershipService } from './membership.service';
+import { IMembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
 import { TokenType } from '../../../token/types/token.types';
 import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generator';
-import { ITokenService, TokenService } from '../../../token/token.service';
+import { ITokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
 import ms from 'ms';
@@ -40,7 +40,8 @@ export class MembershipInvitationService
     private readonly mailService: MailService,
     @Inject('IUserService')
     private readonly userService: IUserService,
-    private readonly membershipService: MembershipService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
   ) {}
 
   /**

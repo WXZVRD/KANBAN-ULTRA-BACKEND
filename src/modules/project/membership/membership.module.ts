@@ -8,7 +8,7 @@ import { MembershipController } from './membership.controller';
 import { MembershipService } from './services/membership.service';
 import { MembershipRepository } from './repository/membership.repository';
 import { MembershipInvitationService } from './services/membership-invitation.service';
-import { MailService } from '../../mail/mail.service';
+import { MailModule } from '../../mail/mail.module';
 
 @Module({
   imports: [
@@ -16,14 +16,27 @@ import { MailService } from '../../mail/mail.service';
     EmailConfirmationModule,
     UserModule,
     TokenModule,
+    MailModule,
   ],
   controllers: [MembershipController],
   providers: [
-    MembershipService,
-    MembershipRepository,
-    MembershipInvitationService,
-    MailService,
+    {
+      provide: 'IMembershipService',
+      useClass: MembershipService,
+    },
+    {
+      provide: 'IMembershipRepository',
+      useClass: MembershipRepository,
+    },
+    {
+      provide: 'IMembershipInvitationService',
+      useClass: MembershipInvitationService,
+    },
   ],
-  exports: [MembershipService, MembershipRepository],
+  exports: [
+    'IMembershipService',
+    'IMembershipRepository',
+    'IMembershipInvitationService',
+  ],
 })
 export class MembershipModule {}

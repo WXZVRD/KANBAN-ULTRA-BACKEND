@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Membership } from '../entity/membership.entity';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 
-interface IMembershipRepository {
+export interface IMembershipRepository {
   create(memberToCreate: DeepPartial<Membership>): Promise<Membership>;
   save(memberToSave: DeepPartial<Membership>): Promise<Membership>;
   createAndSave(memberToSave: DeepPartial<Membership>): Promise<Membership>;
