@@ -12,6 +12,7 @@ import { TwoFactorAuthModule } from './modules/auth/two-factor-auth/two-factor-a
 import { ProjectModule } from './modules/project/project.module';
 import { TokenModule } from './modules/token/token.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { AnalyticModule } from './modules/analytic/analytic.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RedisModule } from './modules/redis/redis.module';
     ProjectModule,
     TokenModule,
     RedisModule,
+    AnalyticModule,
   ],
 })
 export class AppModule {}
