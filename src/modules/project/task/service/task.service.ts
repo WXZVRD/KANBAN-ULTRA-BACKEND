@@ -11,6 +11,9 @@ import { RedisService } from '../../../redis/redis.service';
 import { RedisKey } from '../../../../libs/common/types/redis.types';
 import ms from 'ms';
 import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
+import { MailService } from '../../../mail/mail.service';
+import { UserService } from '../../../user/services/user.service';
+import { User } from '../../../user/entity/user.entity';
 
 interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
@@ -27,6 +30,8 @@ export class TaskService implements ITaskService {
   public constructor(
     private readonly taskRepository: TaskRepository,
     private readonly redisService: RedisService,
+    private readonly mailService: MailService,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -82,12 +87,15 @@ export class TaskService implements ITaskService {
   /**
    * Updates an existing task.
    *
+   * @param assigneeId
+   * @param projectId
    * @param dto - DTO containing updated fields
    * @returns Updated task entity
    * @throws NotFoundException if task does not exist
    */
   public async updateAssignee(
     assigneeId: string,
+    projectId: string,
     dto: UpdateAssigneeDTO,
   ): Promise<Task> {
     this.logger.log(
@@ -131,6 +139,28 @@ export class TaskService implements ITaskService {
     );
 
     this.logger.log(`Task with ID ${updated.id} successfully updated.`);
+
+    const assigneeUser: User | null =
+      await this.userService.findById(assigneeId);
+
+    if (!assigneeUser) {
+      this.logger.warn(`User with ID ${assigneeId} not found.`);
+      throw new NotFoundException(
+        `User with ID ${assigneeId} was not found. Please check the provided ID.`,
+      );
+    }
+
+    await this.mailService.sendTaskAssigneeEmail(
+      assigneeUser.email,
+      projectId,
+      updated.id,
+      updated.title,
+    );
+
+    this.logger.log(
+      `Sending task assignment email: "${updated.title}" to ${assigneeUser.email}`,
+    );
+
     return updated;
   }
 

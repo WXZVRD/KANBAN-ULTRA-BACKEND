@@ -7,6 +7,7 @@ import { TaskController } from './task.controller';
 import { TaskService } from './service/task.service';
 import { TaskRepository } from './repository/task.repository';
 import { RedisModule } from '../../redis/redis.module';
+import { MailModule } from '../../mail/mail.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisModule } from '../../redis/redis.module';
     UserModule,
     MembershipModule,
     RedisModule,
+    MailModule,
   ],
   controllers: [TaskController],
   providers: [TaskService, TaskRepository],

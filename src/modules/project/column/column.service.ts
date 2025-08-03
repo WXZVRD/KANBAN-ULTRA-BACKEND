@@ -1,4 +1,9 @@
-import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 import { Project } from '../entity/project.entity';
 import { CreateColumnDTO } from './dto/create-column.dto';
@@ -15,6 +20,8 @@ interface IProjectColumnService {
   moveColumn(columnId: string, dto: MoveColumnDTO): Promise<ProjectColumn>;
   delete(columnId: string): Promise<DeleteResult>;
 }
+
+@Injectable()
 export class ProjectColumnService implements IProjectColumnService {
   private readonly logger: Logger = new Logger(ProjectColumnService.name);
 
