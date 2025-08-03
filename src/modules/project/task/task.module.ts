@@ -6,9 +6,15 @@ import { Task } from './entity/task.entity';
 import { TaskController } from './task.controller';
 import { TaskService } from './service/task.service';
 import { TaskRepository } from './repository/task.repository';
+import { RedisModule } from '../../redis/redis.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Task]), UserModule, MembershipModule],
+  imports: [
+    TypeOrmModule.forFeature([Task]),
+    UserModule,
+    MembershipModule,
+    RedisModule,
+  ],
   controllers: [TaskController],
   providers: [TaskService, TaskRepository],
 })
