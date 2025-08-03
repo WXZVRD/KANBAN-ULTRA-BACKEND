@@ -18,6 +18,15 @@ import { MailModule } from '../../mail/mail.module';
     MailModule,
   ],
   controllers: [TaskController],
-  providers: [TaskService, TaskRepository],
+  providers: [
+    {
+      provide: 'ITaskService',
+      useClass: TaskService,
+    },
+    {
+      provide: 'ITaskRepository',
+      useClass: TaskRepository,
+    },
+  ],
 })
 export class TaskModule {}

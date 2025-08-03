@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { TaskService } from './service/task.service';
+import { ITaskService, TaskService } from './service/task.service';
 import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
 import { MemberACL, MemberRole } from '../membership';
 import {
@@ -30,7 +31,10 @@ import { UpdateAssigneeDTO } from './dto/update-assignee.dto';
 export class TaskController {
   private readonly logger: Logger = new Logger(TaskController.name);
 
-  constructor(private readonly taskService: TaskService) {}
+  constructor(
+    @Inject('ITaskService')
+    private readonly taskService: ITaskService,
+  ) {}
 
   /**
    * Creates a new task for the specified project.

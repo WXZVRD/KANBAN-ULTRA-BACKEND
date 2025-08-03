@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DeleteResult } from 'typeorm';
-import { TaskRepository } from '../repository/task.repository';
+import { ITaskRepository } from '../repository/task.repository';
 import { CreateTaskDTO, Task, TaskFilterDto, UpdateTaskDTO } from '../index';
 import { IRedisService } from '../../../redis/redis.service';
 import { RedisKey } from '../../../../libs/common/types/redis.types';
@@ -16,12 +16,18 @@ import { MailService } from '../../../mail/mail.service';
 import { IUserService } from '../../../user/services/user.service';
 import { User } from '../../../user/entity/user.entity';
 
-interface ITaskService {
+export interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
   update(dto: UpdateTaskDTO): Promise<Task>;
   getAll(): Promise<Task[]>;
   getById(id: string): Promise<Task>;
   findProjectTask(projectId: string, filter: TaskFilterDto): Promise<Task[]>;
+  updateAssignee(
+    assigneeId: string,
+    projectId: string,
+    dto: UpdateAssigneeDTO,
+  ): Promise<Task>;
+  delete(taskId: string): Promise<DeleteResult>;
 }
 
 @Injectable()
@@ -29,7 +35,8 @@ export class TaskService implements ITaskService {
   private readonly logger: Logger = new Logger(TaskService.name);
 
   public constructor(
-    private readonly taskRepository: TaskRepository,
+    @Inject('ITaskRepository')
+    private readonly taskRepository: ITaskRepository,
     @Inject('IRedisService')
     private readonly redisService: IRedisService,
     private readonly mailService: MailService,

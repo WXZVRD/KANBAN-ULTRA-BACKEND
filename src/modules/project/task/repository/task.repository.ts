@@ -9,13 +9,14 @@ import {
 import { Task } from '../entity/task.entity';
 import { TaskFilterDto } from '../dto/task-filter.dto';
 
-interface ITaskRepository {
+export interface ITaskRepository {
   create(taskToCreate: DeepPartial<Task>): Promise<Task>;
   save(taskToSave: Task): Promise<Task>;
   createAndSave(taskToSave: DeepPartial<Task>): Promise<Task>;
   findById(id: string): Promise<Task | null>;
   getAll(): Promise<Task[] | null>;
   findByProjectId(projectId: string, filter?: TaskFilterDto): Promise<Task[]>;
+  delete(id: string): Promise<DeleteResult>;
 }
 
 @Injectable()
