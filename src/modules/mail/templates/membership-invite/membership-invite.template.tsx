@@ -11,7 +11,7 @@ import {
   Link,
   Section,
 } from '@react-email/components';
-import { MemberRole } from '../../project/membership/types/member-role.enum';
+import { MemberRole } from '../../../project/membership/types/member-role.enum';
 
 interface IMembershipInviteTemplateProps {
   domain: string;

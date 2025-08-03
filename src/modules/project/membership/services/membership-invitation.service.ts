@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { IUserService } from '../../../user/services/user.service';
-import { IMailService, MailService } from '../../../mail/mail.service';
+import { IMailService } from '../../../mail/mail.service';
 import { InviteDto } from '../dto/invite.dto';
 import { IMembershipService } from './membership.service';
 import { MemberRole } from '../types/member-role.enum';
@@ -16,6 +16,10 @@ import { ITokenService } from '../../../token/token.service';
 import { Token } from '../../../token/entity/token.entity';
 import { User } from '../../../user/entity/user.entity';
 import ms from 'ms';
+import {
+  MembershipInviteEmail,
+  MembershipInviteEmailData,
+} from '../../../mail/templates/membership-invite/membership-invite.email';
 
 export interface IMembershipInvitationService {
   newVerification(dto: InviteDto): Promise<void>;
@@ -102,11 +106,14 @@ export class MembershipInvitationService
     );
 
     try {
-      await this.mailService.sendMembershipInviteEmail(
-        token.email,
-        token.token,
-        projectId,
-        memberRole,
+      await this.mailService.send<MembershipInviteEmailData>(
+        email,
+        new MembershipInviteEmail(),
+        {
+          token: token.token,
+          projectId,
+          memberRole,
+        },
       );
       this.logger.log(`Invitation sent to: ${email}`);
     } catch (error) {

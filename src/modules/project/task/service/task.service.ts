@@ -15,6 +15,10 @@ import { UpdateAssigneeDTO } from '../dto/update-assignee.dto';
 import { IMailService } from '../../../mail/mail.service';
 import { IUserService } from '../../../user/services/user.service';
 import { User } from '../../../user/entity/user.entity';
+import {
+  TaskAssignedEmailData,
+  TaskAssigneeEmail,
+} from '../../../mail/templates/task-assignee/task-assignee.email';
 
 export interface ITaskService {
   create(dto: CreateTaskDTO, id: string): Promise<Task>;
@@ -161,11 +165,14 @@ export class TaskService implements ITaskService {
       );
     }
 
-    await this.mailService.sendTaskAssigneeEmail(
+    await this.mailService.send<TaskAssignedEmailData>(
       assigneeUser.email,
-      projectId,
-      updated.id,
-      updated.title,
+      new TaskAssigneeEmail(),
+      {
+        projectId: projectId,
+        taskId: assigneeId,
+        taskTitle: updated.id,
+      },
     );
 
     this.logger.log(

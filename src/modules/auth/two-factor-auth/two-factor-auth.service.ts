@@ -1,10 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import ms from 'ms';
-import { IMailService, MailService } from '../../mail/mail.service';
-import { ITokenService, TokenService } from '../../token/token.service';
+import { IMailService } from '../../mail/mail.service';
+import { ITokenService } from '../../token/token.service';
 import { TokenType } from '../../token/types/token.types';
 import { Token } from '../../token/entity/token.entity';
 import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
+import {
+  TwoFactorEmail,
+  TwoFactorEmailData,
+} from '../../mail/templates/two-factor-auth/two-factor-auth.email';
 
 export interface ITwoFactorAuthService {
   validateTwoFactorToken(email: string, code: string): Promise<any>;
@@ -62,7 +66,13 @@ export class TwoFactorAuthService implements ITwoFactorAuthService {
       new NumericTokenGenerator(),
     );
 
-    await this.mailService.sendTwoFactorTokenEmail(token.email, token.token);
+    await this.mailService.send<TwoFactorEmailData>(
+      token.email,
+      new TwoFactorEmail(),
+      {
+        token: token.token,
+      },
+    );
 
     return true;
   }

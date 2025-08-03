@@ -16,6 +16,10 @@ import { User } from '../user/entity/user.entity';
 import { TokenType } from '../token/types/token.types';
 import { Token } from '../token/entity/token.entity';
 import { UuidTokenGenerator } from '../token/strategies/uuid-token.generator';
+import {
+  ResetPasswordEmail,
+  ResetPasswordEmailData,
+} from '../mail/templates/reset-password/reset-password.email';
 
 export interface IPasswordRecoveryService {
   resetPassword(dto: ResetPasswordDto): Promise<boolean>;
@@ -64,7 +68,11 @@ export class PasswordRecoveryService implements IPasswordRecoveryService {
       new UuidTokenGenerator(),
     );
 
-    await this.mailService.sendPasswordResetEmail(token.email, token.token);
+    await this.mailService.send<ResetPasswordEmailData>(
+      token.email,
+      new ResetPasswordEmail(),
+      { token: token.token },
+    );
 
     return true;
   }
