@@ -1,15 +1,15 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class UpdateUserDto {
-  @IsString({ message: 'Имя должно быть строкой.' })
-  @IsNotEmpty({ message: 'Имя обязательно для заполнения.' })
-  name: string;
+  @IsString({ message: "Имя должно быть строкой." })
+  @IsNotEmpty({ message: "Имя обязательно для заполнения." })
+  displayName: string;
 
-  @IsString({ message: 'Email должно быть строкой.' })
-  @IsNotEmpty({ message: 'Email обязательно для заполнения.' })
-  @IsEmail({}, { message: 'Некоректный формат Email.' })
+  @IsString({ message: "Email должно быть строкой." })
+  @IsNotEmpty({ message: "Email обязательно для заполнения." })
+  @IsEmail({}, { message: "Некоректный формат Email." })
   email: string;
 
-  @IsBoolean({ message: 'isTwoFactorEnabled должно быть булевым значением.' })
+  @IsBoolean({ message: "isTwoFactorEnabled должно быть булевым значением." })
   isTwoFactorEnabled: boolean;
 }

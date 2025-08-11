@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from '../entity/user.entity';
-import { AuthMethod } from '../types/authMethods.enum';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Logger } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { User } from "../entity/user.entity";
+import { AuthMethod } from "../types/authMethods.enum";
+import { InjectRepository } from "@nestjs/typeorm";
 
 export interface IUserRepository {
   findUniqueById(id: string): Promise<User | null>;
@@ -33,7 +33,7 @@ export class UserRepository implements IUserRepository {
 
     const user: User | null = await this.userRepository.findOne({
       where: { id },
-      relations: ['account'],
+      relations: ["account"],
     });
 
     if (!user) {
@@ -50,7 +50,7 @@ export class UserRepository implements IUserRepository {
 
     const user: User | null = await this.userRepository.findOne({
       where: { email },
-      relations: ['account'],
+      relations: ["account"],
     });
 
     if (!user) {
@@ -65,8 +65,8 @@ export class UserRepository implements IUserRepository {
   public async createUser(
     email: string,
     password: string,
-    displayName: string,
     picture: string,
+    displayName: string,
     method: AuthMethod,
     isVerified: boolean,
   ): Promise<User> {
@@ -77,8 +77,8 @@ export class UserRepository implements IUserRepository {
     const createdUser: User = this.userRepository.create({
       email: email,
       password: password,
-      picture: picture,
       displayName: displayName,
+      picture: picture,
       method: method,
       isVerified: isVerified,
     });

@@ -1,9 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { User } from '../entity/user.entity';
-import { UserRepository } from '../repository/user.repository';
-import { AuthMethod } from '../types/authMethods.enum';
-import { LoginDto } from '../../auth/dto/login.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { User } from "../entity/user.entity";
+import { UserRepository } from "../repository/user.repository";
+import { AuthMethod } from "../types/authMethods.enum";
+import { UpdateUserDto } from "../dto/update-user.dto";
 
 interface IUserService {
   findById(id: string): Promise<User | null>;
@@ -89,9 +88,16 @@ export class UserService implements IUserService {
   }
 
   public async update(id: string, dto: UpdateUserDto): Promise<User> {
+    console.log(
+      `[UserService] Starting update for user id=${id} with data:`,
+      dto,
+    );
+
     const user: User | null = await this.userRepository.findUniqueById(id);
+    console.log(`[UserService] Found user:`, user);
 
     if (!user) {
+      console.error(`[UserService] User with id=${id} not found`);
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
@@ -99,8 +105,10 @@ export class UserService implements IUserService {
       ...user,
       ...dto,
     };
+    console.log(`[UserService] Merged user data:`, updatedUser);
 
     const savedUser: User = await this.userRepository.save(updatedUser);
+    console.log(`[UserService] User successfully updated:`, savedUser);
 
     return savedUser;
   }
