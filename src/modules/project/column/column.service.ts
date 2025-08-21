@@ -1,8 +1,15 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { ProjectColumnRepository } from './repository/column.repository';
-import { ProjectColumn } from './entity/column.entity';
-import { Project } from '../entity/project.entity';
-import { CreateColumnDTO } from './dto/create-column.dto';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
+import { ProjectColumnRepository } from "./repository/column.repository";
+import { ProjectColumn } from "./entity/column.entity";
+import { Project } from "../entity/project.entity";
+import { CreateColumnDTO } from "./dto/create-column.dto";
+import { DeleteResult } from "typeorm";
+import { RenameColumnDTO } from "./dto/rename-column.dto";
 
 @Injectable()
 export class ProjectColumnService {
@@ -15,7 +22,7 @@ export class ProjectColumnService {
   public async createDefaultColumns(
     project: Project,
   ): Promise<ProjectColumn[]> {
-    const defaultTitles: string[] = ['To Do', 'In Progress', 'Done'];
+    const defaultTitles: string[] = ["To Do", "In Progress", "Done"];
 
     this.logger.log(`Создание стандартных колонок для проекта: ${project.id}`);
 
@@ -30,7 +37,7 @@ export class ProjectColumnService {
     );
 
     this.logger.log(
-      `Колонки созданы: ${createdColumns.map((c) => c.title).join(', ')}`,
+      `Колонки созданы: ${createdColumns.map((c) => c.title).join(", ")}`,
     );
 
     return createdColumns;
@@ -53,7 +60,7 @@ export class ProjectColumnService {
         `Колонка с названием "${dto.title}" или позицией "${dto.order}" уже существует в проекте ID=${dto.projectId}`,
       );
       throw new ConflictException(
-        'Колонка с таким названием или позицией уже существует.',
+        "Колонка с таким названием или позицией уже существует.",
       );
     }
 
@@ -69,5 +76,71 @@ export class ProjectColumnService {
     );
 
     return newColumn;
+  }
+
+  public async getByProjectId(projectId: string): Promise<ProjectColumn[]> {
+    const columns: ProjectColumn[] | null =
+      await this.projectColumnRepository.findByProjectId(projectId);
+
+    if (!columns || !columns.length) {
+      this.logger.warn(
+        `У проекта с id ${projectId} колонок нету, пожалуйста создайте хотя бы один`,
+      );
+      throw new NotFoundException(
+        `У проекта с id ${projectId} колонок нету, пожалуйста создайте хотя бы один`,
+      );
+    }
+
+    return columns;
+  }
+
+  public async deleteByProjectIdAndTitle(
+    projectId: string,
+    title: string,
+  ): Promise<DeleteResult> {
+    const column: ProjectColumn | null =
+      await this.projectColumnRepository.findByProjectIdAndTitle(
+        projectId,
+        title,
+      );
+
+    if (!column) {
+      this.logger.warn(`Колонки с названием ${title} не существует!`);
+      throw new NotFoundException(
+        `Колонки с названием ${title} не существует!`,
+      );
+    }
+
+    const res = await this.projectColumnRepository.delete(projectId, title);
+
+    return res;
+  }
+
+  public async renameColumn(
+    columnId: string,
+    body: RenameColumnDTO,
+  ): Promise<any> {
+    const column: ProjectColumn | null =
+      await this.projectColumnRepository.findById(columnId);
+    this.logger.log(`columnId ${columnId} !`);
+    this.logger.log(`body.title ${body.title} !`);
+
+    if (!column) {
+      this.logger.warn(`Колонки с названием ${body.title} не существует!`);
+      throw new NotFoundException(
+        `Колонки с названием ${body.title} не существует!`,
+      );
+    }
+
+    if (column.title === body.title) {
+      this.logger.warn(`Колонки с названием ${body.title} уже существует!`);
+      throw new NotFoundException(
+        `Колонки с названием ${body.title} уже существует!`,
+      );
+    }
+
+    Object.assign(column, body);
+    const updated = await this.projectColumnRepository.save(column);
+    return updated;
   }
 }

@@ -5,22 +5,22 @@ import {
   Logger,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
-import { UserService } from '../user/services/user.service';
-import { AuthMethod } from '../user/types/authMethods.enum';
-import { User } from '../user/entity/user.entity';
-import { Request, Response } from 'express';
-import { LoginDto } from './dto/login.dto';
-import { hash, verify } from 'argon2';
-import { ConfigService } from '@nestjs/config';
-import { AuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
-import { TypeUserInfo } from './OAuthProvider/services/types/user-info.types';
-import { AccountService } from '../account/account.service';
-import { Account } from '../account/entity/account.entity';
-import { EmailConfirmationService } from './email-confirmation/email-confirmation.service';
-import { TwoFactorAuthService } from './two-factor-auth/two-factor-auth.service';
+} from "@nestjs/common";
+import { RegisterDto } from "./dto/register.dto";
+import { UserService } from "../user/services/user.service";
+import { AuthMethod } from "../user/types/authMethods.enum";
+import { User } from "../user/entity/user.entity";
+import { Request, Response } from "express";
+import { LoginDto } from "./dto/login.dto";
+import { hash, verify } from "argon2";
+import { ConfigService } from "@nestjs/config";
+import { AuthProviderService } from "./OAuthProvider/OAuthProvider.service";
+import { BaseOauthService } from "./OAuthProvider/services/base-oauth.service";
+import { TypeUserInfo } from "./OAuthProvider/services/types/user-info.types";
+import { AccountService } from "../account/account.service";
+import { Account } from "../account/entity/account.entity";
+import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
@@ -51,7 +51,7 @@ export class AuthService implements IAuthService {
         `Регистрация отклонена: email=${dto.email} уже существует`,
       );
       throw new ConflictException(
-        'Регистрация не удалась. Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему.',
+        "Регистрация не удалась. Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему.",
       );
     }
 
@@ -62,7 +62,7 @@ export class AuthService implements IAuthService {
       dto.email,
       hashedPassword,
       dto.name,
-      '',
+      "",
       AuthMethod.CREDENTIALS,
       false,
     );
@@ -73,10 +73,9 @@ export class AuthService implements IAuthService {
       `Пользователь успешно создан: id=${newUser.id}, email=${newUser.email}`,
     );
 
-    // return this.saveSession(req, newUser);
     return {
       message:
-        'Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс',
+        "Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адресс",
     };
   }
 
@@ -90,7 +89,7 @@ export class AuthService implements IAuthService {
         `Вход не удался: пользователь не найден или без пароля: email=${dto.email}`,
       );
       throw new NotFoundException(
-        'Пользователь не найден. Пожалуйста, проверьте введеные данные.',
+        "Пользователь не найден. Пожалуйста, проверьте введеные данные.",
       );
     }
 
@@ -98,7 +97,7 @@ export class AuthService implements IAuthService {
     if (!isValidPassword) {
       this.logger.warn(`Неверный пароль для пользователя email=${dto.email}`);
       throw new UnauthorizedException(
-        'Неверный пароль. Пожалуйста, попробуйте еще раз или восстановите пароль, если забыли его.',
+        "Неверный пароль. Пожалуйста, попробуйте еще раз или восстановите пароль, если забыли его.",
       );
     }
 
@@ -106,7 +105,7 @@ export class AuthService implements IAuthService {
       this.logger.warn(`Не подтвержденна почта для email=${dto.email}`);
       await this.emailConfirmationService.sendVerificationToken(user.email);
       throw new UnauthorizedException(
-        'Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адресс.',
+        "Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адресс.",
       );
     }
 
@@ -120,7 +119,7 @@ export class AuthService implements IAuthService {
 
         return {
           message:
-            'Проверьте почту. Требуется код двухфакторной аутентификаций.',
+            "Проверьте почту. Требуется код двухфакторной аутентификаций.",
         };
       }
 
@@ -155,7 +154,7 @@ export class AuthService implements IAuthService {
     if (!profile) {
       this.logger.warn(`Не удалось получить профиль от провайдера ${provider}`);
       throw new NotFoundException(
-        'Не удалось получить данные пользователя от провайдера',
+        "Не удалось получить данные пользователя от провайдера",
       );
     }
 
@@ -182,7 +181,7 @@ export class AuthService implements IAuthService {
     this.logger.log(`Создание нового пользователя для провайдера ${provider}`);
     user = await this.userService.create(
       profile!.email,
-      '',
+      "",
       profile!.name,
       profile!.picture,
       AuthMethod[profile!.provider.toUpperCase()],
@@ -195,7 +194,7 @@ export class AuthService implements IAuthService {
       );
       await this.accountService.create(
         user,
-        'oauth',
+        "oauth",
         profile!.provider,
         profile!.access_token!,
         profile!.refresh_token!,
@@ -223,13 +222,13 @@ export class AuthService implements IAuthService {
           );
           return reject(
             new InternalServerErrorException(
-              'Не удалось завершить сессию. Возможно, возникла проблема с сервером или сессия уже была завершена.',
+              "Не удалось завершить сессию. Возможно, возникла проблема с сервером или сессия уже была завершена.",
             ),
           );
         }
 
         const cookieName: string =
-          this.configService.getOrThrow<string>('SESSION_NAME');
+          this.configService.getOrThrow<string>("SESSION_NAME");
         res.clearCookie(cookieName);
 
         this.logger.log(
