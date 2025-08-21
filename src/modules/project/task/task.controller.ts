@@ -1,51 +1,177 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
+  Inject,
+  Logger,
   Param,
   Patch,
   Post,
-  UseGuards,
+  Query,
 } from '@nestjs/common';
-import { TaskService } from './service/task.service';
-import { Authorization } from '../../auth/decorators/auth.decorator';
-import { Task } from './entity/task.entity';
-import { CreateTaskDTO } from './dto/create-task.dto';
-import { Authorized } from '../../auth/decorators/authorized.decorator';
-import { UpdateTaskDTO } from './dto/update-task.dto';
-import { MembershipAccessControlGuard } from '../membership/guards/member-access-control.guard';
-import { MembershipRoles } from '../membership/decorators/membership.decorator';
-import { MemberRole } from '../membership/types/member-role.enum';
+import { DeleteResult } from 'typeorm';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ITaskService, TaskService } from './service/task.service';
+import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
+import { MemberACL, MemberRole } from '../membership';
+import {
+  CreateTaskDTO,
+  Task,
+  TaskFilterDto,
+  TaskMapSwagger,
+  UpdateTaskDTO,
+} from './index';
+import { Authorization, Authorized } from '../../auth';
+import { UpdateAssigneeDTO } from './dto/update-assignee.dto';
 
-@Controller('task')
+@ApiTags('Tasks')
+@ApiBearerAuth()
+@Controller('project/:projectId/task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  private readonly logger: Logger = new Logger(TaskController.name);
 
-  @UseGuards(MembershipAccessControlGuard)
-  @MembershipRoles(MemberRole.ADMIN, MemberRole.MEMBER)
-  @Post('create')
+  constructor(
+    @Inject('ITaskService')
+    private readonly taskService: ITaskService,
+  ) {}
+
+  /**
+   * Creates a new task for the specified project.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
+  @Post('create')
+  @ApiAuthEndpoint(TaskMapSwagger.create)
   public async create(
     @Body() dto: CreateTaskDTO,
     @Authorized('id') id: string,
   ): Promise<Task> {
-    return this.taskService.create(dto, id);
+    this.logger.log(`POST /create | UserId=${id} | DTO=${JSON.stringify(dto)}`);
+    const task: Task = await this.taskService.create(dto, id);
+    this.logger.log(`Task created with ID=${task.id}`);
+    return task;
   }
 
+  /**
+   * Updates an existing task.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
   @Patch('update')
-  @Authorization()
+  @ApiAuthEndpoint(TaskMapSwagger.update)
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
-    return this.taskService.update(dto);
+    this.logger.log(`PATCH /update | DTO=${JSON.stringify(dto)}`);
+    const task: Task = await this.taskService.update(dto);
+    this.logger.log(`Task updated ID=${task.id}`);
+    return task;
   }
 
+  /**
+   * Updates the assignee of a specific task.
+   *
+   * @description
+   * Changes the assignee of a task to another user.
+   * Only members with `ADMIN` or `MEMBER` roles are allowed.
+   *
+   * @param assigneeId - The ID of the new assignee
+   * @param projectId
+   * @param dto - DTO containing the task ID and additional data
+   * @returns The updated `Task` entity
+   *
+   * @throws NotFoundException if the task does not exist
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
+  @Patch('update-assignee')
+  @ApiAuthEndpoint(TaskMapSwagger.updateAssignee)
+  public async updateAssignee(
+    @Query('assigneeId') assigneeId: string,
+    @Param('projectId') projectId: string,
+    @Body() dto: UpdateAssigneeDTO,
+  ): Promise<Task> {
+    this.logger.log(
+      `Received request to update assignee for task ID: ${dto.taskId} → new assignee: ${assigneeId}`,
+    );
+
+    const updatedTask: Task = await this.taskService.updateAssignee(
+      assigneeId,
+      projectId,
+      dto,
+    );
+
+    this.logger.log(
+      `Task ${updatedTask.id} successfully reassigned to user ${assigneeId}`,
+    );
+
+    return updatedTask;
+  }
+
+  /**
+   * Retrieves all tasks.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
+  @Authorization()
   @Post('getAll')
-  @Authorization()
+  @ApiAuthEndpoint(TaskMapSwagger.getAll)
   public async getAll(): Promise<Task[]> {
-    return this.taskService.getAll();
+    this.logger.log('POST /getAll | Fetching all tasks');
+    const tasks: Task[] = await this.taskService.getAll();
+    this.logger.log(`Returned ${tasks.length} tasks`);
+    return tasks;
   }
 
-  @Post('getById')
+  /**
+   * Retrieves a task by its ID.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
+  @Post('getById')
+  @ApiAuthEndpoint(TaskMapSwagger.getById)
   public async getById(@Param('id') id: string): Promise<Task> {
-    return this.taskService.getById(id);
+    this.logger.log(`POST /getById | TaskID=${id}`);
+    const task: Task = await this.taskService.getById(id);
+    this.logger.log(`Returned task: ${task?.id || 'NOT FOUND'}`);
+    return task;
+  }
+
+  /**
+   * Retrieves all tasks for a specific project with optional filters.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
+  @Authorization()
+  @Get('getByProjectId')
+  @ApiAuthEndpoint(TaskMapSwagger.getTasksByProjectId)
+  public async getTasksByProjectId(
+    @Param('projectId') projectId: string,
+    @Query() filter: TaskFilterDto,
+  ): Promise<Task[]> {
+    this.logger.log(
+      `GET /getByProjectId | ProjectID=${projectId} | Filter=${JSON.stringify(filter)}`,
+    );
+    const tasks: Task[] = await this.taskService.findProjectTask(
+      projectId,
+      filter,
+    );
+    this.logger.log(
+      `Returned ${tasks.length} tasks for ProjectID=${projectId}`,
+    );
+    return tasks;
+  }
+
+  /**
+   * Deletes a task by its ID.
+   */
+  @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
+  @Authorization()
+  @Delete('/:taskId')
+  @ApiAuthEndpoint(TaskMapSwagger.deleteTask)
+  public async deleteTask(
+    @Param('taskId') taskId: string,
+  ): Promise<DeleteResult> {
+    this.logger.log(`DELETE /:taskId | TaskID=${taskId}`);
+    const res: DeleteResult = await this.taskService.delete(taskId);
+
+    return res;
   }
 }

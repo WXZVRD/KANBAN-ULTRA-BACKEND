@@ -1,16 +1,40 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Token } from '../entity/token.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { TokenType } from '../types/token.types';
 
+export interface ITokenRepository {
+  create(
+    email: string,
+    token: string,
+    expiresIn: Date,
+    type: TokenType,
+  ): Promise<Token>;
+
+  findByEmailAndToken(email: string, type: TokenType): Promise<Token | null>;
+
+  deleteByIdAndToken(id: string, type: TokenType): Promise<DeleteResult>;
+
+  findByTokenAndType(token: string, type: TokenType): Promise<Token | null>;
+}
+
 @Injectable()
-export class TokenRepository {
+export class TokenRepository implements ITokenRepository {
   public constructor(
     @InjectRepository(Token)
     private readonly repo: Repository<Token>,
   ) {}
 
+  /**
+   * Creates and saves a new token entity in the database.
+   *
+   * @param email - Email associated with the token
+   * @param token - Token string
+   * @param expiresIn - Expiration date
+   * @param type - Type of token
+   * @returns The saved token entity
+   */
   public async create(
     email: string,
     token: string,
@@ -35,6 +59,13 @@ export class TokenRepository {
     return savedToken;
   }
 
+  /**
+   * Finds a token by email and type.
+   *
+   * @param email - Email associated with the token
+   * @param type - Type of token
+   * @returns The token entity or null if not found
+   */
   public async findByEmailAndToken(
     email: string,
     type: TokenType,
@@ -52,6 +83,13 @@ export class TokenRepository {
     return result;
   }
 
+  /**
+   * Deletes a token by its ID and type.
+   *
+   * @param id - Token ID
+   * @param type - Type of token
+   * @returns DeleteResult indicating the operation result
+   */
   public async deleteByIdAndToken(
     id: string,
     type: TokenType,
@@ -67,6 +105,13 @@ export class TokenRepository {
     return result;
   }
 
+  /**
+   * Finds a token by its string value and type.
+   *
+   * @param token - Token string to search
+   * @param type - Type of token
+   * @returns The token entity or null if not found
+   */
   public async findByTokenAndType(
     token: string,
     type: TokenType,

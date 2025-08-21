@@ -1,15 +1,18 @@
-// project-permission.guard.ts
 import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { MEMBERSHIP_ROLES_KEY } from '../decorators/membership.decorator';
-import { MembershipService } from '../services/membership.service';
+import {
+  IMembershipService,
+  MembershipService,
+} from '../services/membership.service';
 import { Membership } from '../entity/membership.entity';
 
 @Injectable()
@@ -18,12 +21,13 @@ export class MembershipAccessControlGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly membershipService: MembershipService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const handler = context.getHandler().name;
-    const controller = context.getClass().name;
+    const handler: string = context.getHandler().name;
+    const controller: string = context.getClass().name;
 
     this.logger.debug(
       `[${controller}.${handler}] Checking project membership access...`,

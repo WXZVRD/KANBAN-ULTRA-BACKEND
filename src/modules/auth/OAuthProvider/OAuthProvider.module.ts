@@ -1,11 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { AuthProviderService } from './OAuthProvider.service';
-import { TypeProviderOptions } from './services/types/provider-options.type';
 import {
   ProviderOptionsSymbol,
   TypeAsyncOptions,
   TypeOptions,
 } from './provider.constants';
+import { AuthProviderService } from './OAuthProvider.service';
 
 @Module({})
 export class AuthProviderModule {
@@ -17,9 +16,12 @@ export class AuthProviderModule {
           useValue: options.services,
           provide: ProviderOptionsSymbol,
         },
-        AuthProviderService,
+        {
+          provide: 'IAuthProviderService',
+          useClass: AuthProviderService,
+        },
       ],
-      exports: [AuthProviderService],
+      exports: ['IAuthProviderService'],
     };
   }
 
@@ -33,9 +35,12 @@ export class AuthProviderModule {
           provide: ProviderOptionsSymbol,
           inject: options.inject,
         },
-        AuthProviderService,
+        {
+          provide: 'IAuthProviderService',
+          useClass: AuthProviderService,
+        },
       ],
-      exports: [AuthProviderService],
+      exports: ['IAuthProviderService'],
     };
   }
 }

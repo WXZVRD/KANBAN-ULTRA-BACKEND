@@ -1,12 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { AccountRepository } from './repositories/account.repository';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../user/entity/user.entity';
 import { Account } from './entity/account.entity';
+import { IAccountRepository } from './repositories/account.repository';
+
+export interface IAccountService {
+  create(
+    user: User,
+    type: string,
+    provider: string,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number,
+  ): Promise<Account>;
+  findByIdAndProvider(id: string, provider: string): Promise<Account | null>;
+}
 
 @Injectable()
-export class AccountService {
-  constructor(private readonly accountRepository: AccountRepository) {}
+export class AccountService implements IAccountService {
+  constructor(
+    @Inject('IAccountRepository')
+    private readonly accountRepository: IAccountRepository,
+  ) {}
 
+  /**
+   * Creates a new account for the specified user with given provider and tokens.
+   *
+   * @param user - The user to whom the account will be linked
+   * @param type - The type of the account (e.g., OAuth)
+   * @param provider - The name of the provider (e.g., Google, GitHub)
+   * @param accessToken - Access token from the provider
+   * @param refreshToken - Refresh token from the provider
+   * @param expiresAt - Expiration timestamp of the access token
+   * @returns The created account entity
+   */
   public async create(
     user: User,
     type: string,
@@ -25,6 +51,13 @@ export class AccountService {
     );
   }
 
+  /**
+   * Finds an account by user ID and provider name.
+   *
+   * @param id - The user ID
+   * @param provider - The account provider (e.g., Google, GitHub)
+   * @returns The found account entity or null if not found
+   */
   public async findByIdAndProvider(
     id: string,
     provider: string,

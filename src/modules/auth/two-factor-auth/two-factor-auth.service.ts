@@ -1,106 +1,77 @@
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import ms from 'ms';
+import { IMailService } from '../../mail/mail.service';
+import { ITokenService } from '../../token/token.service';
+import { TokenType } from '../../token/types/token.types';
+import { Token } from '../../token/entity/token.entity';
+import { NumericTokenGenerator } from '../../token/strategies/numeric-token.generator';
 import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { MailService } from '../../mail/mail.service';
-import { Token } from '../../account/entity/token.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { TokenType } from '../../account/types/token.types';
-import { TokenRepository } from '../../account/repositories/token.repository';
+  TwoFactorEmail,
+  TwoFactorEmailData,
+} from '../../mail/templates/two-factor-auth/two-factor-auth.email';
+
+export interface ITwoFactorAuthService {
+  validateTwoFactorToken(email: string, code: string): Promise<any>;
+  sendTwoFactorToken(email: string): Promise<any>;
+}
 
 @Injectable()
-export class TwoFactorAuthService {
+export class TwoFactorAuthService implements ITwoFactorAuthService {
   private readonly logger: Logger = new Logger(TwoFactorAuthService.name);
 
   public constructor(
-    private readonly mailService: MailService,
-    private readonly tokenRepository: TokenRepository,
+    @Inject('IMailService')
+    private readonly mailService: IMailService,
+    @Inject('ITokenService')
+    private readonly tokenService: ITokenService,
   ) {}
 
-  private async generateTwoFactorToken(email: string): Promise<Token> {
-    this.logger.log(`Создание нового токена подтверждения для: ${email}`);
-
-    const token: string = Math.floor(
-      Math.random() * (1000000 - 100000) + 100000,
-    ).toString();
-    const expiresIn: Date = new Date(Date.now() + 300000);
-
-    const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
-        email,
-        TokenType.TWO_FACTOR,
-      );
-
-    if (existingToken) {
-      this.logger.warn(`Старый токен найден и удалён для: ${email}`);
-      await this.tokenRepository.deleteByIdAndToken(
-        existingToken.id,
-        TokenType.TWO_FACTOR,
-      );
-    }
-
-    const newTwoFactorToken: Token = await this.tokenRepository.create(
-      email,
-      token,
-      expiresIn,
-      TokenType.TWO_FACTOR,
-    );
-
-    this.logger.log(`Токен создан: ${newTwoFactorToken.token} для ${email}`);
-
-    return newTwoFactorToken;
-  }
-
+  /**
+   * Validates a two-factor authentication token for the given email.
+   *
+   * @param email - The user's email address.
+   * @param code - The token code to validate.
+   * @returns True if the token is valid and consumed.
+   * @throws NotFoundException if the token does not exist.
+   * @throws BadRequestException if the token is invalid or expired.
+   */
   public async validateTwoFactorToken(
     email: string,
     code: string,
   ): Promise<any> {
-    this.logger.log(`Попытка validateTwoFactorToken`);
+    this.logger.log(`Attempting to validate two-factor token`);
 
-    const existingToken: Token | null =
-      await this.tokenRepository.findByEmailAndToken(
-        email,
-        TokenType.TWO_FACTOR,
-      );
-
-    if (!existingToken) {
-      this.logger.warn(`Токен не найден: ${email}`);
-      throw new NotFoundException(
-        'Токен двухфакторной аутентификаций не найден. Убедитесь что вы запрашивали токен для данного адреса электронной почты.',
-      );
-    }
-
-    if (existingToken.token !== code) {
-      throw new UnauthorizedException(
-        'Неверный код двухфакторной аутентификаций. Пожалуйтса, проверьте введеный код и попробуйте снова.',
-      );
-    }
-
-    const isExpired: boolean = new Date(existingToken.expiresIn) < new Date();
-    if (isExpired) {
-      this.logger.warn(`Токен истёк: ${existingToken}`);
-      throw new BadRequestException(
-        'Токен двухфакторной аутентификаций истек. Пожалуйста, запросите новый токен для двухфакторной аутентификаций.',
-      );
-    }
-
-    await this.tokenRepository.deleteByIdAndToken(
-      existingToken.id,
+    const token: Token = await this.tokenService.validateToken(
+      email,
+      code,
       TokenType.TWO_FACTOR,
     );
+
+    await this.tokenService.consumeToken(token.id, TokenType.TWO_FACTOR);
 
     return true;
   }
 
+  /**
+   * Generates and sends a two-factor authentication token to the user's email.
+   *
+   * @param email - The user's email address.
+   * @returns True if the token was successfully generated and sent.
+   */
   public async sendTwoFactorToken(email: string): Promise<any> {
-    const twoFactorToken: Token = await this.generateTwoFactorToken(email);
+    const token: Token = await this.tokenService.generateToken(
+      email,
+      TokenType.TWO_FACTOR,
+      ms('1h'),
+      new NumericTokenGenerator(),
+    );
 
-    await this.mailService.sendTwoFactorTokenEmail(
-      twoFactorToken.email,
-      twoFactorToken.token,
+    await this.mailService.send<TwoFactorEmailData>(
+      token.email,
+      new TwoFactorEmail(),
+      {
+        token: token.token,
+      },
     );
 
     return true;

@@ -6,9 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 
 export interface IUserRepository {
   findUniqueById(id: string): Promise<User | null>;
-
   findUniqueByEmail(email: string): Promise<User | null>;
-
   createUser(
     email: string,
     password: string,
@@ -17,6 +15,9 @@ export interface IUserRepository {
     method: AuthMethod,
     isVerified: boolean,
   ): Promise<User>;
+  updateVerified(user: User, isVerified: boolean): Promise<User>;
+  save(user: User): Promise<User>;
+  updatePassword(user: User, newPassword: string): Promise<User>;
 }
 
 @Injectable()
@@ -28,6 +29,12 @@ export class UserRepository implements IUserRepository {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  /**
+   * Finds a user by ID.
+   *
+   * @param id - User ID
+   * @returns The user entity or null if not found
+   */
   public async findUniqueById(id: string): Promise<User | null> {
     this.logger.log(`Called findUniqueById with id=${id}`);
 
@@ -45,6 +52,12 @@ export class UserRepository implements IUserRepository {
     return user;
   }
 
+  /**
+   * Finds a user by email.
+   *
+   * @param email - User email
+   * @returns The user entity or null if not found
+   */
   public async findUniqueByEmail(email: string): Promise<User | null> {
     this.logger.log(`Called findUniqueByEmail with email=${email}`);
 
@@ -62,6 +75,17 @@ export class UserRepository implements IUserRepository {
     return user;
   }
 
+  /**
+   * Creates and saves a new user entity in the database.
+   *
+   * @param email - User email
+   * @param password - User password
+   * @param displayName - Display name of the user
+   * @param picture - Profile picture URL
+   * @param method - Authentication method
+   * @param isVerified - Whether the user is verified
+   * @returns The saved user entity
+   */
   public async createUser(
     email: string,
     password: string,
@@ -91,19 +115,37 @@ export class UserRepository implements IUserRepository {
     return savedUser;
   }
 
+  /**
+   * Updates the verification status of a user.
+   *
+   * @param user - User entity
+   * @param isVerified - New verification status
+   * @returns The updated user entity
+   */
   public async updateVerified(user: User, isVerified: boolean): Promise<User> {
     user.isVerified = isVerified;
-
     return await this.userRepository.save(user);
   }
 
+  /**
+   * Saves a user entity to the database.
+   *
+   * @param user - User entity
+   * @returns The saved user entity
+   */
   public async save(user: User): Promise<User> {
     return this.userRepository.save(user);
   }
 
+  /**
+   * Updates the password of a user.
+   *
+   * @param user - User entity
+   * @param newPassword - New password
+   * @returns The updated user entity
+   */
   public async updatePassword(user: User, newPassword: string): Promise<User> {
     user.password = newPassword;
-
     return await this.userRepository.save(user);
   }
 }

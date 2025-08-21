@@ -1,43 +1,78 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ProjectRepository } from '../repository/project.repository';
-import { CreateProjectDto } from '../dto/create-project.dto';
-import { ProjectColumnService } from '../column/column.service';
-import { Project } from '../entity/project.entity';
-import { ProjectColumn } from '../column/entity/column.entity';
-import { MembershipService } from '../membership/services/membership.service';
-import { MemberRole } from '../membership/types/member-role.enum';
-import { UpdateProjectDTO } from '../dto/update-project.dto';
 import { DeleteResult } from 'typeorm';
+import { IProjectRepository } from '../repository/project.repository';
+import {
+  IProjectColumnService,
+  ProjectColumnService,
+} from '../column/column.service';
+import {
+  IMembershipService,
+  MembershipService,
+} from '../membership/services/membership.service';
+import { MemberRole } from '../membership';
+import { ProjectColumn } from '../column';
+import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
+import { IRedisService } from '../../redis/redis.service';
+import { RedisKey } from '../../../libs/common/types/redis.types';
+import ms from 'ms';
+import { IProjectColumnRepository } from '../column/repository/column.repository';
+
+export interface IProjectService {
+  create(dto: CreateProjectDto, userId: string): Promise<Project>;
+  getAll(): Promise<Project[]>;
+  getByUser(userId: string): Promise<Project[]>;
+  getById(projectId: string): Promise<Project>;
+  updateById(projectId: string, dto: UpdateProjectDTO): Promise<Project>;
+  deleteById(projectId: string): Promise<DeleteResult>;
+}
 
 @Injectable()
-export class ProjectService {
+export class ProjectService implements IProjectService {
   private readonly logger: Logger = new Logger(ProjectService.name);
 
   public constructor(
-    private readonly projectRepository: ProjectRepository,
-    private readonly projectColumnService: ProjectColumnService,
-    private readonly membershipService: MembershipService,
+    @Inject('IProjectRepository')
+    private readonly projectRepository: IProjectRepository,
+    @Inject('IProjectColumnService')
+    private readonly projectColumnService: IProjectColumnService,
+    @Inject('IMembershipService')
+    private readonly membershipService: IMembershipService,
+    @Inject('IRedisService')
+    private readonly redisService: IRedisService,
   ) {}
 
-  public async create(dto: CreateProjectDto, userId: string): Promise<any> {
+  /**
+   * Creates a new project for the specified user.
+   *
+   * Checks if a project with the same title already exists.
+   * Automatically assigns the creator as an ADMIN member
+   * and generates default project columns.
+   *
+   * @param dto - DTO containing project creation data
+   * @param userId - ID of the user creating the project
+   * @returns The newly created project entity
+   * @throws ConflictException if a project with the same title already exists
+   */
+  public async create(dto: CreateProjectDto, userId: string): Promise<Project> {
     this.logger.log(
-      `Создание проекта с названием: "${dto.title}" для пользователя: ${userId}`,
+      `Creating project with title: "${dto.title}" for user: ${userId}`,
     );
 
     const isSameNameExits: Project | null =
       await this.projectRepository.findByTitle(dto.title);
 
     if (isSameNameExits) {
-      this.logger.warn(`Проект с названием "${dto.title}" уже существует`);
-      throw new ConflictException('Проект с таким названием уже существует.');
+      this.logger.warn(`Project with title "${dto.title}" already exists`);
+      throw new ConflictException('A project with this title already exists.');
     }
 
-    this.logger.log('Проект с таким названием не найден, создаем новый');
+    this.logger.log('No project with the same title found, creating a new one');
 
     const newProject: Project = await this.projectRepository.create({
       title: dto.title,
@@ -45,12 +80,12 @@ export class ProjectService {
       ownerId: userId,
     });
 
-    this.logger.log(`Проект создан: ${JSON.stringify(newProject)}`);
+    this.logger.log(`Project created: ${JSON.stringify(newProject)}`);
 
     const savedProject: Project = await this.projectRepository.save(newProject);
 
     this.logger.log(
-      `Проект успешно сохранен без колонок. ID проекта: ${savedProject.id}`,
+      `Project successfully saved without columns. Project ID: ${savedProject.id}`,
     );
 
     await this.membershipService.createNewMember({
@@ -59,65 +94,114 @@ export class ProjectService {
       userId: userId,
     });
 
-    this.logger.log(`Создателю проекта присвоено членство как АДМИНИСТРАТОР`);
+    this.logger.log(`Project creator assigned as ADMIN member`);
 
     const newProjectColumns: ProjectColumn[] =
       await this.projectColumnService.createDefaultColumns(savedProject);
 
     this.logger.log(
-      `Созданы колонки для проекта: ${newProjectColumns.map((c) => c.title).join(', ')}`,
+      `Columns created for project: ${newProjectColumns.map((c) => c.title).join(', ')}`,
     );
 
     savedProject.columns = newProjectColumns;
 
     this.logger.log(
-      `Проект успешно сохранен с колонками. ID проекта: ${savedProject.id}`,
+      `Project successfully saved with columns. Project ID: ${savedProject.id}`,
     );
 
     return await this.projectRepository.save(savedProject);
   }
 
+  /**
+   * Retrieves all projects from the database.
+   *
+   * @returns An array of all projects
+   * @throws NotFoundException if there are no projects
+   */
   public async getAll(): Promise<Project[]> {
+    const cachedProjects: Project[] | null = await this.redisService.get(
+      RedisKey.ProjectAll,
+    );
+
+    if (cachedProjects) {
+      this.logger.log('Returning projects from Redis cache');
+      return cachedProjects;
+    }
+
     const projects: Project[] | null = await this.projectRepository.findAll();
 
     if (!projects || !projects.length) {
-      this.logger.warn(`Проектов нету, пожалуйста создайте хотя бы один`);
+      this.logger.warn(`No projects found, please create at least one`);
       throw new NotFoundException(
-        'Проектов нету, пожалуйста создайте хотя бы один.',
+        'No projects found, please create at least one.',
       );
     }
+
+    await this.redisService.set(RedisKey.ProjectAll, projects, ms('1m'));
 
     return projects;
   }
 
+  /**
+   * Retrieves all projects owned by a specific user.
+   *
+   * @param userId - ID of the user
+   * @returns Array of projects owned by the user
+   * @throws NotFoundException if the user has no projects
+   */
   public async getByUser(userId: string): Promise<Project[]> {
     const projects: Project[] | null =
       await this.projectRepository.findByUserId(userId);
 
     if (!projects || !projects.length) {
       this.logger.warn(
-        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один`,
+        `User with id ${userId} has no projects, please create at least one`,
       );
       throw new NotFoundException(
-        `У пользователя с id ${userId} проектов нету, пожалуйста создайте хотя бы один.`,
+        `User with id ${userId} has no projects, please create at least one.`,
       );
     }
 
     return projects;
   }
 
+  /**
+   * Retrieves a project by its ID.
+   *
+   * @param projectId - The ID of the project
+   * @returns The project entity
+   * @throws NotFoundException if the project does not exist
+   */
   public async getById(projectId: string): Promise<Project> {
+    const cached: Project | null = await this.redisService.get(
+      RedisKey.Project,
+      projectId,
+    );
+    if (cached) {
+      this.logger.log(`Returning project ${projectId} from Redis cache`);
+      return cached;
+    }
     const project: Project | null =
       await this.projectRepository.findById(projectId);
 
     if (!project) {
-      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
-      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+      this.logger.warn(`Project with id: ${projectId} does not exist!`);
+      throw new NotFoundException(
+        `Project with id: ${projectId} does not exist!`,
+      );
     }
 
     return project;
   }
 
+  /**
+   * Updates a project by its ID.
+   *
+   * @param projectId - The ID of the project to update
+   * @param dto - DTO containing fields to update
+   * @returns The updated project entity
+   * @throws NotFoundException if the project does not exist
+   */
   public async updateById(
     projectId: string,
     dto: UpdateProjectDTO,
@@ -126,8 +210,10 @@ export class ProjectService {
       await this.projectRepository.findById(projectId);
 
     if (!project) {
-      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
-      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+      this.logger.warn(`Project with id: ${projectId} does not exist!`);
+      throw new NotFoundException(
+        `Project with id: ${projectId} does not exist!`,
+      );
     }
 
     Object.assign(project, dto);
@@ -135,13 +221,22 @@ export class ProjectService {
     return await this.projectRepository.save(project);
   }
 
+  /**
+   * Deletes a project by its ID.
+   *
+   * @param projectId - The ID of the project to delete
+   * @returns The result of the delete operation
+   * @throws NotFoundException if the project does not exist
+   */
   public async deleteById(projectId: string): Promise<DeleteResult> {
     const project: Project | null =
       await this.projectRepository.findById(projectId);
 
     if (!project) {
-      this.logger.warn(`Проекта с id:  ${projectId} не существует!`);
-      throw new NotFoundException(`Проекта с id:  ${projectId} не существует!`);
+      this.logger.warn(`Project with id: ${projectId} does not exist!`);
+      throw new NotFoundException(
+        `Project with id: ${projectId} does not exist!`,
+      );
     }
 
     return await this.projectRepository.deleteById(project.id);

@@ -7,28 +7,43 @@ import { TypeBaseProviderOptions } from './types/base-provider.options.types';
 import { TypeUserInfo } from './types/user-info.types';
 import { Logger } from '@nestjs/common';
 
+interface IBaseOauthService {
+  getRedirectUrl(): string;
+  getAuthUrl(): string;
+  findUserByCode(code: string): Promise<TypeUserInfo>;
+}
+
 @Injectable()
-export class BaseOauthService {
+export class BaseOauthService implements IBaseOauthService {
   private readonly logger: Logger = new Logger(BaseOauthService.name);
   private BASE_URL: string;
 
   constructor(private readonly options: TypeBaseProviderOptions) {
-    this.logger.log(`Инициализация OAuth провайдера ${options.name}`);
+    this.logger.log(`Initializing OAuth provider: ${options.name}`);
   }
 
+  /**
+   * Generates the redirect URL for this OAuth provider.
+   *
+   * @returns The redirect URL for the OAuth callback.
+   */
   public getRedirectUrl(): string {
     const url: string = `${this.BASE_URL}/auth/oauth/callback/${this.options.name}`;
-    this.logger.debug(`Сгенерирован redirect URL: ${url}`);
+    this.logger.debug(`Generated redirect URL: ${url}`);
     return url;
   }
 
+  /**
+   * Extracts user information from provider-specific response data.
+   *
+   * @param data - Raw data from the OAuth provider.
+   * @returns A normalized `TypeUserInfo` object.
+   */
   protected async extractUserInfo(data: any): Promise<TypeUserInfo> {
     this.logger.debug(
-      `Извлечение информации о пользователе для провайдера ${this.options.name}`,
+      `Extracting user information for provider: ${this.options.name}`,
     );
-    this.logger.debug(
-      `Извлечение информации о пользователе: ${JSON.stringify(data)}`,
-    );
+    this.logger.debug(`Raw user data: ${JSON.stringify(data)}`);
 
     return {
       ...data,
@@ -36,6 +51,11 @@ export class BaseOauthService {
     };
   }
 
+  /**
+   * Generates the OAuth authorization URL for the provider.
+   *
+   * @returns The complete OAuth authorization URL.
+   */
   public getAuthUrl(): string {
     const query: URLSearchParams = new URLSearchParams({
       response_type: 'code',
@@ -48,14 +68,24 @@ export class BaseOauthService {
 
     const authUrl: string = `${this.options.authorization_url}?${query.toString()}`;
     this.logger.log(
-      `Сгенерирован URL авторизации для ${this.options.name}: ${authUrl}`,
+      `Generated authorization URL for ${this.options.name}: ${authUrl}`,
     );
     return authUrl;
   }
 
+  /**
+   * Finds a user by authorization code.
+   *
+   * Exchanges the authorization code for tokens and fetches user profile data.
+   *
+   * @param code - Authorization code received from the provider.
+   * @returns The normalized user information including access and refresh tokens.
+   * @throws BadRequestException if access token could not be retrieved.
+   * @throws UnauthorizedException if user profile cannot be fetched.
+   */
   public async findUserByCode(code: string): Promise<TypeUserInfo> {
     this.logger.log(
-      `1. Поиск пользователя по коду для провайдера ${this.options.name}`,
+      `1. Finding user by code for provider: ${this.options.name}`,
     );
     const client_id: string = this.options.client_id;
     const client_secret: string = this.options.client_secret;
@@ -68,7 +98,9 @@ export class BaseOauthService {
       grant_type: 'authorization_code',
     });
 
-    this.logger.debug(`2. Запрос токена доступа к ${this.options.access_url}`);
+    this.logger.debug(
+      `2. Requesting access token from ${this.options.access_url}`,
+    );
     const tokenRequest: any = await fetch(this.options.access_url, {
       method: 'POST',
       body: tokenQuery,
@@ -79,26 +111,26 @@ export class BaseOauthService {
     });
 
     if (!tokenRequest.ok) {
-      this.logger.error(`Ошибка получения токена: ${tokenRequest.statusText}`);
+      this.logger.error(`Failed to retrieve token: ${tokenRequest.statusText}`);
       throw new BadRequestException(
         `Failed to get access token: ${tokenRequest.statusText}`,
       );
     }
 
     const tokens: any = await tokenRequest.json();
-    this.logger.debug(`3. Получены токены от провайдера ${this.options.name}`);
+    this.logger.debug(`3. Tokens received from provider: ${this.options.name}`);
 
     if (!tokens.access_token) {
       this.logger.warn(
-        `Отсутствует access_token в ответе от ${this.options.access_url}`,
+        `No access_token found in response from ${this.options.access_url}`,
       );
       throw new BadRequestException(
-        `Нет токена c ${this.options.access_url}. Убедитесь что код действителен!`,
+        `No access token received from ${this.options.access_url}. Ensure the code is valid!`,
       );
     }
 
     this.logger.debug(
-      `4. Запрос данных пользователя к ${this.options.profile_url}`,
+      `4. Requesting user profile from ${this.options.profile_url}`,
     );
     const userRequest: Response = await fetch(this.options.profile_url, {
       headers: {
@@ -108,21 +140,21 @@ export class BaseOauthService {
 
     if (!userRequest.ok) {
       this.logger.error(
-        `Ошибка получения данных пользователя: ${userRequest.statusText}`,
+        `Failed to fetch user profile: ${userRequest.statusText}`,
       );
       throw new UnauthorizedException(
-        `Не удалось получить пользователя c ${this.options.access_url}. Проверьте правильность токена доступа.`,
+        `Failed to retrieve user from ${this.options.access_url}. Check the access token.`,
       );
     }
 
     const user = await userRequest.json();
     this.logger.debug(
-      `5. Получены данные пользователя от провайдера ${this.options.name}`,
+      `5. User data received from provider: ${this.options.name}`,
     );
 
     const userData: TypeUserInfo = await this.extractUserInfo(user);
     this.logger.log(
-      `6. Успешно извлечена информация о пользователе ${userData.id || userData.email}`,
+      `6. Successfully extracted user information: ${userData.id || userData.email}`,
     );
 
     return {
@@ -135,7 +167,7 @@ export class BaseOauthService {
   }
 
   set baseUrl(value: string) {
-    this.logger.debug(`Установлен BASE_URL: ${value}`);
+    this.logger.debug(`BASE_URL set to: ${value}`);
     this.BASE_URL = value;
   }
 

@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ProjectService } from './service/project.service';
-import { ProjectController } from './project.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Project } from './entity/project.entity';
-import { ProjectRepository } from './repository/project.repository';
 import { ColumnModule } from './column/column.module';
-import { ProjectColumnService } from './column/column.service';
-import { UserModule } from '../user/user.module';
 import { TaskModule } from './task/task.module';
+import { UserModule } from '../user/user.module';
 import { MembershipModule } from './membership/membership.module';
-import { MembershipService } from './membership/services/membership.service';
+import { ProjectController } from './project.controller';
+import { ProjectService } from './service/project.service';
+import { ProjectRepository } from './repository/project.repository';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -18,13 +17,19 @@ import { MembershipService } from './membership/services/membership.service';
     TaskModule,
     UserModule,
     MembershipModule,
+    RedisModule,
   ],
   controllers: [ProjectController],
   providers: [
-    ProjectService,
-    ProjectRepository,
-    ProjectColumnService,
-    MembershipService,
+    {
+      provide: 'IProjectService',
+      useClass: ProjectService,
+    },
+    {
+      provide: 'IProjectRepository',
+      useClass: ProjectRepository,
+    },
   ],
+  exports: ['IProjectRepository', 'IProjectService'],
 })
 export class ProjectModule {}

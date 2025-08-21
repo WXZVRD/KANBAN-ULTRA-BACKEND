@@ -1,55 +1,18 @@
-/*
-import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { SentMessageInfo } from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
-import { render } from '@react-email/components';
-import { ConfirmationTemplate } from './templates/confirmation.template';
-
-@Injectable()
-export class MailService {
-  public constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
-  ) {}
-
-  public async sendConfirmationEmail(
-    email: string,
-    token: string,
-  ): Promise<void> {
-    const domain: string =
-      this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-    const html: string = await render(ConfirmationTemplate({ domain, token }));
-
-    return this.sendMail(email, 'Подтверждение почты', html);
-  }
-
-  private sendMail(
-    email: string,
-    subject: string,
-    html: string,
-  ): Promise<SentMessageInfo> {
-    return this.mailerService.sendMail({
-      to: email,
-      subject,
-      html,
-    });
-  }
-}
-*/
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { render } from '@react-email/components';
-import { ConfirmationTemplate } from './templates/confirmation.template';
-import { CreateEmailResponse, Resend } from 'resend';
-import { ResetPasswordTemplate } from './templates/reset-password.template';
-import { TwoFactorAuthTemplate } from './templates/two-factor-auth.template';
-import { MembershipInviteTemplate } from './templates/membership-invite.template';
-import { MemberRole } from '../project/membership/types/member-role.enum';
+import { Resend } from 'resend';
+import { EmailTemplate } from './interface/email-template.interface';
+
+export interface IMailService {
+  send<T>(
+    email: string,
+    template: EmailTemplate<T & { domain: string }>,
+    data: T,
+  ): Promise<void>;
+}
 
 @Injectable()
-export class MailService {
+export class MailService implements IMailService {
   private readonly resend: Resend;
   private readonly sender: string;
   private readonly logger: Logger = new Logger(MailService.name);
@@ -64,102 +27,32 @@ export class MailService {
     this.logger.log(`MailService initialized with sender: ${this.sender}`);
   }
 
-  public async sendConfirmationEmail(
+  /**
+   * Sends an email using the Resend service.
+   *
+   * @param email - Recipient's email address
+   * @param template
+   * @param data
+   * @throws {Error} If sending the email fails
+   */
+  async send<T>(
     email: string,
-    token: string,
-  ): Promise<void> {
-    try {
-      const domain: string =
-        this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-      this.logger.debug(`Domain resolved: ${domain}`);
-
-      const html: string = await render(
-        ConfirmationTemplate({ domain, token }),
-      );
-      this.logger.debug(`Confirmation email HTML rendered for ${email}`);
-
-      await this.sendMail(email, 'Подтверждение почты', html);
-      this.logger.log(`Confirmation email sent to ${email}`);
-    } catch (error) {
-      this.logger.error(
-        `Failed to send confirmation email to ${email}`,
-        error.stack || error.message,
-      );
-      throw error;
-    }
-  }
-
-  public async sendMembershipInviteEmail(
-    email: string,
-    token: string,
-    projectId: string,
-    memberRole: MemberRole,
-  ): Promise<void> {
-    try {
-      const domain: string =
-        this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-      this.logger.debug(`Domain resolved: ${domain}`);
-
-      const html: string = await render(
-        MembershipInviteTemplate({ domain, token, projectId, memberRole }),
-      );
-      this.logger.debug(
-        `sendMembershipInviteEmail email HTML rendered for ${email}`,
-      );
-
-      await this.sendMail(email, 'Приглашения в проект', html);
-      this.logger.log(`sendMembershipInviteEmail email sent to ${email}`);
-    } catch (error) {
-      this.logger.error(
-        `Failed to send sendMembershipInviteEmail email to ${email}`,
-        error.stack || error.message,
-      );
-      throw error;
-    }
-  }
-
-  public async sendPasswordResetEmail(
-    email: string,
-    token: string,
+    template: EmailTemplate<T & { domain: string }>,
+    data: T,
   ): Promise<void> {
     const domain: string =
       this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-    const html: string = await render(ResetPasswordTemplate({ domain, token }));
 
-    await this.sendMail(email, 'Сброс пароля', html);
-  }
+    const html = await template.render({
+      ...data,
+      domain,
+    });
 
-  public async sendTwoFactorTokenEmail(
-    email: string,
-    token: string,
-  ): Promise<void> {
-    const html: string = await render(TwoFactorAuthTemplate({ token }));
-
-    await this.sendMail(email, 'Подтверждение вашей личности', html);
-  }
-
-  private async sendMail(
-    email: string,
-    subject: string,
-    html: string,
-  ): Promise<void> {
-    this.logger.debug(`Sending email to ${email} with subject "${subject}"`);
-
-    try {
-      const result: CreateEmailResponse = await this.resend.emails.send({
-        from: this.sender,
-        to: email,
-        subject,
-        html,
-      });
-
-      this.logger.verbose(`Email sent: ${JSON.stringify(result)}`);
-    } catch (error) {
-      this.logger.error(
-        `Failed to send email to ${email}`,
-        error.stack || error.message,
-      );
-      throw error;
-    }
+    await this.resend.emails.send({
+      from: this.sender,
+      to: email,
+      subject: template.subject,
+      html,
+    });
   }
 }

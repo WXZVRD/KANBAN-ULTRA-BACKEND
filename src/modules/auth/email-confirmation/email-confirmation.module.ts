@@ -1,29 +1,20 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { EmailConfirmationService } from './email-confirmation.service';
 import { EmailConfirmationController } from './email-confirmation.controller';
-import { TokenRepository } from '../../account/repositories/token.repository';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Token } from '../../account/entity/token.entity';
+import { EmailConfirmationService } from './email-confirmation.service';
 import { MailModule } from '../../mail/mail.module';
-import { AuthModule } from '../auth.module';
 import { UserModule } from '../../user/user.module';
-import { UserService } from '../../user/services/user.service';
-import { MailService } from '../../mail/mail.service';
+import { TokenModule } from '../../token/token.module';
+import { AuthModule } from '../auth.module';
 
 @Module({
-  imports: [
-    MailModule,
-    UserModule,
-    forwardRef(() => AuthModule),
-    TypeOrmModule.forFeature([Token]),
-  ],
+  imports: [MailModule, UserModule, TokenModule, forwardRef(() => AuthModule)],
   controllers: [EmailConfirmationController],
   providers: [
-    EmailConfirmationService,
-    UserService,
-    MailService,
-    TokenRepository,
+    {
+      provide: 'IEmailConfirmationService',
+      useClass: EmailConfirmationService,
+    },
   ],
-  exports: [EmailConfirmationService, TokenRepository],
+  exports: ['IEmailConfirmationService'],
 })
 export class EmailConfirmationModule {}
