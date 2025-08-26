@@ -1,13 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
-import { ProjectColumnService } from "./column.service";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+} from "@nestjs/common";
+import { IProjectColumnService, ProjectColumnService } from "./column.service";
 import { Authorization } from "../../auth/decorators/auth.decorator";
 import { CreateColumnDTO } from "./dto/create-column.dto";
 import { DeleteColumnDTO } from "./dto/delete-column.dto";
 import { RenameColumnDTO } from "./dto/rename-column.dto";
+import { MoveColumnDTO } from "./dto/move-column.dto";
 
 @Controller("project_column")
 export class ProjectColumnController {
-  constructor(private readonly projectColumnService: ProjectColumnService) {}
+  constructor(
+    @Inject("IProjectColumnService")
+    private readonly projectColumnService: IProjectColumnService,
+  ) {}
 
   @Post("newOne")
   @Authorization()
@@ -41,5 +54,14 @@ export class ProjectColumnController {
     @Body() body: RenameColumnDTO,
   ): Promise<any> {
     return this.projectColumnService.renameColumn(columnId, body);
+  }
+
+  @Patch("/move/:columnId")
+  @Authorization()
+  public async move(
+    @Param("columnId") columnId: string,
+    @Body() body: MoveColumnDTO,
+  ): Promise<any> {
+    return this.projectColumnService.move(columnId, body);
   }
 }

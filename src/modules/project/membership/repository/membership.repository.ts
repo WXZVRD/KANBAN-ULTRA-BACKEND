@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Membership } from '../entity/membership.entity';
-import { DeepPartial, DeleteResult, Repository } from 'typeorm';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Membership } from "../entity/membership.entity";
+import { DeepPartial, DeleteResult, Repository } from "typeorm";
 
 export interface IMembershipRepository {
   create(memberToCreate: DeepPartial<Membership>): Promise<Membership>;
@@ -50,6 +50,11 @@ export class MembershipRepository implements IMembershipRepository {
     projectId: string,
   ): Promise<Membership | null> {
     return this.repo.findOne({ where: { userId, projectId } });
+  }
+
+  /** Finds a member by project ID. */
+  public async findByProject(projectId: string): Promise<Membership[] | null> {
+    return this.repo.find({ where: { projectId }, relations: ["user"] });
   }
 
   /** Deletes a member from a project. */

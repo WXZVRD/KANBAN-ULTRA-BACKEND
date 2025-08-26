@@ -7,23 +7,23 @@ import {
   Inject,
   Logger,
   Patch,
-} from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { IUserService } from './services/user.service';
-import { User } from './entity/user.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
-import { UsersSwagger } from './maps/user-map.swagger';
-import { Authorization, Authorized } from '../auth';
+} from "@nestjs/common";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { User } from "./entity/user.entity";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { ApiAuthEndpoint } from "../../libs/common/decorators/api-swagger-simpli.decorator";
+import { UsersSwagger } from "./maps/user-map.swagger";
+import { Authorization, Authorized } from "../auth";
+import { IUserService } from "./services/user.service";
 
-@ApiTags('Users')
+@ApiTags("Users")
 @ApiBearerAuth()
-@Controller('users')
+@Controller("users")
 export class UsersController {
   private readonly logger: Logger = new Logger(UsersController.name);
 
   constructor(
-    @Inject('IUserService')
+    @Inject("IUserService")
     private readonly userService: IUserService,
   ) {}
 
@@ -35,10 +35,10 @@ export class UsersController {
    */
   @Authorization()
   @HttpCode(HttpStatus.OK)
-  @Get('profile')
+  @Get("profile")
   @ApiAuthEndpoint(UsersSwagger.findProfile)
   public async findProfile(
-    @Authorized('id') userId: string,
+    @Authorized("id") userId: string,
   ): Promise<User | null> {
     this.logger.log(`Called findProfile with userId=${userId}`);
 
@@ -62,10 +62,10 @@ export class UsersController {
    */
   @Authorization()
   @HttpCode(HttpStatus.OK)
-  @Patch('profile')
+  @Patch("profile")
   @ApiAuthEndpoint(UsersSwagger.updateProfile)
   public async updateProfile(
-    @Authorized('id') userId: string,
+    @Authorized("id") userId: string,
     @Body() dto: UpdateUserDto,
   ): Promise<User> {
     return this.userService.update(userId, dto);

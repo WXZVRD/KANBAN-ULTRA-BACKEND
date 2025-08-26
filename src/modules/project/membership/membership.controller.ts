@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Inject,
@@ -10,14 +11,14 @@ import {
   Post,
   Req,
   UseGuards,
-} from '@nestjs/common';
-import { Request } from 'express';
-import { DeleteResult } from 'typeorm';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { IMembershipService } from './services/membership.service';
-import { IMembershipInvitationService } from './services/membership-invitation.service';
-import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
-import { Authorization } from '../../auth';
+} from "@nestjs/common";
+import { Request } from "express";
+import { DeleteResult } from "typeorm";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { IMembershipService } from "./services/membership.service";
+import { IMembershipInvitationService } from "./services/membership-invitation.service";
+import { ApiAuthEndpoint } from "../../../libs/common/decorators/api-swagger-simpli.decorator";
+import { Authorization } from "../../auth";
 import {
   InviteDto,
   MemberACL,
@@ -28,16 +29,16 @@ import {
   MembershipRoles,
   SendInviteDTO,
   UpdateMembershipDTO,
-} from './index';
+} from "./index";
 
-@ApiTags('Memberships')
+@ApiTags("Memberships")
 @ApiBearerAuth()
-@Controller('project/:projectId/membership')
+@Controller("project/:projectId/membership")
 export class MembershipController {
   constructor(
-    @Inject('IMembershipService')
+    @Inject("IMembershipService")
     private readonly membershipService: IMembershipService,
-    @Inject('IMembershipInvitationService')
+    @Inject("IMembershipInvitationService")
     private readonly membershipInvitationService: IMembershipInvitationService,
   ) {}
 
@@ -46,13 +47,13 @@ export class MembershipController {
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
-  @Post('/invite')
+  @Post("/invite")
   @HttpCode(HttpStatus.OK)
   @Authorization()
   @ApiAuthEndpoint(MembershipMapSwagger.inviteUser)
   public async inviteUser(
     @Body() dto: SendInviteDTO,
-    @Param('projectId') projectId: string,
+    @Param("projectId") projectId: string,
   ): Promise<boolean> {
     return this.membershipInvitationService.sendVerificationToken(
       dto.email,
@@ -66,7 +67,7 @@ export class MembershipController {
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
-  @Post('/take-invite')
+  @Post("/take-invite")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(MembershipMapSwagger.newVerification)
   public async newVerification(
@@ -81,12 +82,12 @@ export class MembershipController {
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
-  @Delete('/:userId')
+  @Delete("/:userId")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(MembershipMapSwagger.deleteMember)
   public async deleteMember(
-    @Param('projectId') projectId: string,
-    @Param('userId') userId: string,
+    @Param("projectId") projectId: string,
+    @Param("userId") userId: string,
   ): Promise<DeleteResult> {
     return this.membershipService.deleteProjectMember(userId, projectId);
   }
@@ -96,11 +97,11 @@ export class MembershipController {
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
-  @Patch('/update-member')
+  @Patch("/update-member")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(MembershipMapSwagger.updateMemberRole)
   public async updateMemberRole(
-    @Param('projectId') projectId: string,
+    @Param("projectId") projectId: string,
     @Body() dto: UpdateMembershipDTO,
   ): Promise<Membership> {
     return this.membershipService.updateUserAccess(
@@ -108,5 +109,12 @@ export class MembershipController {
       projectId,
       dto.memberRole,
     );
+  }
+
+  @Get("/project-member")
+  public async getProjectMembers(
+    @Param("projectId") projectId: string,
+  ): Promise<Membership[] | null> {
+    return this.membershipService.getAllProjectMembers(projectId);
   }
 }

@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -7,25 +8,36 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
-import { UserService } from "../user/services/user.service";
+import { IUserService, UserService } from "../user/services/user.service";
 import { AuthMethod } from "../user/types/authMethods.enum";
 import { User } from "../user/entity/user.entity";
 import { Request, Response } from "express";
 import { LoginDto } from "./dto/login.dto";
 import { hash, verify } from "argon2";
 import { ConfigService } from "@nestjs/config";
-import { AuthProviderService } from "./OAuthProvider/OAuthProvider.service";
+import {
+  AuthProviderService,
+  IAuthProviderService,
+} from "./OAuthProvider/OAuthProvider.service";
 import { BaseOauthService } from "./OAuthProvider/services/base-oauth.service";
 import { TypeUserInfo } from "./OAuthProvider/services/types/user-info.types";
-import { AccountService } from "../account/account.service";
+import { AccountService, IAccountService } from "../account/account.service";
 import { Account } from "../account/entity/account.entity";
 import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
-import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import {
+  ITwoFactorAuthService,
+  TwoFactorAuthService,
+} from "./two-factor-auth/two-factor-auth.service";
 
 export interface IAuthService {
   register(req: Request, dto: RegisterDto): Promise<User | null>;
   login(req: Request, dto: LoginDto): Promise<User | null>;
   logout(req: Request, res: Response): Promise<void>;
+  extractProfileFromCode(
+    req: Request,
+    provider: string,
+    code: string,
+  ): Promise<User | null>;
 }
 
 @Injectable()
@@ -34,11 +46,16 @@ export class AuthService implements IAuthService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
-    private readonly accountService: AccountService,
-    private readonly providerService: AuthProviderService,
+    @Inject("IUserService")
+    private readonly userService: IUserService,
+    @Inject("IAccountService")
+    private readonly accountService: IAccountService,
+    @Inject("IAuthProviderService")
+    private readonly providerService: IAuthProviderService,
+    @Inject("IEmailConfirmationService")
     private readonly emailConfirmationService: EmailConfirmationService,
-    private readonly twoFactorAuthService: TwoFactorAuthService,
+    @Inject("ITwoFactorAuthService")
+    private readonly twoFactorAuthService: ITwoFactorAuthService,
   ) {}
 
   public async register(req: Request, dto: RegisterDto): Promise<any> {

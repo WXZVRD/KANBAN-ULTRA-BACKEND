@@ -7,8 +7,9 @@ import {
   Post,
   Delete,
   UseGuards,
+  Inject,
 } from "@nestjs/common";
-import { ProjectService } from "./service/project.service";
+import { IProjectService, ProjectService } from "./service/project.service";
 import { Authorization } from "../auth/decorators/auth.decorator";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { Authorized } from "../auth/decorators/authorized.decorator";
@@ -22,7 +23,10 @@ import { DeleteResult } from "typeorm";
 
 @Controller("project")
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    @Inject("IProjectService")
+    private readonly projectService: IProjectService,
+  ) {}
 
   @Post("create")
   @Authorization()

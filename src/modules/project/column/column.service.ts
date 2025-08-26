@@ -1,22 +1,40 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { ProjectColumnRepository } from "./repository/column.repository";
+import {
+  IProjectColumnRepository,
+  ProjectColumnRepository,
+} from "./repository/column.repository";
 import { ProjectColumn } from "./entity/column.entity";
 import { Project } from "../entity/project.entity";
 import { CreateColumnDTO } from "./dto/create-column.dto";
 import { DeleteResult } from "typeorm";
 import { RenameColumnDTO } from "./dto/rename-column.dto";
+import { MoveColumnDTO } from "./dto/move-column.dto";
+
+export interface IProjectColumnService {
+  createDefaultColumns(project: Project): Promise<ProjectColumn[]>;
+  createNewColumn(dto: CreateColumnDTO): Promise<ProjectColumn>;
+  getByProjectId(projectId: string): Promise<ProjectColumn[]>;
+  deleteByProjectIdAndTitle(
+    projectId: string,
+    title: string,
+  ): Promise<DeleteResult>;
+  renameColumn(columnId: string, body: RenameColumnDTO): Promise<any>;
+  move(columnId: string, body: MoveColumnDTO): Promise<any>;
+}
 
 @Injectable()
-export class ProjectColumnService {
+export class ProjectColumnService implements IProjectColumnService {
   private readonly logger = new Logger(ProjectColumnService.name);
 
   public constructor(
-    private readonly projectColumnRepository: ProjectColumnRepository,
+    @Inject("IProjectColumnRepository")
+    private readonly projectColumnRepository: IProjectColumnRepository,
   ) {}
 
   public async createDefaultColumns(
@@ -142,5 +160,46 @@ export class ProjectColumnService {
     Object.assign(column, body);
     const updated = await this.projectColumnRepository.save(column);
     return updated;
+  }
+
+  public async move(columnId: string, body: MoveColumnDTO): Promise<any> {
+    this.logger.log(
+      `Move column request: columnId=${columnId}, body=${JSON.stringify(body)}`,
+    );
+
+    const column = await this.projectColumnRepository.findById(columnId);
+    this.logger.debug(`Found column: ${JSON.stringify(column)}`);
+
+    if (!column) {
+      this.logger.warn(`Column with id=${columnId} not found`);
+      throw new NotFoundException("Column not found");
+    }
+
+    const oldOrder: number = column.order;
+    const newOrder: number = body.order;
+
+    this.logger.log(`Orders: oldOrder=${oldOrder}, newOrder=${newOrder}`);
+
+    if (oldOrder === newOrder) {
+      this.logger.log(`Order not changed, returning column`);
+      return column;
+    }
+
+    this.logger.log(
+      `Reordering columns for projectId=${column.projectId}, oldOrder=${oldOrder}, newOrder=${newOrder}, columnId=${column.id}`,
+    );
+
+    await this.projectColumnRepository.reorderColumns(
+      column.projectId,
+      oldOrder,
+      newOrder,
+      column.id,
+    );
+
+    column.order = newOrder;
+    const saved = await this.projectColumnRepository.save(column);
+
+    this.logger.log(`Column saved with new order: ${JSON.stringify(saved)}`);
+    return saved;
   }
 }

@@ -4,8 +4,35 @@ import { Project } from "../../entity/project.entity";
 import { DeepPartial, DeleteResult, Repository } from "typeorm";
 import { ProjectColumn } from "../entity/column.entity";
 
+export interface IProjectColumnRepository {
+  create(columnToCreate: DeepPartial<ProjectColumn>): Promise<ProjectColumn>;
+  save(columnToSave: ProjectColumn): Promise<ProjectColumn>;
+  createAndSave(
+    columnToSave: DeepPartial<ProjectColumn>,
+  ): Promise<ProjectColumn>;
+  findByTitle(title: string): Promise<ProjectColumn | null>;
+  findByTitleOrOrder(
+    title: string,
+    order: number,
+    projectId: string,
+  ): Promise<ProjectColumn | null>;
+  findByProjectId(projectId: string): Promise<ProjectColumn[] | null>;
+  findById(columnId: string): Promise<ProjectColumn | null>;
+  delete(projectId: string, title: string): Promise<DeleteResult>;
+  findByProjectIdAndTitle(
+    projectId: string,
+    title: string,
+  ): Promise<ProjectColumn | null>;
+  reorderColumns(
+    projectId: string,
+    oldOrder: number,
+    newOrder: number,
+    columnId: string,
+  ): Promise<void>;
+}
+
 @Injectable()
-export class ProjectColumnRepository {
+export class ProjectColumnRepository implements IProjectColumnRepository {
   public constructor(
     @InjectRepository(ProjectColumn)
     private readonly repo: Repository<ProjectColumn>,
@@ -50,6 +77,7 @@ export class ProjectColumnRepository {
       where: {
         projectId: projectId,
       },
+      relations: ["tasks"],
       order: { order: "ASC" },
     });
   }
@@ -77,5 +105,38 @@ export class ProjectColumnRepository {
       title: title,
       projectId: projectId,
     });
+  }
+
+  async reorderColumns(
+    projectId: string,
+    oldOrder: number,
+    newOrder: number,
+    columnId: string,
+  ): Promise<void> {
+    if (newOrder > oldOrder) {
+      await this.repo
+        .createQueryBuilder()
+        .update(ProjectColumn)
+        .set({ order: () => `"order" - 1` })
+        .where(`"projectId" = :projectId`, { projectId })
+        .andWhere(`"order" > :oldOrder AND "order" <= :newOrder`, {
+          oldOrder,
+          newOrder,
+        })
+        .andWhere(`id != :columnId`, { columnId })
+        .execute();
+    } else {
+      await this.repo
+        .createQueryBuilder()
+        .update(ProjectColumn)
+        .set({ order: () => `"order" + 1` })
+        .where(`"projectId" = :projectId`, { projectId })
+        .andWhere(`"order" >= :newOrder AND "order" < :oldOrder`, {
+          oldOrder,
+          newOrder,
+        })
+        .andWhere(`id != :columnId`, { columnId })
+        .execute();
+    }
   }
 }

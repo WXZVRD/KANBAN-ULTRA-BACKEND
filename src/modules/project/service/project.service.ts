@@ -4,24 +4,17 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { DeleteResult } from 'typeorm';
-import { IProjectRepository } from '../repository/project.repository';
-import {
-  IProjectColumnService,
-  ProjectColumnService,
-} from '../column/column.service';
-import {
-  IMembershipService,
-  MembershipService,
-} from '../membership/services/membership.service';
-import { MemberRole } from '../membership';
-import { ProjectColumn } from '../column';
-import { CreateProjectDto, Project, UpdateProjectDTO } from '../index';
-import { IRedisService } from '../../redis/redis.service';
-import { RedisKey } from '../../../libs/common/types/redis.types';
-import ms from 'ms';
-import { IProjectColumnRepository } from '../column/repository/column.repository';
+} from "@nestjs/common";
+import { DeleteResult } from "typeorm";
+import { IProjectRepository } from "../repository/project.repository";
+import { IMembershipService } from "../membership/services/membership.service";
+import { MemberRole } from "../membership";
+import { ProjectColumn } from "../column";
+import { CreateProjectDto, Project, UpdateProjectDTO } from "../index";
+import { IRedisService } from "../../redis/redis.service";
+import { RedisKey } from "../../../libs/common/types/redis.types";
+import ms from "ms";
+import { IProjectColumnService } from "../column/column.service";
 
 export interface IProjectService {
   create(dto: CreateProjectDto, userId: string): Promise<Project>;
@@ -37,13 +30,13 @@ export class ProjectService implements IProjectService {
   private readonly logger: Logger = new Logger(ProjectService.name);
 
   public constructor(
-    @Inject('IProjectRepository')
+    @Inject("IProjectRepository")
     private readonly projectRepository: IProjectRepository,
-    @Inject('IProjectColumnService')
+    @Inject("IProjectColumnService")
     private readonly projectColumnService: IProjectColumnService,
-    @Inject('IMembershipService')
+    @Inject("IMembershipService")
     private readonly membershipService: IMembershipService,
-    @Inject('IRedisService')
+    @Inject("IRedisService")
     private readonly redisService: IRedisService,
   ) {}
 
@@ -69,10 +62,10 @@ export class ProjectService implements IProjectService {
 
     if (isSameNameExits) {
       this.logger.warn(`Project with title "${dto.title}" already exists`);
-      throw new ConflictException('A project with this title already exists.');
+      throw new ConflictException("A project with this title already exists.");
     }
 
-    this.logger.log('No project with the same title found, creating a new one');
+    this.logger.log("No project with the same title found, creating a new one");
 
     const newProject: Project = await this.projectRepository.create({
       title: dto.title,
@@ -100,7 +93,7 @@ export class ProjectService implements IProjectService {
       await this.projectColumnService.createDefaultColumns(savedProject);
 
     this.logger.log(
-      `Columns created for project: ${newProjectColumns.map((c) => c.title).join(', ')}`,
+      `Columns created for project: ${newProjectColumns.map((c) => c.title).join(", ")}`,
     );
 
     savedProject.columns = newProjectColumns;
@@ -124,7 +117,7 @@ export class ProjectService implements IProjectService {
     );
 
     if (cachedProjects) {
-      this.logger.log('Returning projects from Redis cache');
+      this.logger.log("Returning projects from Redis cache");
       return cachedProjects;
     }
 
@@ -133,11 +126,11 @@ export class ProjectService implements IProjectService {
     if (!projects || !projects.length) {
       this.logger.warn(`No projects found, please create at least one`);
       throw new NotFoundException(
-        'No projects found, please create at least one.',
+        "No projects found, please create at least one.",
       );
     }
 
-    await this.redisService.set(RedisKey.ProjectAll, projects, ms('1m'));
+    await this.redisService.set(RedisKey.ProjectAll, projects, ms("1m"));
 
     return projects;
   }

@@ -5,17 +5,21 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import { Request } from 'express';
-import { AuthService } from '../auth.service';
-import { ConfirmationDto } from './dto/confirmation.dto';
-import { IMailService, MailService } from '../../mail/mail.service';
-import { IUserService } from '../../user/services/user.service';
-import { Token } from '../../token/entity/token.entity';
-import { TokenType } from '../../token/types/token.types';
-import { User } from '../../user/entity/user.entity';
-import { ITokenService } from '../../token/token.service';
+} from "@nestjs/common";
+import { v4 as uuidv4 } from "uuid";
+import { Request } from "express";
+import { AuthService } from "../auth.service";
+import { ConfirmationDto } from "./dto/confirmation.dto";
+import { IMailService, MailService } from "../../mail/mail.service";
+import { IUserService } from "../../user/services/user.service";
+import { Token } from "../../token/entity/token.entity";
+import { TokenType } from "../../token/types/token.types";
+import { User } from "../../user/entity/user.entity";
+import { ITokenService } from "../../token/token.service";
+import {
+  TwoFactorEmail,
+  TwoFactorEmailData,
+} from "../../mail/templates/two-factor-auth/two-factor-auth.email";
 
 export interface IEmailConfirmationService {
   newVerification(req: Request, dto: ConfirmationDto): Promise<any>;
@@ -27,13 +31,13 @@ export class EmailConfirmationService implements IEmailConfirmationService {
   private readonly logger: Logger = new Logger(EmailConfirmationService.name);
 
   constructor(
-    @Inject('ITokenService')
+    @Inject("ITokenService")
     private readonly tokenService: ITokenService,
-    @Inject('IMailService')
+    @Inject("IMailService")
     private readonly mailService: IMailService,
-    @Inject('IUserService')
+    @Inject("IUserService")
     private readonly userService: IUserService,
-    @Inject(forwardRef(() => 'IAuthService'))
+    @Inject(forwardRef(() => "IAuthService"))
     private readonly authService: AuthService,
   ) {}
 
@@ -64,7 +68,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     if (!existingToken) {
       this.logger.warn(`Token not found: ${dto.token}`);
       throw new NotFoundException(
-        'Verification token not found. Please make sure you provided the correct token.',
+        "Verification token not found. Please make sure you provided the correct token.",
       );
     }
 
@@ -72,7 +76,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     if (isExpired) {
       this.logger.warn(`Token expired: ${dto.token}`);
       throw new BadRequestException(
-        'The verification token has expired. Please request a new verification token.',
+        "The verification token has expired. Please request a new verification token.",
       );
     }
 
@@ -82,7 +86,7 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     if (!user) {
       this.logger.error(`User not found for email: ${existingToken.email}`);
       throw new NotFoundException(
-        'User with the specified email address was not found. Please check the email address.',
+        "User with the specified email address was not found. Please check the email address.",
       );
     }
 
@@ -114,13 +118,19 @@ export class EmailConfirmationService implements IEmailConfirmationService {
     const token: Token = await this.generateVerificationToken(email);
 
     try {
-      await this.mailService.sendConfirmationEmail(token.email, token.token);
+      await this.mailService.send<TwoFactorEmailData>(
+        token.email,
+        new TwoFactorEmail(),
+        {
+          token: token.token,
+        },
+      );
       this.logger.log(`Verification email sent to: ${token.email}`);
     } catch (error) {
       this.logger.error(
         `Failed to send email to ${token.email}: ${error.message}`,
       );
-      throw new BadRequestException('Failed to send verification email.');
+      throw new BadRequestException("Failed to send verification email.");
     }
 
     return true;

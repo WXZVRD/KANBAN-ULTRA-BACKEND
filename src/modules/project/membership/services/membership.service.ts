@@ -3,12 +3,12 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { DeleteResult } from 'typeorm';
-import { CreateMembershipDTO } from '../dto/create-membership.dto';
-import { Membership } from '../entity/membership.entity';
-import { MemberRole } from '../types/member-role.enum';
-import { MembershipRepository } from '../repository/membership.repository';
+} from "@nestjs/common";
+import { DeleteResult } from "typeorm";
+import { CreateMembershipDTO } from "../dto/create-membership.dto";
+import { Membership } from "../entity/membership.entity";
+import { MemberRole } from "../types/member-role.enum";
+import { MembershipRepository } from "../repository/membership.repository";
 
 export interface IMembershipService {
   createNewMember(membershipData: CreateMembershipDTO): Promise<any>;
@@ -22,12 +22,13 @@ export interface IMembershipService {
     projectId: string,
     memberRole: MemberRole,
   ): Promise<Membership>;
+  getAllProjectMembers(projectId: string): Promise<Membership[] | null>;
 }
 
 @Injectable()
 export class MembershipService implements IMembershipService {
   public constructor(
-    @Inject('IMembershipRepository')
+    @Inject("IMembershipRepository")
     private readonly membershipRepository: MembershipRepository,
   ) {}
 
@@ -54,6 +55,19 @@ export class MembershipService implements IMembershipService {
     projectId: string,
   ): Promise<Membership | null> {
     return this.membershipRepository.findByUserAndProject(userId, projectId);
+  }
+
+  /**
+   * Retrieves a specific member in a project.
+   *
+   * @param userId - User ID
+   * @param projectId - Project ID
+   * @returns Membership or null
+   */
+  public async getAllProjectMembers(
+    projectId: string,
+  ): Promise<Membership[] | null> {
+    return this.membershipRepository.findByProject(projectId);
   }
 
   /**
