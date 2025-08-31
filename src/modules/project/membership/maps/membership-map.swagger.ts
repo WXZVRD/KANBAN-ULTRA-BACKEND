@@ -14,6 +14,20 @@ export const MembershipMapSwagger: SwaggerMap<MembershipController> = {
     bodyType: SendInviteDTO,
   },
 
+  deleteArrayOfMembers: {
+    summary: "Send an invitation to a user to join a project",
+    okDescription: "Invitation successfully sent",
+    okType: Boolean,
+    bodyType: SendInviteDTO,
+  },
+
+  getProjectByMember: {
+    summary: "Send an invitation to a user to join a project",
+    okDescription: "Invitation successfully sent",
+    okType: Boolean,
+    bodyType: SendInviteDTO,
+  },
+
   newVerification: {
     summary: "Accept an invitation to join the project",
     okDescription: "Invitation accepted",

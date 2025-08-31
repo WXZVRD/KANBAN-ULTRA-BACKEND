@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Html,
   Head,
@@ -10,8 +10,8 @@ import {
   Text,
   Link,
   Section,
-} from '@react-email/components';
-import { MemberRole } from '../../../project/membership/types/member-role.enum';
+} from "@react-email/components";
+import { MemberRole } from "../../../project/membership/types/member-role.enum";
 
 interface IMembershipInviteTemplateProps {
   domain: string;
@@ -26,7 +26,7 @@ export function MembershipInviteTemplate({
   projectId,
   memberRole,
 }: IMembershipInviteTemplateProps): any {
-  const confirmLink: string = `${domain}/project/${projectId}/?role=${memberRole}?token=${token}`;
+  const confirmLink: string = `${domain}/project/${projectId}?role=${memberRole}&token=${token}`;
 
   return (
     <Html>

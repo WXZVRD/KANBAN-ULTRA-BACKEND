@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Membership } from "../entity/membership.entity";
-import { DeepPartial, DeleteResult, Repository } from "typeorm";
+import { DeepPartial, DeleteResult, In, Repository } from "typeorm";
 
 export interface IMembershipRepository {
   create(memberToCreate: DeepPartial<Membership>): Promise<Membership>;
@@ -12,7 +12,9 @@ export interface IMembershipRepository {
     projectId: string,
   ): Promise<Membership | null>;
   delete(userId: string, projectId: string): Promise<DeleteResult>;
+  deleteArrayOfMembers(ids: string[], projectId: string): Promise<DeleteResult>;
   updateUserAccess(userId: string, projectId: string): Promise<DeleteResult>;
+  getProjectsByMember(userId: string): Promise<Membership[] | null>;
 }
 
 @Injectable()
@@ -65,11 +67,30 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.delete({ userId: userId, projectId: projectId });
   }
 
+  public async deleteArrayOfMembers(
+    ids: string[],
+    projectId: string,
+  ): Promise<DeleteResult> {
+    return this.repo.delete({
+      id: In(ids),
+      projectId: projectId,
+    });
+  }
+
   /** Dummy method for updating user access (currently performs delete). */
   public async updateUserAccess(
     userId: string,
     projectId: string,
   ): Promise<DeleteResult> {
     return this.repo.delete({ userId: userId, projectId: projectId });
+  }
+
+  public async getProjectsByMember(
+    userId: string,
+  ): Promise<Membership[] | null> {
+    return this.repo.find({
+      where: { userId: userId },
+      relations: ["project"],
+    });
   }
 }

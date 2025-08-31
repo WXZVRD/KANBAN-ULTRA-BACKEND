@@ -4,25 +4,25 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { IUserService } from '../../../user/services/user.service';
-import { IMailService } from '../../../mail/mail.service';
-import { InviteDto } from '../dto/invite.dto';
-import { IMembershipService } from './membership.service';
-import { MemberRole } from '../types/member-role.enum';
-import { TokenType } from '../../../token/types/token.types';
-import { UuidTokenGenerator } from '../../../token/strategies/uuid-token.generator';
-import { ITokenService } from '../../../token/token.service';
-import { Token } from '../../../token/entity/token.entity';
-import { User } from '../../../user/entity/user.entity';
-import ms from 'ms';
+} from "@nestjs/common";
+import { IUserService } from "../../../user/services/user.service";
+import { IMailService } from "../../../mail/mail.service";
+import { InviteDto } from "../dto/invite.dto";
+import { IMembershipService } from "./membership.service";
+import { MemberRole } from "../types/member-role.enum";
+import { TokenType } from "../../../token/types/token.types";
+import { UuidTokenGenerator } from "../../../token/strategies/uuid-token.generator";
+import { ITokenService } from "../../../token/token.service";
+import { Token } from "../../../token/entity/token.entity";
+import { User } from "../../../user/entity/user.entity";
+import ms from "ms";
 import {
   MembershipInviteEmail,
   MembershipInviteEmailData,
-} from '../../../mail/templates/membership-invite/membership-invite.email';
+} from "../../../mail/templates/membership-invite/membership-invite.email";
 
 export interface IMembershipInvitationService {
-  newVerification(dto: InviteDto): Promise<void>;
+  newVerification(dto: InviteDto & { projectId: string }): Promise<void>;
   sendVerificationToken(
     email: string,
     projectId: string,
@@ -39,13 +39,13 @@ export class MembershipInvitationService
   );
 
   constructor(
-    @Inject('ITokenService')
+    @Inject("ITokenService")
     private readonly tokenService: ITokenService,
-    @Inject('IMailService')
+    @Inject("IMailService")
     private readonly mailService: IMailService,
-    @Inject('IUserService')
+    @Inject("IUserService")
     private readonly userService: IUserService,
-    @Inject('IMembershipService')
+    @Inject("IMembershipService")
     private readonly membershipService: IMembershipService,
   ) {}
 
@@ -55,7 +55,9 @@ export class MembershipInvitationService
    * @param dto - DTO containing token and project data
    * @throws NotFoundException if user is not found
    */
-  public async newVerification(dto: InviteDto): Promise<void> {
+  public async newVerification(
+    dto: InviteDto & { projectId: string },
+  ): Promise<void> {
     this.logger.log(`Attempting to confirm token: ${dto.token}`);
 
     const token: Token = await this.tokenService.validateTokenByValue(
@@ -67,7 +69,7 @@ export class MembershipInvitationService
     if (!user) {
       this.logger.error(`User not found by email: ${token.email}`);
       throw new NotFoundException(
-        'User with this email was not found. Please check the invitation.',
+        "User with this email was not found. Please check the invitation.",
       );
     }
 
@@ -101,7 +103,7 @@ export class MembershipInvitationService
     const token: Token = await this.tokenService.generateToken(
       email,
       TokenType.PROJECT_INVITE,
-      ms('1h'),
+      ms("1h"),
       new UuidTokenGenerator(),
     );
 
@@ -118,7 +120,7 @@ export class MembershipInvitationService
       this.logger.log(`Invitation sent to: ${email}`);
     } catch (error) {
       this.logger.error(`Error sending invitation: ${error.message}`);
-      throw new BadRequestException('Failed to send invitation.');
+      throw new BadRequestException("Failed to send invitation.");
     }
 
     return true;

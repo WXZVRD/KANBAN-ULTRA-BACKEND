@@ -30,22 +30,20 @@ export class UsersController {
   /**
    * Retrieves the profile of the currently authenticated user.
    *
-   * @param userId - ID of the authorized user
    * @returns The user profile or null if not found
+   * @param id
    */
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get("profile")
   @ApiAuthEndpoint(UsersSwagger.findProfile)
-  public async findProfile(
-    @Authorized("id") userId: string,
-  ): Promise<User | null> {
-    this.logger.log(`Called findProfile with userId=${userId}`);
+  public async findProfile(@Authorized("id") id: string): Promise<User | null> {
+    this.logger.log(`Called findProfile with userId=${id}`);
 
-    const user: User | null = await this.userService.findById(userId);
+    const user: User | null = await this.userService.findById(id);
 
     if (!user) {
-      this.logger.warn(`User with id=${userId} not found`);
+      this.logger.warn(`User with id=${id} not found`);
     } else {
       this.logger.debug(`User found: ${JSON.stringify(user)}`);
     }

@@ -174,8 +174,9 @@ export class AuthService implements IAuthService {
         "Не удалось получить данные пользователя от провайдера",
       );
     }
+    this.logger.log(`profile profile=${JSON.stringify(profile)}`);
 
-    this.logger.log(`Поиск существующего аккаунта для id=${profile.id}`);
+    this.logger.log(`Поиск существующего аккаунта для email=${profile.email}`);
     const account: Account | null =
       await this.accountService.findByIdAndProvider(
         profile!.id,

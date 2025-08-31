@@ -17,12 +17,17 @@ export interface IMembershipService {
     projectId: string,
   ): Promise<Membership | null>;
   deleteProjectMember(userId: string, projectId: string): Promise<DeleteResult>;
+  deleteArrayOfProjectMember(
+    ids: string[],
+    projectId: string,
+  ): Promise<DeleteResult>;
   updateUserAccess(
     userId: string,
     projectId: string,
     memberRole: MemberRole,
   ): Promise<Membership>;
   getAllProjectMembers(projectId: string): Promise<Membership[] | null>;
+  getProjectsByMember(userId: string): Promise<Membership[] | null>;
 }
 
 @Injectable()
@@ -84,6 +89,13 @@ export class MembershipService implements IMembershipService {
     return this.membershipRepository.delete(userId, projectId);
   }
 
+  public async deleteArrayOfProjectMember(
+    ids: string[],
+    projectId: string,
+  ): Promise<DeleteResult> {
+    return this.membershipRepository.deleteArrayOfMembers(ids, projectId);
+  }
+
   /**
    * Updates the access level (role) of a project member.
    *
@@ -117,5 +129,23 @@ export class MembershipService implements IMembershipService {
     member.memberRole = memberRole;
 
     return this.membershipRepository.save(member);
+  }
+
+  public async getProjectsByMember(
+    userId: string,
+  ): Promise<Membership[] | null> {
+    const projects: Membership[] | null =
+      await this.membershipRepository.getProjectsByMember(userId);
+
+    if (!projects || !projects.length) {
+      console.warn(
+        `User with id ${userId} has no projects, please create at least one`,
+      );
+      throw new NotFoundException(
+        `User with id ${userId} has no projects, please create at least one.`,
+      );
+    }
+
+    return projects;
   }
 }

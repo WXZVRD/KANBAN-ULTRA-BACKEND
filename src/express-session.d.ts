@@ -1,13 +1,13 @@
-import 'express-session';
-import 'express';
+import "express-session";
+import "express";
 
-declare module 'express-session' {
-  interface Session {
+declare module "express-session" {
+  interface SessionData {
     userId: number;
   }
 }
 
-declare module 'express' {
+declare module "express" {
   interface Request {
     session: Express.Session;
   }

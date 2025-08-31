@@ -9,16 +9,14 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from "@nestjs/common";
-import { Request } from "express";
 import { DeleteResult } from "typeorm";
-import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { IMembershipService } from "./services/membership.service";
 import { IMembershipInvitationService } from "./services/membership-invitation.service";
 import { ApiAuthEndpoint } from "../../../libs/common/decorators/api-swagger-simpli.decorator";
-import { Authorization } from "../../auth";
+import { Authorization, Authorized } from "../../auth";
 import {
   InviteDto,
   MemberACL,
@@ -30,6 +28,7 @@ import {
   SendInviteDTO,
   UpdateMembershipDTO,
 } from "./index";
+import { DeleteMembersDTO } from "./dto/delete-members.dto";
 
 @ApiTags("Memberships")
 @ApiBearerAuth()
@@ -65,16 +64,19 @@ export class MembershipController {
   /**
    * Accepts an invitation by validating the token and creating the membership.
    */
-  @MemberACL(MemberRole.ADMIN)
   @Authorization()
   @Post("/take-invite")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(MembershipMapSwagger.newVerification)
   public async newVerification(
-    @Req() req: Request,
+    @Param("projectId") projectId: string,
     @Body() dto: InviteDto,
   ): Promise<void> {
-    return this.membershipInvitationService.newVerification(dto);
+    return this.membershipInvitationService.newVerification({
+      token: dto.token,
+      projectId: projectId,
+      memberRole: dto.memberRole,
+    });
   }
 
   /**
@@ -90,6 +92,24 @@ export class MembershipController {
     @Param("userId") userId: string,
   ): Promise<DeleteResult> {
     return this.membershipService.deleteProjectMember(userId, projectId);
+  }
+
+  /**
+   * Deletes an array of project members.
+   */
+  @MemberACL(MemberRole.ADMIN)
+  @Authorization()
+  @Delete("/members/all")
+  @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(MembershipMapSwagger.deleteArrayOfMembers)
+  public async deleteArrayOfMembers(
+    @Param("projectId") projectId: string,
+    @Body() dto: DeleteMembersDTO,
+  ): Promise<DeleteResult> {
+    return this.membershipService.deleteArrayOfProjectMember(
+      dto.ids,
+      projectId,
+    );
   }
 
   /**
@@ -109,6 +129,16 @@ export class MembershipController {
       projectId,
       dto.memberRole,
     );
+  }
+
+  @Authorization()
+  @Get("/get-project-by-member")
+  @HttpCode(HttpStatus.OK)
+  @ApiAuthEndpoint(MembershipMapSwagger.getProjectByMember)
+  public async getProjectByMember(
+    @Authorized("id") userId: string,
+  ): Promise<Membership[] | null> {
+    return this.membershipService.getProjectsByMember(userId);
   }
 
   @Get("/project-member")

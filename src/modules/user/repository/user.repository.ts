@@ -35,10 +35,15 @@ export class UserRepository implements IUserRepository {
    * @param id - User ID
    * @returns The user entity or null if not found
    */
-  public async findUniqueById(id: string): Promise<User | null> {
+  public async findUniqueById(id: string | undefined): Promise<User | null> {
+    if (!id) {
+      this.logger.warn(`Called findUniqueById with invalid id=${id}`);
+      return null;
+    }
+
     this.logger.log(`Called findUniqueById with id=${id}`);
 
-    const user: User | null = await this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { id },
       relations: ["account"],
     });
