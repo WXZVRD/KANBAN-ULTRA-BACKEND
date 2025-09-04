@@ -14,39 +14,43 @@ import {
   Req,
   Res,
   UseGuards,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { Recaptcha } from '@nestlab/google-recaptcha';
-import { ConfigService } from '@nestjs/config';
-import { ApiTags } from '@nestjs/swagger';
-import { AuthProviderGuard } from './guards/provider.guard';
-import { IAuthService } from './auth.service';
-import { IAuthProviderService } from './OAuthProvider/OAuthProvider.service';
-import { RegisterDto } from './dto/register.dto';
-import { User } from '../user/entity/user.entity';
-import { LoginDto } from './dto/login.dto';
-import { BaseOauthService } from './OAuthProvider/services/base-oauth.service';
-import { ApiAuthEndpoint } from '../../libs/common/decorators/api-swagger-simpli.decorator';
-import { AuthMapSwagger } from './maps/auth-map.swagger';
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { Recaptcha } from "@nestlab/google-recaptcha";
+import { ConfigService } from "@nestjs/config";
+import { ApiTags } from "@nestjs/swagger";
+import { AuthProviderGuard } from "./guards/provider.guard";
+import { IAuthService } from "./auth.service";
+import { IAuthProviderService } from "./OAuthProvider/OAuthProvider.service";
+import { RegisterDto } from "./dto/register.dto";
+import { User } from "../user/entity/user.entity";
+import { LoginDto } from "./dto/login.dto";
+import { BaseOauthService } from "./OAuthProvider/services/base-oauth.service";
+import { ApiAuthEndpoint } from "../../libs/common/decorators/api-swagger-simpli.decorator";
+import { AuthMapSwagger } from "./maps/auth-map.swagger";
 
-@ApiTags('Auth')
-@Controller('auth')
+@ApiTags("Auth")
+@Controller("auth")
 export class AuthController {
   private readonly logger: Logger = new Logger(AuthController.name);
 
   constructor(
-    @Inject('IAuthService')
+    @Inject("IAuthService")
     private readonly authService: IAuthService,
-    @Inject('IAuthProviderService')
+    @Inject("IAuthProviderService")
     private readonly authProviderService: IAuthProviderService,
     private readonly configService: ConfigService,
   ) {}
 
   /**
    * Handles user registration.
+   *
+   * @param req Incoming HTTP request (used for session management)
+   * @param dto RegisterDto containing user registration data (name, email, password)
+   * @returns The newly registered user object, or null if registration fails
    */
   @Recaptcha()
-  @Post('register')
+  @Post("register")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(AuthMapSwagger.register)
   public async register(
@@ -62,10 +66,14 @@ export class AuthController {
   }
 
   /**
-   * Handles user login.
+   * Handles user login with email and password.
+   *
+   * @param req Incoming HTTP request (used for session management)
+   * @param dto LoginDto containing user credentials (email and password)
+   * @returns The logged-in user object, or null if login fails
    */
   @Recaptcha()
-  @Post('login')
+  @Post("login")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(AuthMapSwagger.login)
   public async login(
@@ -83,16 +91,23 @@ export class AuthController {
   }
 
   /**
-   * Handles OAuth provider callback.
+   * Handles the OAuth callback from a provider.
+   *
+   * @param req Incoming HTTP request
+   * @param res HTTP response (used to redirect after successful auth)
+   * @param provider OAuth provider name
+   * @param code Authorization code returned by the provider
+   * @throws {BadRequestException} If the authorization code is missing
+   * @returns Redirects the user to the dashboard settings page
    */
   @UseGuards(AuthProviderGuard)
-  @Get('/oauth/callback/:provider')
+  @Get("/oauth/callback/:provider")
   @ApiAuthEndpoint(AuthMapSwagger.callback)
   public async callback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Param('provider') provider: string,
-    @Query('code') code: string,
+    @Param("provider") provider: string,
+    @Query("code") code: string,
   ): Promise<any> {
     this.logger.log(
       `GET /oauth/callback/${provider} — Processing OAuth callback, provider=${provider}`,
@@ -102,7 +117,7 @@ export class AuthController {
       this.logger.warn(
         `OAuth callback for provider ${provider} was called without an authorization code`,
       );
-      throw new BadRequestException('Authorization code was not provided.');
+      throw new BadRequestException("Authorization code was not provided.");
     }
 
     this.logger.log(
@@ -110,7 +125,7 @@ export class AuthController {
     );
     await this.authService.extractProfileFromCode(req, provider, code);
 
-    const redirectUrl: string = `${this.configService.getOrThrow<string>('ALLOWED_ORIGIN')}/dashboard/settings`;
+    const redirectUrl: string = `${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`;
     this.logger.log(
       `OAuth authentication via ${provider} succeeded, redirecting to ${redirectUrl}`,
     );
@@ -119,12 +134,15 @@ export class AuthController {
   }
 
   /**
-   * Generates an OAuth authentication URL for the specified provider.
+   * Returns an OAuth authorization URL for the given provider.
+   *
+   * @param provider OAuth provider name
+   * @returns {Promise<{url: string}>} Authentication URL
    */
   @UseGuards(AuthProviderGuard)
-  @Get('/oauth/connect/:provider')
+  @Get("/oauth/connect/:provider")
   @ApiAuthEndpoint(AuthMapSwagger.connect)
-  public async connect(@Param('provider') provider: string): Promise<any> {
+  public async connect(@Param("provider") provider: string): Promise<any> {
     this.logger.log(
       `GET /oauth/connect/${provider} — Requesting authentication URL for provider ${provider}`,
     );
@@ -148,9 +166,13 @@ export class AuthController {
   }
 
   /**
-   * Handles user logout.
+   * Logs out the current user.
+   *
+   * @param req Express request with session
+   * @param res Express response (passthrough)
+   * @returns {Promise<void>}
    */
-  @Post('logout')
+  @Post("logout")
   @HttpCode(HttpStatus.OK)
   @ApiAuthEndpoint(AuthMapSwagger.logout)
   public async logout(

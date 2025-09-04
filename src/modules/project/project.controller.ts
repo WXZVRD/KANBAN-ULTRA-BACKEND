@@ -33,7 +33,7 @@ export class ProjectController {
   public async create(
     @Body() dto: CreateProjectDto,
     @Authorized("id") id: string,
-  ) {
+  ): Promise<Project> {
     return await this.projectService.create(dto, id);
   }
 

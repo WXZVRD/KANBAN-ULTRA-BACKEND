@@ -14,6 +14,7 @@ import { CreateColumnDTO } from "./dto/create-column.dto";
 import { DeleteColumnDTO } from "./dto/delete-column.dto";
 import { RenameColumnDTO } from "./dto/rename-column.dto";
 import { MoveColumnDTO } from "./dto/move-column.dto";
+import { ProjectColumn } from "./entity/column.entity";
 
 @Controller("project_column")
 export class ProjectColumnController {
@@ -24,7 +25,7 @@ export class ProjectColumnController {
 
   @Post("newOne")
   @Authorization()
-  public async newOne(@Body() dto: CreateColumnDTO): Promise<any> {
+  public async newOne(@Body() dto: CreateColumnDTO): Promise<ProjectColumn> {
     return this.projectColumnService.createNewColumn(dto);
   }
 
@@ -32,7 +33,7 @@ export class ProjectColumnController {
   @Authorization()
   public async getByProjectId(
     @Param("projectId") projectId: string,
-  ): Promise<any> {
+  ): Promise<ProjectColumn[]> {
     return this.projectColumnService.getByProjectId(projectId);
   }
 
@@ -52,7 +53,7 @@ export class ProjectColumnController {
   public async renameColumn(
     @Param("columnId") columnId: string,
     @Body() body: RenameColumnDTO,
-  ): Promise<any> {
+  ): Promise<ProjectColumn> {
     return this.projectColumnService.renameColumn(columnId, body);
   }
 
@@ -61,7 +62,7 @@ export class ProjectColumnController {
   public async move(
     @Param("columnId") columnId: string,
     @Body() body: MoveColumnDTO,
-  ): Promise<any> {
+  ): Promise<ProjectColumn> {
     return this.projectColumnService.move(columnId, body);
   }
 }

@@ -5,10 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import {
-  IProjectColumnRepository,
-  ProjectColumnRepository,
-} from "./repository/column.repository";
+import { IProjectColumnRepository } from "./repository/column.repository";
 import { ProjectColumn } from "./entity/column.entity";
 import { Project } from "../entity/project.entity";
 import { CreateColumnDTO } from "./dto/create-column.dto";
@@ -24,8 +21,8 @@ export interface IProjectColumnService {
     projectId: string,
     title: string,
   ): Promise<DeleteResult>;
-  renameColumn(columnId: string, body: RenameColumnDTO): Promise<any>;
-  move(columnId: string, body: MoveColumnDTO): Promise<any>;
+  renameColumn(columnId: string, body: RenameColumnDTO): Promise<ProjectColumn>;
+  move(columnId: string, body: MoveColumnDTO): Promise<ProjectColumn>;
 }
 
 @Injectable()
@@ -137,7 +134,7 @@ export class ProjectColumnService implements IProjectColumnService {
   public async renameColumn(
     columnId: string,
     body: RenameColumnDTO,
-  ): Promise<any> {
+  ): Promise<ProjectColumn> {
     const column: ProjectColumn | null =
       await this.projectColumnRepository.findById(columnId);
     this.logger.log(`columnId ${columnId} !`);
@@ -158,7 +155,8 @@ export class ProjectColumnService implements IProjectColumnService {
     }
 
     Object.assign(column, body);
-    const updated = await this.projectColumnRepository.save(column);
+    const updated: ProjectColumn =
+      await this.projectColumnRepository.save(column);
     return updated;
   }
 
@@ -197,7 +195,8 @@ export class ProjectColumnService implements IProjectColumnService {
     );
 
     column.order = newOrder;
-    const saved = await this.projectColumnRepository.save(column);
+    const saved: ProjectColumn =
+      await this.projectColumnRepository.save(column);
 
     this.logger.log(`Column saved with new order: ${JSON.stringify(saved)}`);
     return saved;
