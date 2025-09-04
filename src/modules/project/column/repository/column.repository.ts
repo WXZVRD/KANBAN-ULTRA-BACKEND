@@ -92,7 +92,10 @@ export class ProjectColumnRepository implements IProjectColumnRepository {
     projectId: string,
   ): Promise<ProjectColumn | null> {
     return await this.repo.findOne({
-      where: [{ title: title }, { order: order, projectId: projectId }],
+      where: [
+        { title: title, projectId: projectId },
+        { order: order, projectId: projectId },
+      ],
     });
   }
 
