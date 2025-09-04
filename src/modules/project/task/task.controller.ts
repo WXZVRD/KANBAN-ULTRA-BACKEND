@@ -9,43 +9,46 @@ import {
   Patch,
   Post,
   Query,
-} from '@nestjs/common';
-import { DeleteResult } from 'typeorm';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { ITaskService, TaskService } from './service/task.service';
-import { ApiAuthEndpoint } from '../../../libs/common/decorators/api-swagger-simpli.decorator';
-import { MemberACL, MemberRole } from '../membership';
+} from "@nestjs/common";
+import { DeleteResult } from "typeorm";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { ITaskService, TaskService } from "./service/task.service";
+import { ApiAuthEndpoint } from "../../../libs/common/decorators/api-swagger-simpli.decorator";
+import { MemberACL, MemberRole } from "../membership";
 import {
   CreateTaskDTO,
   Task,
   TaskFilterDto,
   TaskMapSwagger,
   UpdateTaskDTO,
-} from './index';
-import { Authorization, Authorized } from '../../auth';
-import { UpdateAssigneeDTO } from './dto/update-assignee.dto';
+} from "./index";
+import { Authorization, Authorized } from "../../auth";
+import { UpdateAssigneeDTO } from "./dto/update-assignee.dto";
 
-@ApiTags('Tasks')
+@ApiTags("Tasks")
 @ApiBearerAuth()
-@Controller('project/:projectId/task')
+@Controller("project/:projectId/task")
 export class TaskController {
   private readonly logger: Logger = new Logger(TaskController.name);
 
   constructor(
-    @Inject('ITaskService')
+    @Inject("ITaskService")
     private readonly taskService: ITaskService,
   ) {}
 
   /**
-   * Creates a new task for the specified project.
+   * Creates a new task for a project.
+   * @param dto - Task creation data
+   * @param id - ID of the user creating the task
+   * @returns The created Task entity
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
-  @Post('create')
+  @Post("create")
   @ApiAuthEndpoint(TaskMapSwagger.create)
   public async create(
     @Body() dto: CreateTaskDTO,
-    @Authorized('id') id: string,
+    @Authorized("id") id: string,
   ): Promise<Task> {
     this.logger.log(`POST /create | UserId=${id} | DTO=${JSON.stringify(dto)}`);
     const task: Task = await this.taskService.create(dto, id);
@@ -55,10 +58,12 @@ export class TaskController {
 
   /**
    * Updates an existing task.
+   * @param dto - Task update data
+   * @returns Updated Task entity
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
-  @Patch('update')
+  @Patch("update")
   @ApiAuthEndpoint(TaskMapSwagger.update)
   public async update(@Body() dto: UpdateTaskDTO): Promise<Task> {
     this.logger.log(`PATCH /update | DTO=${JSON.stringify(dto)}`);
@@ -83,11 +88,11 @@ export class TaskController {
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
-  @Patch('update-assignee')
+  @Patch("update-assignee")
   @ApiAuthEndpoint(TaskMapSwagger.updateAssignee)
   public async updateAssignee(
-    @Query('assigneeId') assigneeId: string,
-    @Param('projectId') projectId: string,
+    @Query("assigneeId") assigneeId: string,
+    @Param("projectId") projectId: string,
     @Body() dto: UpdateAssigneeDTO,
   ): Promise<Task> {
     this.logger.log(
@@ -109,13 +114,14 @@ export class TaskController {
 
   /**
    * Retrieves all tasks.
+   * @returns Array of Task entities
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
-  @Post('getAll')
+  @Post("getAll")
   @ApiAuthEndpoint(TaskMapSwagger.getAll)
   public async getAll(): Promise<Task[]> {
-    this.logger.log('POST /getAll | Fetching all tasks');
+    this.logger.log("POST /getAll | Fetching all tasks");
     const tasks: Task[] = await this.taskService.getAll();
     this.logger.log(`Returned ${tasks.length} tasks`);
     return tasks;
@@ -123,27 +129,32 @@ export class TaskController {
 
   /**
    * Retrieves a task by its ID.
+   * @param id - Task ID
+   * @returns Task entity
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
-  @Post('getById')
+  @Post("getById")
   @ApiAuthEndpoint(TaskMapSwagger.getById)
-  public async getById(@Param('id') id: string): Promise<Task> {
+  public async getById(@Param("id") id: string): Promise<Task> {
     this.logger.log(`POST /getById | TaskID=${id}`);
     const task: Task = await this.taskService.getById(id);
-    this.logger.log(`Returned task: ${task?.id || 'NOT FOUND'}`);
+    this.logger.log(`Returned task: ${task?.id || "NOT FOUND"}`);
     return task;
   }
 
   /**
-   * Retrieves all tasks for a specific project with optional filters.
+   * Retrieves tasks for a specific project with optional filters.
+   * @param projectId - Project ID
+   * @param filter - Filter options for tasks
+   * @returns Array of Task entities
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER, MemberRole.VISITOR)
   @Authorization()
-  @Get('getByProjectId')
+  @Get("getByProjectId")
   @ApiAuthEndpoint(TaskMapSwagger.getTasksByProjectId)
   public async getTasksByProjectId(
-    @Param('projectId') projectId: string,
+    @Param("projectId") projectId: string,
     @Query() filter: TaskFilterDto,
   ): Promise<Task[]> {
     this.logger.log(
@@ -161,13 +172,15 @@ export class TaskController {
 
   /**
    * Deletes a task by its ID.
+   * @param taskId - Task ID
+   * @returns DeleteResult
    */
   @MemberACL(MemberRole.ADMIN, MemberRole.MEMBER)
   @Authorization()
-  @Delete('/:taskId')
+  @Delete("/:taskId")
   @ApiAuthEndpoint(TaskMapSwagger.deleteTask)
   public async deleteTask(
-    @Param('taskId') taskId: string,
+    @Param("taskId") taskId: string,
   ): Promise<DeleteResult> {
     this.logger.log(`DELETE /:taskId | TaskID=${taskId}`);
     const res: DeleteResult = await this.taskService.delete(taskId);

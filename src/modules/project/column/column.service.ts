@@ -27,13 +27,18 @@ export interface IProjectColumnService {
 
 @Injectable()
 export class ProjectColumnService implements IProjectColumnService {
-  private readonly logger = new Logger(ProjectColumnService.name);
+  private readonly logger: Logger = new Logger(ProjectColumnService.name);
 
   public constructor(
     @Inject("IProjectColumnRepository")
     private readonly projectColumnRepository: IProjectColumnRepository,
   ) {}
 
+  /**
+   * Creates default columns ("To Do", "In Progress", "Done") for a new project.
+   * @param project - Project entity
+   * @returns Array of created ProjectColumn entities
+   */
   public async createDefaultColumns(
     project: Project,
   ): Promise<ProjectColumn[]> {
@@ -58,6 +63,12 @@ export class ProjectColumnService implements IProjectColumnService {
     return createdColumns;
   }
 
+  /**
+   * Creates a new column in a project.
+   * @param dto - DTO containing projectId, title, and order
+   * @throws ConflictException if a column with same title or order exists
+   * @returns Created ProjectColumn entity
+   */
   public async createNewColumn(dto: CreateColumnDTO): Promise<ProjectColumn> {
     this.logger.debug(
       `Создание новой колонки: title="${dto.title}", order=${dto.order}, projectId=${dto.projectId}`,
@@ -93,6 +104,12 @@ export class ProjectColumnService implements IProjectColumnService {
     return newColumn;
   }
 
+  /**
+   * Retrieves all columns for a specific project.
+   * @param projectId - ID of the project
+   * @throws NotFoundException if no columns exist
+   * @returns Array of ProjectColumn entities
+   */
   public async getByProjectId(projectId: string): Promise<ProjectColumn[]> {
     const columns: ProjectColumn[] | null =
       await this.projectColumnRepository.findByProjectId(projectId);
@@ -109,6 +126,13 @@ export class ProjectColumnService implements IProjectColumnService {
     return columns;
   }
 
+  /**
+   * Deletes a column by projectId and title.
+   * @param projectId - Project ID
+   * @param title - Column title
+   * @throws NotFoundException if column does not exist
+   * @returns DeleteResult
+   */
   public async deleteByProjectIdAndTitle(
     projectId: string,
     title: string,
@@ -131,6 +155,13 @@ export class ProjectColumnService implements IProjectColumnService {
     return res;
   }
 
+  /**
+   * Renames a column.
+   * @param columnId - Column ID
+   * @param body - DTO containing new title
+   * @throws NotFoundException if column does not exist or title is unchanged
+   * @returns Updated ProjectColumn entity
+   */
   public async renameColumn(
     columnId: string,
     body: RenameColumnDTO,
@@ -160,6 +191,13 @@ export class ProjectColumnService implements IProjectColumnService {
     return updated;
   }
 
+  /**
+   * Moves a column to a new order within the project.
+   * @param columnId - Column ID
+   * @param body - DTO containing new order
+   * @throws NotFoundException if column does not exist
+   * @returns Updated ProjectColumn entity
+   */
   public async move(columnId: string, body: MoveColumnDTO): Promise<any> {
     this.logger.log(
       `Move column request: columnId=${columnId}, body=${JSON.stringify(body)}`,

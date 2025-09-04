@@ -24,21 +24,33 @@ export class MembershipRepository implements IMembershipRepository {
     private readonly repo: Repository<Membership>,
   ) {}
 
-  /** Creates a Membership entity (does not persist to DB). */
+  /**
+   * Creates a Membership entity (does not persist to DB).
+   * @param memberToCreate - Partial membership data
+   * @returns Membership instance
+   */
   public async create(
     memberToCreate: DeepPartial<Membership>,
   ): Promise<Membership> {
     return this.repo.create(memberToCreate);
   }
 
-  /** Saves a Membership entity to the database. */
+  /**
+   * Saves a Membership entity to the database.
+   * @param memberToSave - Membership entity or partial data
+   * @returns Saved Membership entity
+   */
   public async save(
     memberToSave: DeepPartial<Membership>,
   ): Promise<Membership> {
     return this.repo.save(memberToSave);
   }
 
-  /** Creates and immediately saves a Membership entity. */
+  /**
+   * Creates and immediately saves a Membership entity.
+   * @param memberToSave - Membership entity or partial data
+   * @returns Saved Membership entity
+   */
   public async createAndSave(
     memberToSave: DeepPartial<Membership>,
   ): Promise<Membership> {
@@ -46,7 +58,12 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.save(createdMember);
   }
 
-  /** Finds a member by user ID and project ID. */
+  /**
+   * Finds a membership by user ID and project ID.
+   * @param userId - User ID
+   * @param projectId - Project ID
+   * @returns Membership entity or null
+   */
   public async findByUserAndProject(
     userId: string,
     projectId: string,
@@ -54,12 +71,21 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.findOne({ where: { userId, projectId } });
   }
 
-  /** Finds a member by project ID. */
+  /**
+   * Finds all members for a specific project.
+   * @param projectId - Project ID
+   * @returns Array of Memberships or null
+   */
   public async findByProject(projectId: string): Promise<Membership[] | null> {
     return this.repo.find({ where: { projectId }, relations: ["user"] });
   }
 
-  /** Deletes a member from a project. */
+  /**
+   * Deletes a single member from a project.
+   * @param userId - User ID
+   * @param projectId - Project ID
+   * @returns DeleteResult from TypeORM
+   */
   public async delete(
     userId: string,
     projectId: string,
@@ -67,6 +93,12 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.delete({ userId: userId, projectId: projectId });
   }
 
+  /**
+   * Deletes multiple members from a project.
+   * @param ids - Array of Membership IDs
+   * @param projectId - Project ID
+   * @returns DeleteResult from TypeORM
+   */
   public async deleteArrayOfMembers(
     ids: string[],
     projectId: string,
@@ -77,7 +109,12 @@ export class MembershipRepository implements IMembershipRepository {
     });
   }
 
-  /** Dummy method for updating user access (currently performs delete). */
+  /**
+   * Updates a user's access to a project.
+   * @param userId - User ID
+   * @param projectId - Project ID
+   * @returns DeleteResult (currently this method performs delete)
+   */
   public async updateUserAccess(
     userId: string,
     projectId: string,
@@ -85,6 +122,11 @@ export class MembershipRepository implements IMembershipRepository {
     return this.repo.delete({ userId: userId, projectId: projectId });
   }
 
+  /**
+   * Retrieves all projects for a given member.
+   * @param userId - User ID
+   * @returns Array of Memberships with project relations or null
+   */
   public async getProjectsByMember(
     userId: string,
   ): Promise<Membership[] | null> {

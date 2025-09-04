@@ -58,6 +58,14 @@ export class AuthService implements IAuthService {
     private readonly twoFactorAuthService: ITwoFactorAuthService,
   ) {}
 
+  /**
+   * Registers a new user.
+   *
+   * @param req HTTP request object (used for session management)
+   * @param dto RegisterDto containing user registration info (name, email, password)
+   * @returns Success message with email verification instruction
+   * @throws ConflictException if the email is already registered
+   */
   public async register(req: Request, dto: RegisterDto): Promise<any> {
     this.logger.log(`Регистрация пользователя с email=${dto.email}`);
 
@@ -96,6 +104,15 @@ export class AuthService implements IAuthService {
     };
   }
 
+  /**
+   * Logs in a user with credentials.
+   *
+   * @param req HTTP request object (used for session management)
+   * @param dto LoginDto containing user credentials (email, password, optional 2FA code)
+   * @returns Logged-in user object or 2FA message if enabled
+   * @throws NotFoundException if user not found
+   * @throws UnauthorizedException if password invalid or email not verified
+   */
   public async login(req: Request, dto: LoginDto): Promise<any> {
     this.logger.log(`Попытка входа пользователя email=${dto.email}`);
 
@@ -149,6 +166,15 @@ export class AuthService implements IAuthService {
     return this.saveSession(req, user);
   }
 
+  /**
+   * Extracts user profile from OAuth provider using authorization code.
+   *
+   * @param req HTTP request object (used for session management)
+   * @param provider OAuth provider name
+   * @param code Authorization code from provider
+   * @returns Logged-in user object
+   * @throws NotFoundException if provider or user profile not found
+   */
   public async extractProfileFromCode(
     req: Request,
     provider: string,
@@ -226,6 +252,12 @@ export class AuthService implements IAuthService {
     return this.saveSession(req, user);
   }
 
+  /**
+   * Logs out the current user and destroys session.
+   *
+   * @param req HTTP request object (contains session)
+   * @param res HTTP response object (used to clear cookie)
+   */
   public async logout(req: Request, res: Response): Promise<void> {
     this.logger.log(
       `Попытка выхода пользователя userId=${req.session?.userId}`,
@@ -257,6 +289,13 @@ export class AuthService implements IAuthService {
     });
   }
 
+  /**
+   * Saves a user session.
+   *
+   * @param req HTTP request object (used for session management)
+   * @param user User entity to save in session
+   * @returns The saved user
+   */
   public async saveSession(req: Request, user: User): Promise<User | null> {
     this.logger.debug(`Сохраняем сессию для пользователя id=${user.id}`);
 

@@ -18,6 +18,11 @@ export interface IStatisticRepository {
 export class StatisticRepository implements IStatisticRepository {
   constructor(private readonly dataSource: DataSource) {}
 
+  /**
+   * Returns workload statistics for all members in a project.
+   * @param projectId - ID of the project
+   * @returns Array of objects containing assignee info, task count, and percent of total tasks
+   */
   async getMembersWorkload(projectId: string): Promise<MemberWorkloadDTO[]> {
     const totalTasks: number = await this.dataSource
       .getRepository(Task)
@@ -60,6 +65,11 @@ export class StatisticRepository implements IStatisticRepository {
     }));
   }
 
+  /**
+   * Returns count of tasks grouped by priority in a project.
+   * @param projectId - ID of the project
+   * @returns Array of objects with priority, count, and percent of total tasks
+   */
   async getTaskPriorities(projectId: string): Promise<TaskPriorityDTO[]> {
     const totalTasks: number = await this.dataSource
       .getRepository(Task)
@@ -83,6 +93,11 @@ export class StatisticRepository implements IStatisticRepository {
     }));
   }
 
+  /**
+   * Returns count of tasks per project column/status.
+   * @param projectId - ID of the project
+   * @returns Array of objects with column ID, title, task count, and percent
+   */
   async getColumnStats(projectId: string): Promise<ColumnStatDTO[]> {
     const totalTasks: number = await this.dataSource
       .getRepository(Task)
@@ -111,6 +126,11 @@ export class StatisticRepository implements IStatisticRepository {
     }));
   }
 
+  /**
+   * Returns overall project progress.
+   * @param projectId - ID of the project
+   * @returns Object containing total tasks, done tasks, and completion percent
+   */
   async getProjectProgress(projectId: string): Promise<ProjectProgressDTO> {
     const totalTasks: number = await this.dataSource
       .getRepository(Task)

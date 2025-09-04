@@ -42,7 +42,10 @@ export class MembershipController {
   ) {}
 
   /**
-   * Sends a project membership invitation to a user.
+   * Sends a membership invitation to a user via email.
+   * @param dto - Invitation DTO containing email and memberRole
+   * @param projectId - ID of the project
+   * @returns true if invitation sent successfully
    */
   @UseGuards(MembershipAccessControlGuard)
   @MembershipRoles(MemberRole.ADMIN)
@@ -62,7 +65,9 @@ export class MembershipController {
   }
 
   /**
-   * Accepts an invitation by validating the token and creating the membership.
+   * Accepts an invitation using the provided token and creates the membership.
+   * @param projectId - ID of the project
+   * @param dto - Invite DTO containing token and memberRole
    */
   @Authorization()
   @Post("/take-invite")
@@ -80,7 +85,10 @@ export class MembershipController {
   }
 
   /**
-   * Deletes a project member.
+   * Deletes a single project member.
+   * @param projectId - ID of the project
+   * @param userId - ID of the member to delete
+   * @returns DeleteResult from TypeORM
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
@@ -95,7 +103,10 @@ export class MembershipController {
   }
 
   /**
-   * Deletes an array of project members.
+   * Deletes multiple project members at once.
+   * @param projectId - ID of the project
+   * @param dto - DTO containing array of member IDs
+   * @returns DeleteResult from TypeORM
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
@@ -114,6 +125,9 @@ export class MembershipController {
 
   /**
    * Updates the role of a project member.
+   * @param projectId - ID of the project
+   * @param dto - DTO containing userId and new memberRole
+   * @returns Updated Membership entity
    */
   @MemberACL(MemberRole.ADMIN)
   @Authorization()
@@ -131,6 +145,11 @@ export class MembershipController {
     );
   }
 
+  /**
+   * Retrieves all projects for a specific member.
+   * @param userId - ID of the user
+   * @returns Array of Memberships or null
+   */
   @Authorization()
   @Get("/get-project-by-member")
   @HttpCode(HttpStatus.OK)
@@ -141,6 +160,11 @@ export class MembershipController {
     return this.membershipService.getProjectsByMember(userId);
   }
 
+  /**
+   * Retrieves all members of a specific project.
+   * @param projectId - ID of the project
+   * @returns Array of Memberships or null
+   */
   @Get("/project-member")
   public async getProjectMembers(
     @Param("projectId") projectId: string,
